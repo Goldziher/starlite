@@ -4,7 +4,21 @@ from collections import abc, deque
 from copy import deepcopy
 from dataclasses import dataclass, is_dataclass, replace
 from inspect import Parameter, Signature
-from typing import Any, AnyStr, Callable, Collection, ForwardRef, Literal, Mapping, Protocol, Sequence, TypeVar, cast
+from typing import (  # type: ignore[attr-defined]
+    Any,
+    AnyStr,
+    Callable,
+    ClassVar,
+    Collection,
+    ForwardRef,
+    Literal,
+    Mapping,
+    Protocol,
+    Sequence,
+    TypeVar,
+    _GenericAlias,  # pyright: ignore
+    cast,
+)
 
 from msgspec import UnsetType
 from typing_extensions import NotRequired, Required, Self, get_args, get_origin, get_type_hints, is_typeddict
@@ -441,6 +455,19 @@ class FieldDefinition:
         if self.origin:
             if self.origin in UnionTypes:
                 return all(t.is_subclass_of(cl) for t in self.inner_types)
+
+            if isinstance(self.annotation, _GenericAlias) and self.origin not in (ClassVar, Literal):
+                cl_args = get_args(cl)
+                cl_origin = get_origin(cl) or cl
+                return (
+                    issubclass(self.origin, cl_origin)
+                    and (len(cl_args) == len(self.args) if cl_args else True)
+                    and (
+                        all(t.is_subclass_of(cl_arg) for t, cl_arg in zip(self.inner_types, cl_args))
+                        if cl_args
+                        else True
+                    )
+                )
 
             return self.origin not in UnionTypes and is_class_and_subclass(self.origin, cl)
 

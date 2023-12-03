@@ -5,7 +5,7 @@ from abc import abstractmethod
 from inspect import getmodule
 from typing import TYPE_CHECKING, Collection, Generic, TypeVar
 
-from typing_extensions import NotRequired, TypedDict, get_type_hints
+from typing_extensions import NotRequired, TypedDict
 
 from litestar.dto._backend import DTOBackend
 from litestar.dto._codegen_backend import DTOCodegenBackend
@@ -17,6 +17,7 @@ from litestar.exceptions.dto_exceptions import InvalidAnnotationException
 from litestar.types.builtin_types import NoneType
 from litestar.types.composite_types import TypeEncodersMap
 from litestar.typing import FieldDefinition
+from litestar.utils.typing import get_type_hints_with_generics_resolved
 
 if TYPE_CHECKING:
     from typing import Any, ClassVar, Generator
@@ -267,7 +268,9 @@ class AbstractDTO(Generic[T]):
 
         return {
             k: FieldDefinition.from_kwarg(annotation=v, name=k)
-            for k, v in get_type_hints(model_type, localns=namespace, include_extras=True).items()
+            for k, v in get_type_hints_with_generics_resolved(
+                model_type, localns=namespace, include_extras=True
+            ).items()
         }
 
     @staticmethod

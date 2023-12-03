@@ -249,7 +249,9 @@ def get_type_hints_with_generics_resolved(
     if origin is None:
         # Implies the generic types have not been specified in the annotation
         type_hints = get_type_hints(annotation, globalns=globalns, localns=localns, include_extras=include_extras)
-        typevar_map = {p: p for p in annotation.__parameters__}
+        if not (parameters := getattr(annotation, "__parameters__", None)):
+            return type_hints
+        typevar_map = {p: p for p in parameters}
     else:
         type_hints = get_type_hints(origin, globalns=globalns, localns=localns, include_extras=include_extras)
         # the __parameters__ is only available on the origin itself and not the annotation

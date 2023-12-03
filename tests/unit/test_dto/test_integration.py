@@ -1,18 +1,21 @@
 from __future__ import annotations
 
-from typing import Dict
+from dataclasses import dataclass
+from typing import Dict, Generic, TypeVar
 from unittest.mock import MagicMock
 
 import pytest
 
 from litestar import Controller, Litestar, Router, post
 from litestar.config.app import ExperimentalFeatures
-from litestar.dto import AbstractDTO, DTOConfig
+from litestar.dto import AbstractDTO, DataclassDTO, DTOConfig, DTOData
 from litestar.dto._backend import DTOBackend
 from litestar.dto._codegen_backend import DTOCodegenBackend
 from litestar.testing import create_test_client
 
 from . import Model
+
+T = TypeVar("T")
 
 
 @pytest.fixture()
@@ -153,3 +156,23 @@ def test_enable_experimental_backend_override_in_dto_config(ModelDataDTO: type[A
 
     backend = handler.resolve_data_dto()._dto_backends[handler.handler_id]["data_backend"]  # type: ignore[union-attr]
     assert isinstance(backend, DTOBackend)
+
+
+def test_dto_for_generic_model() -> None:
+    @dataclass
+    class Foo(Generic[T]):
+        foo: T
+
+    FooDTO = DataclassDTO[Foo[int]]
+
+    @post("/foo", dto=FooDTO, signature_types=[Foo])
+    async def foo_handler(data: DTOData[Foo[int]]) -> Foo[int]:
+        return data.create_instance()
+
+    with create_test_client(route_handlers=foo_handler) as client:
+        response = client.post("/foo", json={"foo": 1})
+        assert response.status_code == 201
+        assert response.json() == {"foo": 1}
+        response = client.post("/foo", json={"foo": "1"})
+        assert response.status_code == 400
+        assert response.json() == {"status_code": 400, "detail": "Expected `int`, got `str` - at `$.foo`"}

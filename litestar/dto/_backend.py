@@ -18,6 +18,7 @@ from typing import (
 )
 
 from msgspec import UNSET, Struct, UnsetType, convert, defstruct, field
+from typing_extensions import get_origin
 
 from litestar.dto._types import (
     CollectionType,
@@ -110,7 +111,7 @@ class DTOBackend:
             rename_fields=self.dto_factory.config.rename_fields,
         )
         self.transfer_model_type = self.create_transfer_model_type(
-            model_name=model_type.__name__, field_definitions=self.parsed_field_definitions
+            model_name=(get_origin(model_type) or model_type).__name__, field_definitions=self.parsed_field_definitions
         )
         self.dto_data_type: type[DTOData] | None = None
 
