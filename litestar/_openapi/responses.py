@@ -283,8 +283,8 @@ def create_error_responses(exceptions: list[type[HTTPException]]) -> Iterator[tu
                             any_of=[
                                 Schema(type=OpenAPIType.NULL),
                                 Schema(type=OpenAPIType.OBJECT),
-                                Schema(type=OpenAPIType.ARRAY, items=Schema())
-                                ],
+                                Schema(type=OpenAPIType.ARRAY, items=Schema()),
+                            ],
                             additional_properties=Schema(),
                         ),
                     },
