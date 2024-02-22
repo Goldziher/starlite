@@ -117,7 +117,7 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
         Returns:
             A State instance constructed from the scope["state"] value.
         """
-        return cast("StateT", State(self.scope["state"]))
+        return cast("StateT", State(self.scope.get("state")))
 
     @property
     def url(self) -> URL:

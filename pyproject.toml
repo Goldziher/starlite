@@ -57,7 +57,7 @@ maintainers = [
 name = "litestar"
 readme = "README.md"
 requires-python = ">=3.8,<4.0"
-version = "2.5.4"
+version = "2.6.1"
 
 [project.urls]
 Blog = "https://blog.litestar.dev"
@@ -108,29 +108,26 @@ include = [
   '/CHANGELOG.rst',
 ]
 
-
-
-
 [tool.pdm]
 ignore_package_warnings = ["sphinx", "slotscheck"]
 
 [tool.pdm.dev-dependencies]
 dev = [
-    "beanie>=1.21.0",
-    "beautifulsoup4",
-    "fsspec",
-    "greenlet",
-    "hypothesis",
-    "python-dotenv",
-    "starlette",
-    "trio",
-    "aiosqlite",
-    "asyncpg>=0.29.0",
-    "psycopg[pool,binary]>=3.1.10",
-    "psycopg2-binary",
-    "psutil>=5.9.8",
-    "hypercorn>=0.16.0",
-    "daphne>=4.0.0",
+  "beanie>=1.21.0",
+  "beautifulsoup4",
+  "fsspec",
+  "greenlet",
+  "hypothesis",
+  "python-dotenv",
+  "starlette",
+  "trio",
+  "aiosqlite",
+  "asyncpg>=0.29.0",
+  "psycopg[pool,binary]>=3.1.10",
+  "psycopg2-binary",
+  "psutil>=5.9.8",
+  "hypercorn>=0.16.0",
+  "daphne>=4.0.0",
 ]
 dev-contrib = ["opentelemetry-sdk", "httpx-sse"]
 docs = [
@@ -138,7 +135,6 @@ docs = [
   "sphinx-autobuild>=2021.3.14",
   "sphinx-copybutton>=0.5.2",
   "sphinx-toolbox>=3.5.0",
-  "blacken-docs>=1.16.0",
   "sphinx-design>=0.5.0",
   "sphinx-click>=4.4.0",
   "sphinxcontrib-mermaid>=0.9.2",
@@ -146,19 +142,18 @@ docs = [
   "litestar-sphinx-theme @ git+https://github.com/litestar-org/litestar-sphinx-theme.git",
 ]
 linting = [
-    "ruff",
-    "mypy",
-    "pre-commit",
-    "slotscheck",
-    "pyright==1.1.344",
-    "blacken-docs",
-    "asyncpg-stubs",
-    "types-beautifulsoup4",
-    "types-pytest-lazy-fixture",
-    "types-python-jose",
-    "types-pyyaml",
-    "types-redis",
-    "types-psutil",
+  "ruff>=0.2.1",
+  "mypy",
+  "pre-commit",
+  "slotscheck",
+  "pyright==1.1.344",
+  "asyncpg-stubs",
+  "types-beautifulsoup4",
+  "types-pytest-lazy-fixture",
+  "types-python-jose",
+  "types-pyyaml",
+  "types-redis",
+  "types-psutil",
 ]
 test = [
   "covdefaults",
@@ -216,13 +211,13 @@ filterwarnings = [
   "ignore::DeprecationWarning:litestar.*",
   "ignore::pydantic.PydanticDeprecatedSince20::",
   "ignore:`general_plain_validator_function`:DeprecationWarning::",
-  "ignore: 'RichMultiCommand':DeprecationWarning::"  # this is coming from rich_click itself, nothing we can do about
-                                                     # that for now
+  "ignore: 'RichMultiCommand':DeprecationWarning::", # this is coming from rich_click itself, nothing we can do about # that for now
 ]
 markers = [
   "sqlalchemy_integration: SQLAlchemy integration tests",
-  "server_integration: Test integration with ASGI server"
+  "server_integration: Test integration with ASGI server",
 ]
+testpaths = ["tests", "docs/examples/testing"]
 xfail_strict = true
 
 [tool.mypy]
@@ -260,6 +255,8 @@ module = [
   "fsspec.*",
   "jsbeautifier.*",
   "pytimeparse.*",
+  "importlib_resources",
+  "exceptiongroup",
 ]
 
 [tool.pydantic-mypy]
@@ -270,7 +267,6 @@ warn_untyped_fields = true
 
 [tool.pyright]
 disableBytesTypePromotions = true
-reportUnnecessaryTypeIgnoreComments = true
 exclude = [
   "test_apps",
   "tools",
@@ -283,12 +279,13 @@ exclude = [
 ]
 include = ["litestar", "tests"]
 pythonVersion = "3.8"
+reportUnnecessaryTypeIgnoreComments = true
 
 [tool.slotscheck]
 strict-imports = false
 
 [tool.ruff]
-select = [
+lint.select = [
   "A", # flake8-builtins
   "B", # flake8-bugbear
   "BLE", # flake8-blind-except
@@ -325,7 +322,8 @@ select = [
   "YTT", # flake8-2020
 ]
 
-ignore = [
+line-length = 120
+lint.ignore = [
   "A003", # flake8-builtins - class attribute {name} is shadowing a python builtin
   "B010", # flake8-bugbear - do not call setattr with a constant attribute value
   "D100", # pydocstyle - missing docstring in public module
@@ -339,22 +337,21 @@ ignore = [
   "D202", # pydocstyle - no blank lines allowed after function docstring
   "D205", # pydocstyle - 1 blank line required between summary line and description
   "D415", # pydocstyle - first line should end with a period, question mark, or exclamation point
-  "E501", # pycodestyle line too long, handled by black
+  "E501", # pycodestyle line too long, handled by ruff format
   "PLW2901", # pylint - for loop variable overwritten by assignment target
   "RUF012", # Ruff-specific rule - annotated with classvar
   "ISC001", # Ruff formatter incompatible
 ]
-line-length = 120
 src = ["litestar", "tests", "docs/examples"]
 target-version = "py38"
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 12
 
-[tool.ruff.pep8-naming]
+[tool.ruff.lint.pep8-naming]
 classmethod-decorators = [
   "classmethod",
   "pydantic.root_validator",
@@ -364,10 +361,10 @@ classmethod-decorators = [
   "sqlalchemy.orm.declared_attr",
 ]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["litestar", "tests", "examples"]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "docs/**/*.*" = ["S", "B", "DTZ", "A", "TCH", "ERA", "D", "RET"]
 "docs/examples/**" = ["T201"]
 "docs/examples/application_hooks/before_send_hook.py" = ["UP006"]
@@ -405,6 +402,10 @@ known-first-party = ["litestar", "tests", "examples"]
 "tests/unit/test_contrib/test_sqlalchemy/**/*.*" = ["UP006"]
 "tools/**/*.*" = ["D", "ARG", "EM", "TRY", "G", "FBT"]
 "tools/prepare_release.py" = ["S603", "S607"]
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = 88
 
 [tool.unasyncd]
 add_editors_note = true

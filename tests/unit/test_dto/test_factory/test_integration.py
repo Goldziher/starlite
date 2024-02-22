@@ -848,3 +848,53 @@ def test_data_dto_with_default() -> None:
     with create_test_client([test]) as client:
         response = client.post("/")
         assert response.json() == {"foo": None}
+
+
+@pytest.mark.parametrize(
+    "field_type, constraint_name, constraint_value, request_data",
+    [
+        (int, "gt", 2, 2),
+        (int, "ge", 2, 1),
+        (int, "lt", 2, 2),
+        (int, "le", 2, 3),
+        (int, "multiple_of", 2, 3),
+        (str, "min_length", 2, "1"),
+        (str, "max_length", 1, "12"),
+        (str, "pattern", r"\d", "a"),
+    ],
+)
+def test_msgspec_dto_copies_constraints(
+    field_type: Any, constraint_name: str, constraint_value: Any, request_data: Any, use_experimental_dto_backend: bool
+) -> None:
+    # https://github.com/litestar-org/litestar/issues/3026
+    struct = msgspec.defstruct(
+        "Foo",
+        fields=[("bar", Annotated[field_type, msgspec.Meta(**{constraint_name: constraint_value})])],  # type: ignore[list-item]
+    )
+
+    @post(
+        "/",
+        dto=Annotated[MsgspecDTO[struct], DTOConfig(experimental_codegen_backend=use_experimental_dto_backend)],  # type: ignore[arg-type, valid-type]
+        signature_namespace={"struct": struct},
+    )
+    def handler(data: struct) -> None:  # type: ignore[valid-type]
+        pass
+
+    with create_test_client([handler]) as client:
+        assert client.post("/", json={"bar": request_data}).status_code == 400
+
+
+def test_msgspec_dto_dont_copy_length_constraint_for_partial_dto() -> None:
+    class Foo(msgspec.Struct):
+        bar: Annotated[str, msgspec.Meta(min_length=2)]
+        baz: Annotated[str, msgspec.Meta(max_length=2)]
+
+    class FooDTO(MsgspecDTO[Foo]):
+        config = DTOConfig(partial=True)
+
+    @post("/", dto=FooDTO, signature_types={Foo})
+    def handler(data: Foo) -> None:
+        pass
+
+    with create_test_client([handler]) as client:
+        assert client.post("/", json={"bar": "1", "baz": "123"}).status_code == 201

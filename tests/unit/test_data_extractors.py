@@ -1,6 +1,8 @@
 from typing import Any, List
+from unittest.mock import AsyncMock
 
 import pytest
+from pytest_mock import MockFixture
 
 from litestar import Request
 from litestar.connection.base import empty_receive
@@ -108,3 +110,18 @@ async def test_response_data_extractor() -> None:
     assert extracted_data.get("body") == b'{"hello":"world"}'
     assert extracted_data.get("headers") == {**headers, "content-length": "17"}
     assert extracted_data.get("cookies") == {"Path": "/", "SameSite": "lax", "auth": "", "regular": ""}
+
+
+async def test_request_data_extractor_skip_keys() -> None:
+    req = factory.get()
+    extractor = ConnectionDataExtractor()
+    assert (await extractor.extract(req, {"body"})).keys() == {"body"}
+
+
+async def test_skip_parse_malformed_body_false_raises(mocker: MockFixture) -> None:
+    mocker.patch("litestar.testing.request_factory.Request.json", new=AsyncMock(side_effect=ValueError()))
+    req = factory.post(headers={"Content-Type": "application/json"})
+    extractor = ConnectionDataExtractor(parse_body=True, skip_parse_malformed_body=False)
+
+    with pytest.raises(ValueError):
+        await extractor.extract(req, {"body"})

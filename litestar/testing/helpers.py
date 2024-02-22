@@ -12,14 +12,14 @@ from litestar.utils.predicates import is_class_and_subclass
 if TYPE_CHECKING:
     from contextlib import AbstractAsyncContextManager
 
-    from litestar import Request, WebSocket
+    from litestar import Request, Response, WebSocket
     from litestar.config.allowed_hosts import AllowedHostsConfig
     from litestar.config.app import ExperimentalFeatures
     from litestar.config.compression import CompressionConfig
     from litestar.config.cors import CORSConfig
     from litestar.config.csrf import CSRFConfig
     from litestar.config.response_cache import ResponseCacheConfig
-    from litestar.datastructures import CacheControlHeader, ETag, ResponseHeader, State
+    from litestar.datastructures import CacheControlHeader, ETag, State
     from litestar.dto import AbstractDTO
     from litestar.events import BaseEventEmitterBackend, EventListener
     from litestar.logging.config import BaseLoggingConfig
@@ -47,7 +47,7 @@ if TYPE_CHECKING:
         OnAppInitHandler,
         ParametersMap,
         ResponseCookies,
-        ResponseType,
+        ResponseHeaders,
         TypeEncodersMap,
     )
 
@@ -92,9 +92,9 @@ def create_test_client(
     pdb_on_exception: bool | None = None,
     request_class: type[Request] | None = None,
     response_cache_config: ResponseCacheConfig | None = None,
-    response_class: ResponseType | None = None,
+    response_class: type[Response] | None = None,
     response_cookies: ResponseCookies | None = None,
-    response_headers: Sequence[ResponseHeader] | None = None,
+    response_headers: ResponseHeaders | None = None,
     return_dto: type[AbstractDTO] | None | EmptyType = Empty,
     root_path: str = "",
     security: Sequence[SecurityRequirement] | None = None,
@@ -347,9 +347,9 @@ def create_async_test_client(
     raise_server_exceptions: bool = True,
     request_class: type[Request] | None = None,
     response_cache_config: ResponseCacheConfig | None = None,
-    response_class: ResponseType | None = None,
+    response_class: type[Response] | None = None,
     response_cookies: ResponseCookies | None = None,
-    response_headers: Sequence[ResponseHeader] | None = None,
+    response_headers: ResponseHeaders | None = None,
     return_dto: type[AbstractDTO] | None | EmptyType = Empty,
     root_path: str = "",
     security: Sequence[SecurityRequirement] | None = None,

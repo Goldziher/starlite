@@ -39,7 +39,6 @@ from litestar.types import (
     Middleware,
     ResponseCookies,
     ResponseHeaders,
-    ResponseType,
     TypeEncodersMap,
 )
 from litestar.utils import ensure_async_callable
@@ -135,7 +134,7 @@ class HTTPRouteHandler(BaseRouteHandler):
         middleware: Sequence[Middleware] | None = None,
         name: str | None = None,
         opt: Mapping[str, Any] | None = None,
-        response_class: ResponseType | None = None,
+        response_class: type[Response] | None = None,
         response_cookies: ResponseCookies | None = None,
         response_headers: ResponseHeaders | None = None,
         return_dto: type[AbstractDTO] | None | EmptyType = Empty,

@@ -98,15 +98,15 @@ def test_media_type(media_type: MediaType | str, tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     "extension,expected_type",
     [
-        (".json", MediaType.JSON),
-        (".html", MediaType.HTML),
-        (".html.other", MediaType.HTML),
-        (".css", MediaType.CSS),
-        (".xml", MediaType.XML),
-        (".xml.other", MediaType.XML),
-        (".txt", MediaType.TEXT),
-        (".unknown", MediaType.TEXT),
-        ("", MediaType.TEXT),
+        (".json", MediaType.JSON.value),
+        (".html", MediaType.HTML.value),
+        (".html.other", MediaType.HTML.value),
+        (".css", MediaType.CSS.value),
+        (".xml", MediaType.XML.value),
+        (".xml.other", MediaType.XML.value),
+        (".txt", MediaType.TEXT.value),
+        (".unknown", MediaType.TEXT.value),
+        ("", MediaType.TEXT.value),
     ],
 )
 @pytest.mark.skipif(sys.platform == "win32", reason="mimetypes.guess_types is unreliable on windows")
@@ -123,7 +123,7 @@ def test_media_type_inferred(extension: str, expected_type: MediaType, tmp_path:
     ) as client:
         res = client.get("/")
         assert res.status_code == 200
-        assert res.headers["content-type"].startswith(expected_type.value)
+        assert res.headers["content-type"].startswith(expected_type)
 
 
 def test_before_request_handler_content_type(tmp_path: Path) -> None:

@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, Type
 
 import pytest
 from hypothesis import given
@@ -9,7 +9,6 @@ from litestar.exceptions import ImproperlyConfiguredException
 from litestar.handlers.http_handlers import HTTPRouteHandler
 from litestar.handlers.http_handlers._utils import get_default_status_code
 from litestar.status_codes import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
-from litestar.types import ResponseType
 from litestar.utils import normalize_path
 
 
@@ -30,7 +29,7 @@ def test_route_handler_kwarg_handling(
     http_method: Any,
     media_type: MediaType,
     include_in_schema: bool,
-    response_class: Optional[ResponseType],
+    response_class: Optional[Type[Response]],
     response_headers: Any,
     status_code: Any,
     path: Any,

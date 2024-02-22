@@ -59,12 +59,13 @@ if TYPE_CHECKING:
     from litestar.config.compression import CompressionConfig
     from litestar.config.cors import CORSConfig
     from litestar.config.csrf import CSRFConfig
-    from litestar.datastructures import CacheControlHeader, ETag, ResponseHeader
+    from litestar.datastructures import CacheControlHeader, ETag
     from litestar.dto import AbstractDTO
     from litestar.events.listener import EventListener
     from litestar.logging.config import BaseLoggingConfig
     from litestar.openapi.spec import SecurityRequirement
     from litestar.openapi.spec.open_api import OpenAPI
+    from litestar.response import Response
     from litestar.static_files.config import StaticFilesConfig
     from litestar.stores.base import Store
     from litestar.types import (
@@ -91,7 +92,7 @@ if TYPE_CHECKING:
         ParametersMap,
         Receive,
         ResponseCookies,
-        ResponseType,
+        ResponseHeaders,
         RouteHandlerType,
         Scope,
         Send,
@@ -137,6 +138,7 @@ class Litestar(Router):
         "_server_lifespan_managers",
         "_debug",
         "_openapi_schema",
+        "_static_files_config",
         "plugins",
         "after_exception",
         "allowed_hosts",
@@ -160,7 +162,6 @@ class Litestar(Router):
         "route_map",
         "signature_namespace",
         "state",
-        "static_files_config",
         "stores",
         "template_engine",
         "websocket_class",
@@ -203,9 +204,9 @@ class Litestar(Router):
         plugins: Sequence[PluginProtocol] | None = None,
         request_class: type[Request] | None = None,
         response_cache_config: ResponseCacheConfig | None = None,
-        response_class: ResponseType | None = None,
+        response_class: type[Response] | None = None,
         response_cookies: ResponseCookies | None = None,
-        response_headers: Sequence[ResponseHeader] | None = None,
+        response_headers: ResponseHeaders | None = None,
         return_dto: type[AbstractDTO] | None | EmptyType = Empty,
         security: Sequence[SecurityRequirement] | None = None,
         signature_namespace: Mapping[str, Any] | None = None,
@@ -410,7 +411,7 @@ class Litestar(Router):
         self.request_class = config.request_class or Request
         self.response_cache_config = config.response_cache_config
         self.state = config.state
-        self.static_files_config = config.static_files_config
+        self._static_files_config = config.static_files_config
         self.template_engine = config.template_config.engine_instance if config.template_config else None
         self.websocket_class = config.websocket_class or WebSocket
         self.debug = config.debug
@@ -419,6 +420,15 @@ class Litestar(Router):
 
         if self.pdb_on_exception:
             warn_pdb_on_exception()
+
+        try:
+            from starlette.exceptions import HTTPException as StarletteHTTPException
+
+            from litestar.middleware.exceptions.middleware import _starlette_exception_handler
+
+            config.exception_handlers.setdefault(StarletteHTTPException, _starlette_exception_handler)
+        except ImportError:
+            pass
 
         super().__init__(
             after_request=config.after_request,
@@ -456,7 +466,7 @@ class Litestar(Router):
             self.get_logger = self.logging_config.configure()
             self.logger = self.get_logger("litestar")
 
-        for static_config in self.static_files_config:
+        for static_config in self._static_files_config:
             self.register(static_config.to_static_files_app())
 
         self.asgi_handler = self._create_asgi_handler()
@@ -464,6 +474,11 @@ class Litestar(Router):
         self.stores: StoreRegistry = (
             config.stores if isinstance(config.stores, StoreRegistry) else StoreRegistry(config.stores)
         )
+
+    @property
+    @deprecated(version="2.6.0", kind="property", info="Use create_static_files router instead")
+    def static_files_config(self) -> list[StaticFilesConfig]:
+        return self._static_files_config
 
     @property
     @deprecated(version="2.0", alternative="Litestar.plugins.cli", kind="property")
@@ -482,18 +497,30 @@ class Litestar(Router):
 
     @staticmethod
     def _get_default_plugins(plugins: list[PluginProtocol]) -> list[PluginProtocol]:
+        from litestar.plugins.core import MsgspecDIPlugin
+
+        plugins.append(MsgspecDIPlugin())
+
         with suppress(MissingDependencyException):
-            from litestar.contrib.pydantic import PydanticInitPlugin, PydanticPlugin, PydanticSchemaPlugin
+            from litestar.contrib.pydantic import (
+                PydanticDIPlugin,
+                PydanticInitPlugin,
+                PydanticPlugin,
+                PydanticSchemaPlugin,
+            )
 
             pydantic_plugin_found = any(isinstance(plugin, PydanticPlugin) for plugin in plugins)
             pydantic_init_plugin_found = any(isinstance(plugin, PydanticInitPlugin) for plugin in plugins)
             pydantic_schema_plugin_found = any(isinstance(plugin, PydanticSchemaPlugin) for plugin in plugins)
+            pydantic_serialization_plugin_found = any(isinstance(plugin, PydanticDIPlugin) for plugin in plugins)
             if not pydantic_plugin_found and not pydantic_init_plugin_found and not pydantic_schema_plugin_found:
                 plugins.append(PydanticPlugin())
             elif not pydantic_plugin_found and pydantic_init_plugin_found and not pydantic_schema_plugin_found:
                 plugins.append(PydanticSchemaPlugin())
             elif not pydantic_plugin_found and not pydantic_init_plugin_found:
                 plugins.append(PydanticInitPlugin())
+            if not pydantic_plugin_found and not pydantic_serialization_plugin_found:
+                plugins.append(PydanticDIPlugin())
         with suppress(MissingDependencyException):
             from litestar.contrib.attrs import AttrsSchemaPlugin
 
@@ -508,8 +535,14 @@ class Litestar(Router):
 
     @debug.setter
     def debug(self, value: bool) -> None:
-        if self.logger:
-            self.logger.setLevel(logging.DEBUG if value else logging.INFO)
+        """Sets the debug logging level for the application.
+
+        When possible, it calls the `self.logging_config.set_level` method.  This allows for implementation specific code and APIs to be called.
+        """
+        if self.logger and self.logging_config:
+            self.logging_config.set_level(self.logger, logging.DEBUG if value else logging.INFO)
+        elif self.logger and hasattr(self.logger, "setLevel"):  # pragma: no cover
+            self.logger.setLevel(logging.DEBUG if value else logging.INFO)  # pragma: no cover
         if isinstance(self.logging_config, LoggingConfig):
             self.logging_config.loggers["litestar"]["level"] = "DEBUG" if value else "INFO"
         self._debug = value
@@ -537,7 +570,7 @@ class Litestar(Router):
             return
 
         scope["app"] = self
-        scope["state"] = {}
+        scope.setdefault("state", {})
         await self.asgi_handler(scope, receive, self._wrap_send(send=send, scope=scope))  # type: ignore[arg-type]
 
     async def _call_lifespan_hook(self, hook: LifespanHook) -> None:
@@ -733,6 +766,9 @@ class Litestar(Router):
 
         return join_paths(output)
 
+    @deprecated(
+        "2.6.0", info="Use create_static_files router instead of StaticFilesConfig, which works with route_reverse"
+    )
     def url_for_static_asset(self, name: str, file_path: str) -> str:
         """Receives a static files handler name, an asset file path and returns resolved url path to the asset.
 

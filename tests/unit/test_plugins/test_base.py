@@ -8,9 +8,10 @@ from click import Group
 from litestar import Litestar, MediaType, get
 from litestar.constants import UNDEFINED_SENTINELS
 from litestar.contrib.attrs import AttrsSchemaPlugin
-from litestar.contrib.pydantic import PydanticInitPlugin, PydanticPlugin, PydanticSchemaPlugin
+from litestar.contrib.pydantic import PydanticDIPlugin, PydanticInitPlugin, PydanticPlugin, PydanticSchemaPlugin
 from litestar.contrib.sqlalchemy.plugins import SQLAlchemySerializationPlugin
 from litestar.plugins import CLIPluginProtocol, InitPluginProtocol, OpenAPISchemaPlugin, PluginRegistry
+from litestar.plugins.core import MsgspecDIPlugin
 from litestar.testing import create_test_client
 from litestar.typing import FieldDefinition
 
@@ -81,6 +82,27 @@ def test_plugin_registry_get() -> None:
     assert PluginRegistry([cli_plugin]).get(CLIPlugin) is cli_plugin
 
 
+def test_plugin_registry_stringified_get() -> None:
+    class CLIPlugin(CLIPluginProtocol):
+        def on_cli_init(self, cli: Group) -> None:
+            pass
+
+    cli_plugin = CLIPlugin()
+    pydantic_plugin = PydanticPlugin()
+    with pytest.raises(KeyError):
+        PluginRegistry([CLIPlugin()]).get(
+            "litestar2.contrib.pydantic.PydanticPlugin"
+        )  # not a fqdn.  should fail # type: ignore[list-item]
+        PluginRegistry([]).get("CLIPlugin")  # not a fqdn.  should fail # type: ignore[list-item]
+
+    assert PluginRegistry([cli_plugin, pydantic_plugin]).get(CLIPlugin) is cli_plugin
+    assert PluginRegistry([cli_plugin, pydantic_plugin]).get(PydanticPlugin) is pydantic_plugin
+    assert PluginRegistry([cli_plugin, pydantic_plugin]).get("PydanticPlugin") is pydantic_plugin
+    assert (
+        PluginRegistry([cli_plugin, pydantic_plugin]).get("litestar.contrib.pydantic.PydanticPlugin") is pydantic_plugin
+    )
+
+
 def test_openapi_schema_plugin_is_constrained_field() -> None:
     assert OpenAPISchemaPlugin.is_constrained_field(FieldDefinition.from_annotation(str)) is False
 
@@ -100,6 +122,17 @@ def test_app_get_default_plugins(
     any_pydantic = bool(init_plugin) or bool(schema_plugin)
     default_plugins = Litestar._get_default_plugins(plugins)  # type: ignore[arg-type]
     if not any_pydantic:
-        assert {type(p) for p in default_plugins} == {PydanticPlugin, AttrsSchemaPlugin}
+        assert {type(p) for p in default_plugins} == {
+            PydanticPlugin,
+            AttrsSchemaPlugin,
+            PydanticDIPlugin,
+            MsgspecDIPlugin,
+        }
     else:
-        assert {type(p) for p in default_plugins} == {PydanticInitPlugin, PydanticSchemaPlugin, AttrsSchemaPlugin}
+        assert {type(p) for p in default_plugins} == {
+            PydanticInitPlugin,
+            PydanticSchemaPlugin,
+            AttrsSchemaPlugin,
+            PydanticDIPlugin,
+            MsgspecDIPlugin,
+        }

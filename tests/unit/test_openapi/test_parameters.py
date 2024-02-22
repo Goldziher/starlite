@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, List, Optional, Type, cast
+from uuid import UUID
 
 import pytest
 from typing_extensions import Annotated
@@ -324,3 +325,21 @@ def test_parameter_examples() -> None:
         assert response.json()["paths"]["/"]["get"]["parameters"][0]["examples"] == {
             "text-example-1": {"summary": "example summary", "value": "example value"}
         }
+
+
+def test_uuid_path_description_generation() -> None:
+    # https://github.com/litestar-org/litestar/issues/2967
+    @get("str/{id:str}")
+    async def str_path(id: Annotated[str, Parameter(description="String ID")]) -> str:
+        return id
+
+    @get("uuid/{id:uuid}")
+    async def uuid_path(id: Annotated[UUID, Parameter(description="UUID ID")]) -> UUID:
+        return id
+
+    with create_test_client(
+        [str_path, uuid_path], openapi_config=OpenAPIConfig(title="Test API", version="1.0.0")
+    ) as client:
+        response = client.get("/schema/openapi.json")
+        assert response.json()["paths"]["/str/{id}"]["get"]["parameters"][0]["description"] == "String ID"
+        assert response.json()["paths"]["/uuid/{id}"]["get"]["parameters"][0]["description"] == "UUID ID"

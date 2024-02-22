@@ -77,7 +77,4 @@ async def on_startup():
     await create_db_tables(Task, if_not_exists=True)
 
 
-app = Litestar(
-    route_handlers=[tasks, create_task, delete_task, update_task],
-    on_startup=[on_startup],
-)
+app = Litestar(route_handlers=[tasks, create_task, delete_task, update_task], on_startup=[on_startup], debug=True)

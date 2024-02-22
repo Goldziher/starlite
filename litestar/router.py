@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from litestar.datastructures import CacheControlHeader, ETag
     from litestar.dto import AbstractDTO
     from litestar.openapi.spec import SecurityRequirement
+    from litestar.response import Response
     from litestar.routes import BaseRoute
     from litestar.types import (
         AfterRequestHookHandler,
@@ -34,7 +35,6 @@ if TYPE_CHECKING:
         Middleware,
         ParametersMap,
         ResponseCookies,
-        ResponseType,
         RouteHandlerMapItem,
         RouteHandlerType,
         TypeEncodersMap,
@@ -95,7 +95,7 @@ class Router:
         middleware: Sequence[Middleware] | None = None,
         opt: Mapping[str, Any] | None = None,
         parameters: ParametersMap | None = None,
-        response_class: ResponseType | None = None,
+        response_class: type[Response] | None = None,
         response_cookies: ResponseCookies | None = None,
         response_headers: ResponseHeaders | None = None,
         return_dto: type[AbstractDTO] | None | EmptyType = Empty,

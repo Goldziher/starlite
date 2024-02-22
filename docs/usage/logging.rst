@@ -113,12 +113,12 @@ Using StructLog
 ^^^^^^^^^^^^^^^
 
 `StructLog <https://www.structlog.org/en/stable/>`_ is a powerful structured-logging library. Litestar ships with a dedicated
-logging config for using it:
+logging plugin and config for using it:
 
 .. code-block:: python
 
    from litestar import Litestar, Request, get
-   from litestar.logging import StructLoggingConfig
+   from litestar.plugins.structlog import StructlogPlugin
 
 
    @get("/")
@@ -127,9 +127,9 @@ logging config for using it:
        return None
 
 
-   logging_config = StructLoggingConfig()
+   structlog_plugin = StructlogPlugin()
 
-   app = Litestar(route_handlers=[my_router_handler], logging_config=logging_config)
+   app = Litestar(route_handlers=[my_router_handler], plugins=[StructlogPlugin()])
 
 Subclass Logging Configs
 ^^^^^^^^^^^^^^^^^^^^^^^^

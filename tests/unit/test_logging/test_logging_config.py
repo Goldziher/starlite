@@ -147,6 +147,27 @@ def test_root_logger(handlers: Any, listener: Any) -> None:
 @pytest.mark.parametrize(
     "handlers, listener",
     [
+        [default_handlers, StandardQueueListenerHandler],
+        [default_picologging_handlers, PicologgingQueueListenerHandler],
+    ],
+)
+def test_root_logger_no_config(handlers: Any, listener: Any) -> None:
+    logging_config = LoggingConfig(handlers=handlers, configure_root_logger=False)
+    get_logger = logging_config.configure()
+    root_logger = get_logger()
+    for handler in root_logger.handlers:  # type: ignore[attr-defined]
+        root_logger.removeHandler(handler)  # type: ignore[attr-defined]
+    get_logger = logging_config.configure()
+    root_logger = get_logger()
+    if handlers["console"]["class"] == "logging.StreamHandler":
+        assert not isinstance(root_logger.handlers[0], listener)  # type: ignore[attr-defined]
+    else:
+        assert len(root_logger.handlers) < 1  # type: ignore[attr-defined]
+
+
+@pytest.mark.parametrize(
+    "handlers, listener",
+    [
         pytest.param(
             default_handlers,
             StandardQueueListenerHandler,
@@ -159,7 +180,6 @@ def test_root_logger(handlers: Any, listener: Any) -> None:
 )
 def test_customizing_handler(handlers: Any, listener: Any, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setitem(handlers["queue_listener"], "handlers", ["cfg://handlers.console"])
-
     logging_config = LoggingConfig(handlers=handlers)
     get_logger = logging_config.configure()
     root_logger = get_logger()

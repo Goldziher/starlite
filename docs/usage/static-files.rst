@@ -1,89 +1,116 @@
-Static Files
+Static files
 ============
 
-Static files are served by the app from predefined locations. To configure static file serving, either pass an
-instance of :class:`StaticFilesConfig <.static_files.config.StaticFilesConfig>` or a list
-thereof to :class:`Litestar <.app.Litestar>` using the ``static_files_config`` kwarg.
+To serve static files (i.e. serve arbitrary files from a given directory), the
+:func:`~litestar.static_files.create_static_files_router` can be used to create a
+:class:`Router <litestar.router.Router>` to handle this task.
 
-For example, lets say our Litestar app is going to serve **regular files** from the ``my_app/static`` folder and **html
-documents** from the ``my_app/html`` folder, and we would like to serve the **static files** on the ``/files`` path,
-and the **html files** on the ``/html`` path:
+.. literalinclude:: /examples/static_files/full_example.py
+    :language: python
 
-.. code-block:: python
+In this example, files from the directory ``assets`` will be served on the path
+``/static``. A file ``assets/hello.txt`` would now be available on ``/static/hello.txt``
 
-   from litestar import Litestar
-   from litestar.static_files.config import StaticFilesConfig
+.. attention::
+    Directories are interpreted as relative to the working directory from which the
+    application is started
 
-   app = Litestar(
-       route_handlers=[...],
-       static_files_config=[
-           StaticFilesConfig(directories=["static"], path="/files"),
-           StaticFilesConfig(directories=["html"], path="/html", html_mode=True),
-       ],
-   )
-
-Matching is done based on filename, for example, assume we have a request that is trying to retrieve the path
-``/files/file.txt``\ , the **directory for the base path** ``/files`` **will be searched** for the file ``file.txt``. If it is
-found, the file will be sent, otherwise a **404 response** will be sent.
-
-If ``html_mode`` is enabled and no specific file is requested, the application will fall back to serving ``index.html``. If
-no file is found the application will look for a ``404.html`` file in order to render a response, otherwise a 404
-:class:`NotFoundException <.exceptions.http_exceptions.NotFoundException>` will be returned.
-
-You can provide a ``name`` parameter to ``StaticFilesConfig`` to identify the given config and generate links to files in
-folders belonging to that config. ``name`` should be a unique string across all static configs and
-:doc:`/usage/routing/handlers`.
-
-.. code-block:: python
-
-   from litestar import Litestar
-   from litestar.static_files.config import StaticFilesConfig
-
-   app = Litestar(
-       route_handlers=[...],
-       static_files_config=[
-           StaticFilesConfig(
-               directories=["static"], path="/some_folder/static/path", name="static"
-           ),
-       ],
-   )
-
-   url_path = app.url_for_static_asset("static", "file.pdf")
-   # /some_folder/static/path/file.pdf
 
 Sending files as attachments
 ----------------------------
 
-By default, files are sent "inline", meaning they will have a ``Content-Disposition: inline`` header.
-To send them as attachments, use the ``send_as_attachment=True`` flag, which will add a
-``Content-Disposition: attachment`` header:
+By default, files are sent "inline", meaning they will have a
+``Content-Disposition: inline`` header. Setting ``send_as_attachment=True`` flag will
+send them with a ``Content-Disposition: attachment`` instead:
 
-.. code-block:: python
+.. literalinclude:: /examples/static_files/send_as_attachment.py
+    :language: python
 
-   from litestar import Litestar
-   from litestar.static_files.config import StaticFilesConfig
 
-   app = Litestar(
-       route_handlers=[...],
-       static_files_config=[
-           StaticFilesConfig(
-               directories=["static"],
-               path="/some_folder/static/path",
-               name="static",
-               send_as_attachment=True,
-           ),
-       ],
-   )
+HTML mode
+---------
 
-File System support and Cloud Files
------------------------------------
+"HTML mode" can be enabled by setting ``html_mode=True``. This will:
 
-The :class:`StaticFilesConfig <.static_files.StaticFilesConfig>` class accepts a value called ``file_system``,
-which can be any class adhering to the Litestar :class:`FileSystemProtocol <litestar.types.FileSystemProtocol>`.
+- Serve and ``/index.html`` when the path ``/`` is requested
+- Attempt to serve ``/404.html`` when a requested file is not found
 
-This protocol is similar to the file systems defined by `fsspec <https://filesystem-spec.readthedocs.io/en/latest/>`_,
-which cover all major cloud providers and a wide range of other use cases (e.g. HTTP based file service, ``ftp``, etc.).
 
-In order to use any file system, simply use `fsspec <https://filesystem-spec.readthedocs.io/en/latest/>`_ or one of
-the libraries based upon it, or provide a custom implementation adhering to the
-:class:`FileSystemProtocol <litestar.types.FileSystemProtocol>`.
+.. literalinclude:: /examples/static_files/html_mode.py
+    :language: python
+
+
+Passing options to the generated router
+---------------------------------------
+
+Options available on :class:`~litestar.router.Router` can be passed to directly
+:func:`~litestar.static_files.create_static_files_router`:
+
+.. literalinclude:: /examples/static_files/passing_options.py
+    :language: python
+
+
+Using a custom router class
+---------------------------
+
+The router class used can be customized with the ``router_class`` parameter:
+
+.. literalinclude:: /examples/static_files/custom_router.py
+    :language: python
+
+
+
+Retrieving paths to static files
+--------------------------------
+
+:meth:`~litestar.app.Litestar.route_reverse` and
+:meth:`~litestar.connection.ASGIConnection.url_for` can be used to retrieve the path
+under which a specific file will be available:
+
+.. literalinclude:: /examples/static_files/route_reverse.py
+    :language: python
+
+.. tip::
+
+    The ``name`` parameter has to match the ``name`` parameter passed to
+    :func:`create_static_files_router`, which defaults to ``static``.
+
+
+(Remote) file systems
+---------------------
+
+To customize how Litestar interacts with the file system, a class implementing the
+:class:`~litestar.types.FileSystemProtocol` can be passed to ``file_system``. An example
+of this are the file systems provided by
+`fsspec <https://filesystem-spec.readthedocs.io/en/latest/>`_, which includes support
+for FTP, SFTP, Hadoop, SMB, GitHub and
+`many more <https://filesystem-spec.readthedocs.io/en/latest/api.html#implementations>`_,
+with support for popular cloud providers available via 3rd party implementations such as
+
+- S3 via `S3FS <https://s3fs.readthedocs.io/en/latest/>`_
+- Google Cloud Storage via `GCFS <https://gcsfs.readthedocs.io/en/latest/>`_
+- Azure Blob Storage via `adlfs <https://github.com/fsspec/adlfs>`_
+
+
+.. literalinclude:: /examples/static_files/file_system.py
+    :language: python
+
+
+Upgrading from legacy StaticFilesConfig
+---------------------------------------
+
+.. important:: Info
+    :class:`StaticFilesConfig` is deprecated and will be removed in Litestar 3.0
+
+
+Existing code can be upgraded to :func:`create_static_files_router` by replacing
+:class:`StaticFilesConfig` instances with this function call and passing the result to
+``route_handlers`` instead of ``static_files_config``:
+
+
+.. literalinclude:: /examples/static_files/upgrade_from_static_1.py
+    :language: python
+
+
+.. literalinclude:: /examples/static_files/upgrade_from_static_2.py
+    :language: python

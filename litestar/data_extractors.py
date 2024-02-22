@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Literal, TypedDict, cast
+import inspect
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Iterable, Literal, TypedDict, cast
 
 from litestar._parsers import parse_cookie_string
 from litestar.connection.request import Request
@@ -70,6 +71,7 @@ class ConnectionDataExtractor:
         "parse_query",
         "obfuscate_headers",
         "obfuscate_cookies",
+        "skip_parse_malformed_body",
     )
 
     def __init__(
@@ -88,6 +90,7 @@ class ConnectionDataExtractor:
         obfuscate_headers: set[str] | None = None,
         parse_body: bool = False,
         parse_query: bool = False,
+        skip_parse_malformed_body: bool = False,
     ) -> None:
         """Initialize ``ConnectionDataExtractor``
 
@@ -106,9 +109,11 @@ class ConnectionDataExtractor:
             obfuscate_cookies: cookie keys to obfuscate. Obfuscated values are replaced with '*****'.
             parse_body: Whether to parse the body value or return the raw byte string, (for requests only).
             parse_query: Whether to parse query parameters or return the raw byte string.
+            skip_parse_malformed_body: Whether to skip parsing the body if it is malformed
         """
         self.parse_body = parse_body
         self.parse_query = parse_query
+        self.skip_parse_malformed_body = skip_parse_malformed_body
         self.obfuscate_headers = {h.lower() for h in (obfuscate_headers or set())}
         self.obfuscate_cookies = {c.lower() for c in (obfuscate_cookies or set())}
         self.connection_extractors: dict[str, Callable[[ASGIConnection[Any, Any, Any, Any]], Any]] = {}
@@ -152,6 +157,25 @@ class ConnectionDataExtractor:
             else self.connection_extractors
         )
         return cast("ExtractedRequestData", {key: extractor(connection) for key, extractor in extractors.items()})
+
+    async def extract(
+        self, connection: ASGIConnection[Any, Any, Any, Any], fields: Iterable[str]
+    ) -> ExtractedRequestData:
+        extractors = (
+            {**self.connection_extractors, **self.request_extractors}  # type: ignore
+            if isinstance(connection, Request)
+            else self.connection_extractors
+        )
+        data = {}
+        for key, extractor in extractors.items():
+            if key not in fields:
+                continue
+            if inspect.iscoroutinefunction(extractor):
+                value = await extractor(connection)
+            else:
+                value = extractor(connection)
+            data[key] = value
+        return cast("ExtractedRequestData", data)
 
     @staticmethod
     def extract_scheme(connection: ASGIConnection[Any, Any, Any, Any]) -> str:
@@ -272,13 +296,20 @@ class ConnectionDataExtractor:
             return None
         if not self.parse_body:
             return await request.body()
-        request_encoding_type = request.content_type[0]
-        if request_encoding_type == RequestEncodingType.JSON:
-            return await request.json()
-        form_data = await request.form()
-        if request_encoding_type == RequestEncodingType.URL_ENCODED:
-            return dict(form_data)
-        return {key: repr(value) if isinstance(value, UploadFile) else value for key, value in form_data.multi_items()}
+        try:
+            request_encoding_type = request.content_type[0]
+            if request_encoding_type == RequestEncodingType.JSON:
+                return await request.json()
+            form_data = await request.form()
+            if request_encoding_type == RequestEncodingType.URL_ENCODED:
+                return dict(form_data)
+            return {
+                key: repr(value) if isinstance(value, UploadFile) else value for key, value in form_data.multi_items()
+            }
+        except Exception as exc:
+            if self.skip_parse_malformed_body:
+                return await request.body()
+            raise exc
 
 
 class ExtractedResponseData(TypedDict, total=False):

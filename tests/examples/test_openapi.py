@@ -28,7 +28,7 @@ def test_schema_generation() -> None:
             "components": {
                 "schemas": {
                     "IdModel": {
-                        "properties": {"id": {"type": "string", "format": "uuid", "description": "Any UUID string"}},
+                        "properties": {"id": {"type": "string", "format": "uuid"}},
                         "type": "object",
                         "required": ["id"],
                         "title": "IdContainer",

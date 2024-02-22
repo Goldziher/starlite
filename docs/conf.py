@@ -178,6 +178,7 @@ nitpick_ignore = [
     ("py:exc", "InternalServerError"),
     ("py:exc", "HTTPExceptions"),
     (PY_CLASS, "litestar.template.Template"),
+    (PY_CLASS, "litestar.middleware.compression.gzip_facade.GzipCompression"),
 ]
 
 nitpick_ignore_regex = [

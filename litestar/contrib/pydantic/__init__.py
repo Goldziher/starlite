@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 from litestar.plugins import InitPluginProtocol
 
+from .pydantic_di_plugin import PydanticDIPlugin
 from .pydantic_dto_factory import PydanticDTO
 from .pydantic_init_plugin import PydanticInitPlugin
 from .pydantic_schema_plugin import PydanticSchemaPlugin
@@ -14,7 +15,13 @@ if TYPE_CHECKING:
 
     from litestar.config.app import AppConfig
 
-__all__ = ("PydanticDTO", "PydanticInitPlugin", "PydanticSchemaPlugin", "PydanticPlugin")
+__all__ = (
+    "PydanticDTO",
+    "PydanticInitPlugin",
+    "PydanticSchemaPlugin",
+    "PydanticPlugin",
+    "PydanticDIPlugin",
+)
 
 
 def _model_dump(model: BaseModel | BaseModelV1, *, by_alias: bool = False) -> dict[str, Any]:
@@ -53,6 +60,10 @@ class PydanticPlugin(InitPluginProtocol):
             app_config: The :class:`AppConfig <.config.app.AppConfig>` instance.
         """
         app_config.plugins.extend(
-            [PydanticInitPlugin(prefer_alias=self.prefer_alias), PydanticSchemaPlugin(prefer_alias=self.prefer_alias)]
+            [
+                PydanticInitPlugin(prefer_alias=self.prefer_alias),
+                PydanticSchemaPlugin(prefer_alias=self.prefer_alias),
+                PydanticDIPlugin(),
+            ]
         )
         return app_config

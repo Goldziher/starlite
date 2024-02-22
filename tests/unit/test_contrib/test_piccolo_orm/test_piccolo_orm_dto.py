@@ -58,8 +58,20 @@ def test_serializing_single_piccolo_table(scaffold_piccolo: Callable) -> None:
 def test_serializing_multiple_piccolo_tables(scaffold_piccolo: Callable) -> None:
     with create_test_client(route_handlers=[retrieve_venues]) as client:
         response = client.get("/venues")
+
+        sanitized_venues = []
+        for v in venues:
+            non_secret_data = {
+                column._meta.db_column_name: v[column._meta.db_column_name]
+                for column in v.all_columns()
+                if not column._meta.secret
+            }
+            sanitized_venues.append(Venue(**non_secret_data))
+
         assert response.status_code == HTTP_200_OK
-        assert [str(Venue(**value).querystring) for value in response.json()] == [str(v.querystring) for v in venues]
+        assert [str(Venue(**value).querystring) for value in response.json()] == [
+            str(v.querystring) for v in sanitized_venues
+        ]
 
 
 @pytest.mark.parametrize(
@@ -154,7 +166,6 @@ def test_piccolo_dto_openapi_spec_generation() -> None:
     assert venue_schema
     assert venue_schema.to_schema() == {
         "properties": {
-            "capacity": {"oneOf": [{"type": "null"}, {"type": "integer"}]},
             "id": {"oneOf": [{"type": "null"}, {"type": "integer"}]},
             "name": {"oneOf": [{"type": "null"}, {"type": "string"}]},
         },

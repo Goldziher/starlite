@@ -117,7 +117,7 @@ TYPE_MAP: dict[type[Any] | None | Any, Schema] = {
     Sequence: Schema(type=OpenAPIType.ARRAY),
     Set: Schema(type=OpenAPIType.ARRAY),
     Tuple: Schema(type=OpenAPIType.ARRAY),
-    UUID: Schema(type=OpenAPIType.STRING, format=OpenAPIFormat.UUID, description="Any UUID string"),
+    UUID: Schema(type=OpenAPIType.STRING, format=OpenAPIFormat.UUID),
     bool: Schema(type=OpenAPIType.BOOLEAN),
     bytearray: Schema(type=OpenAPIType.STRING),
     bytes: Schema(type=OpenAPIType.STRING),

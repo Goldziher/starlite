@@ -17,7 +17,9 @@ from typing import (
     cast,
 )
 
+import msgspec
 from msgspec import UNSET, Struct, UnsetType, convert, defstruct, field
+from typing_extensions import Annotated
 
 from litestar.dto._types import (
     CollectionType,
@@ -33,6 +35,7 @@ from litestar.dto._types import (
 from litestar.dto.data_structures import DTOData, DTOFieldDefinition
 from litestar.dto.field import Mark
 from litestar.enums import RequestEncodingType
+from litestar.params import KwargDefinition
 from litestar.serialization import decode_json, decode_msgpack
 from litestar.types import Empty
 from litestar.typing import FieldDefinition
@@ -740,6 +743,24 @@ def _create_msgspec_field(field_definition: TransferDTOFieldDefinition) -> Any:
     return field(**kwargs)
 
 
+def _create_struct_field_meta_for_field_definition(field_definition: TransferDTOFieldDefinition) -> msgspec.Meta | None:
+    if (kwarg_definition := field_definition.kwarg_definition) is None or not isinstance(
+        kwarg_definition, KwargDefinition
+    ):
+        return None
+
+    return msgspec.Meta(
+        gt=kwarg_definition.gt,
+        ge=kwarg_definition.ge,
+        lt=kwarg_definition.lt,
+        le=kwarg_definition.le,
+        multiple_of=kwarg_definition.multiple_of,
+        min_length=kwarg_definition.min_length if not field_definition.is_partial else None,
+        max_length=kwarg_definition.max_length if not field_definition.is_partial else None,
+        pattern=kwarg_definition.pattern,
+    )
+
+
 def _create_struct_for_field_definitions(
     model_name: str,
     field_definitions: tuple[TransferDTOFieldDefinition, ...],
@@ -754,6 +775,9 @@ def _create_struct_for_field_definitions(
         field_type = _create_transfer_model_type_annotation(field_definition.transfer_type)
         if field_definition.is_partial:
             field_type = Union[field_type, UnsetType]
+
+        if (field_meta := _create_struct_field_meta_for_field_definition(field_definition)) is not None:
+            field_type = Annotated[field_type, field_meta]
 
         struct_fields.append(
             (

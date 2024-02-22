@@ -36,13 +36,11 @@ if TYPE_CHECKING:
     from litestar.types import AnyCallable
 
 
-RICH_CLICK_INSTALLED = find_spec("rich-click") is not None
 UVICORN_INSTALLED = find_spec("uvicorn") is not None
 JSBEAUTIFIER_INSTALLED = find_spec("jsbeautifier") is not None
 
 
 __all__ = (
-    "RICH_CLICK_INSTALLED",
     "UVICORN_INSTALLED",
     "JSBEAUTIFIER_INSTALLED",
     "LoadedApp",
@@ -85,6 +83,8 @@ class LitestarEnv:
     uds: str | None = None
     reload: bool | None = None
     reload_dirs: tuple[str, ...] | None = None
+    reload_include: tuple[str, ...] | None = None
+    reload_exclude: tuple[str, ...] | None = None
     web_concurrency: int | None = None
     is_app_factory: bool = False
     certfile_path: str | None = None
@@ -120,6 +120,8 @@ class LitestarEnv:
         uds = getenv("LITESTAR_UNIX_DOMAIN_SOCKET")
         fd = getenv("LITESTAR_FILE_DESCRIPTOR")
         reload_dirs = tuple(s.strip() for s in getenv("LITESTAR_RELOAD_DIRS", "").split(",") if s) or None
+        reload_include = tuple(s.strip() for s in getenv("LITESTAR_RELOAD_INCLUDES", "").split(",") if s) or None
+        reload_exclude = tuple(s.strip() for s in getenv("LITESTAR_RELOAD_EXCLUDES", "").split(",") if s) or None
 
         return cls(
             app_path=loaded_app.app_path,
@@ -131,6 +133,8 @@ class LitestarEnv:
             fd=int(fd) if fd else None,
             reload=_bool_from_env("LITESTAR_RELOAD"),
             reload_dirs=reload_dirs,
+            reload_include=reload_include,
+            reload_exclude=reload_exclude,
             web_concurrency=int(web_concurrency) if web_concurrency else None,
             is_app_factory=loaded_app.is_factory,
             cwd=cwd,

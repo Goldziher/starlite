@@ -1,5 +1,5 @@
 from logging import INFO
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Any, Dict
 
 import pytest
 from structlog.testing import capture_logs
@@ -286,3 +286,17 @@ def test_logging_middleware_with_session_middleware(session_backend_config_memor
         assert response.status_code == HTTP_200_OK
         assert "session" in client.cookies
         assert client.cookies["session"] == session_id
+
+
+def test_structlog_invalid_request_body_handled() -> None:
+    # https://github.com/litestar-org/litestar/issues/3063
+    @post("/")
+    async def hello_world(data: Dict[str, Any]) -> Dict[str, Any]:
+        return data
+
+    with create_test_client(
+        route_handlers=[hello_world],
+        logging_config=StructLoggingConfig(log_exceptions="always"),
+        middleware=[LoggingMiddlewareConfig().middleware],
+    ) as client:
+        assert client.post("/", headers={"Content-Type": "application/json"}, content=b'{"a": "b",}').status_code == 400

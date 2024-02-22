@@ -240,14 +240,21 @@ class ResponseFactory:
                 prefer_alias=False,
                 generate_examples=additional_response.generate_examples,
             )
-            schema = schema_creator.for_field_definition(
-                FieldDefinition.from_annotation(additional_response.data_container)
-            )
+
+            content: dict[str, OpenAPIMediaType] | None
+            if additional_response.data_container is not None:
+                schema = schema_creator.for_field_definition(
+                    FieldDefinition.from_annotation(additional_response.data_container)
+                )
+                content = {additional_response.media_type: OpenAPIMediaType(schema=schema)}
+            else:
+                content = None
+
             yield (
                 str(status_code),
                 OpenAPIResponse(
                     description=additional_response.description,
-                    content={additional_response.media_type: OpenAPIMediaType(schema=schema)},
+                    content=content,
                 ),
             )
 

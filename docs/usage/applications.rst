@@ -25,7 +25,6 @@ and Route Handlers should be registered on it.
 
     * :ref:`Routing - Registering Routes <usage/routing/overview:Registering Routes>`
 
-
 Startup and Shutdown
 --------------------
 
@@ -93,8 +92,9 @@ On the other hand, the shutdown hooks are invoked in their specified order.
 Using Application State
 -----------------------
 
-As seen in the examples for the `on_startup <#before-after-startup>`_ / `on_shutdown <#before-after-shutdown>`_ ,
-callables passed to these hooks can receive an optional kwarg called ``state``, which is the application's state object.
+As seen in the examples for the `on_startup / on_shutdown <Startup and Shutdown>`,
+callables passed to these hooks can receive an optional kwarg called ``app``, through which the application's state object
+and other properties can be accessed.
 The advantage of using application ``state``, is that it can be accessed during multiple stages of the connection, and
 it can be injected into dependencies and route handlers.
 
@@ -186,8 +186,7 @@ After Exception
 ^^^^^^^^^^^^^^^
 
 The ``after_exception`` hook takes a :class:`sync or async callable <litestar.types.AfterExceptionHookHandler>` that is called with
-three arguments: the ``exception`` that occurred, the ASGI ``scope`` of the request or websocket connection, and the
-application ``state``.
+two arguments: the ``exception`` that occurred and the ASGI ``scope`` of the request or websocket connection.
 
 .. literalinclude:: /examples/application_hooks/after_exception_hook.py
     :caption: After Exception Hook
@@ -203,7 +202,7 @@ Before Send
 ^^^^^^^^^^^
 
 The ``before_send`` hook takes a :class:`sync or async callable <litestar.types.BeforeMessageSendHookHandler>` that is called when
-an ASGI message is sent. The hook receives the message instance and the application state.
+an ASGI message is sent. The hook receives the message instance and the ASGI ``scope``.
 
 .. literalinclude:: /examples/application_hooks/before_send_hook.py
     :caption: Before Send Hook

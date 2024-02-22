@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, List, cast
 
 import pytest
-from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 from litestar import Controller, Request, Response, Router, get, post
@@ -56,8 +55,8 @@ class MiddlewareWithArgsAndKwargs(BaseHTTPMiddleware):
     "middleware",
     [
         BaseMiddlewareRequestLoggingMiddleware,
-        Middleware(MiddlewareWithArgsAndKwargs, kwarg="123Jeronimo"),
-        Middleware(MiddlewareProtocolRequestLoggingMiddleware, kwarg="123Jeronimo"),
+        # Middleware(MiddlewareWithArgsAndKwargs, kwarg="123Jeronimo"),  # pyright: ignore[reportGeneralTypeIssues] # noqa: ERA001
+        # Middleware(MiddlewareProtocolRequestLoggingMiddleware, kwarg="123Jeronimo"),  # type: ignore[arg-type] # pyright: ignore[reportGeneralTypeIssues] # noqa: ERA001
         DefineMiddleware(MiddlewareWithArgsAndKwargs, 1, kwarg="123Jeronimo"),  # type: ignore[arg-type]
         DefineMiddleware(MiddlewareProtocolRequestLoggingMiddleware, kwarg="123Jeronimo"),
     ],

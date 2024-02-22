@@ -85,7 +85,8 @@ class BaseBackendConfig(ABC, Generic[BaseSessionBackendT]):  # pyright: ignore
 
 
                 @get("/")
-                def my_handler(request: Request) -> None: ...
+                def my_handler(request: Request) -> None:
+                    ...
 
 
                 app = Litestar(route_handlers=[my_handler], middleware=[session_config.middleware])

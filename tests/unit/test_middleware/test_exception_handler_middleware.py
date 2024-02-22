@@ -12,7 +12,7 @@ from litestar.exceptions import HTTPException, InternalServerException, Validati
 from litestar.logging.config import LoggingConfig, StructLoggingConfig
 from litestar.middleware.exceptions import ExceptionHandlerMiddleware
 from litestar.middleware.exceptions._debug_response import get_symbol_name
-from litestar.middleware.exceptions.middleware import get_exception_handler
+from litestar.middleware.exceptions.middleware import _starlette_exception_handler, get_exception_handler
 from litestar.status_codes import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
 from litestar.testing import TestClient, create_test_client
 from litestar.types import ExceptionHandlersMap
@@ -124,7 +124,8 @@ def test_exception_handler_middleware_exception_handlers_mapping() -> None:
 
     app = Litestar(route_handlers=[handler], exception_handlers={Exception: exception_handler}, openapi_config=None)
     assert app.asgi_router.root_route_map_node.children["/"].asgi_handlers["GET"][0].exception_handlers == {  # type: ignore
-        Exception: exception_handler
+        Exception: exception_handler,
+        StarletteHTTPException: _starlette_exception_handler,
     }
 
 
@@ -233,7 +234,7 @@ def test_exception_handler_struct_logging(
             assert cap_logs[0].get("connection_type") == "http"
             assert cap_logs[0].get("path") == "/test"
             assert cap_logs[0].get("traceback")
-            assert cap_logs[0].get("event") == "uncaught exception"
+            assert cap_logs[0].get("event") == "Uncaught Exception"
             assert cap_logs[0].get("log_level") == "error"
         else:
             assert not cap_logs

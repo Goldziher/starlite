@@ -157,7 +157,7 @@ A huge thank you to our current sponsors:
       </div>
       <div>
         <a href="https://www.stok.kr/" title="Stok - Stack Up Your Assets!">
-            <img src="https://avatars.githubusercontent.com/u/144093421?s=400&v=4" width="150" alt="Stok">
+            <img src="https://avatars.githubusercontent.com/u/144093421?s=400&v=4" alt="Stok" style="border-radius: 10px; width: auto; max-height: 150px;" />
         </a>
         <p style="text-align: center;">Stok</p>
       </div>

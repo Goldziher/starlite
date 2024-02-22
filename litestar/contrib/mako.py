@@ -130,7 +130,7 @@ class MakoTemplateEngine(TemplateEngineProtocol[MakoTemplate, Mapping[str, Any]]
         Returns:
             The rendered template as a string.
         """
-        template = _MakoTemplate(template_string)
+        template = _MakoTemplate(template_string)  # noqa: S702
         return template.render(**context)  # type: ignore[no-any-return]
 
     @classmethod

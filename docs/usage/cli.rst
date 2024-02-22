@@ -107,6 +107,10 @@ Options
 +-------------------------------------------+----------------------------------------------+----------------------------------------------------------------------------------+
 | ``-R``\ , ``--reload-dir``                | ``LITESTAR_RELOAD_DIRS``                     | Specify directories to watch for reload.                                         |
 +-------------------------------------------+----------------------------------------------+----------------------------------------------------------------------------------+
+| ``-I``\ , ``--reload-include``            | ``LITESTAR_RELOAD_INCLUDES``                 | Specify glob patterns for files to include when watching for reload.             |
++-------------------------------------------+----------------------------------------------+----------------------------------------------------------------------------------+
+| ``-E``\ , ``--reload-exclude``            | ``LITESTAR_RELOAD_EXCLUDES``                 | Specify glob patterns for files to exclude when watching for reload.             |
++-------------------------------------------+----------------------------------------------+----------------------------------------------------------------------------------+
 | ``-p``\ , ``--port``                      | ``LITESTAR_PORT``                            | Bind the server to this port [default: 8000]                                     |
 +-------------------------------------------+----------------------------------------------+----------------------------------------------------------------------------------+
 | ``--wc``\ , ``--web-concurrency``         | ``WEB_CONCURRENCY``                          | The number of concurrent web workers to start [default: 1]                       |
@@ -142,6 +146,40 @@ To set multiple directories via an environment variable, use a comma-separated l
 .. code-block:: shell
 
    LITESTAR_RELOAD_DIRS=.,../other-library/src
+
+--reload-include
+++++++++++++++++
+
+The ``--reload-include`` flag allows you to specify glob patterns to include when watching for file changes. If you specify this flag, the ``--reload`` flag is implied. Furthermore, ``.py`` files are included implicitly by default.
+
+You can specify multiple glob patterns by passing the flag multiple times:
+
+.. code-block:: shell
+
+   litestar run --reload-include="*.rst" --reload-include="*.yml"
+
+To set multiple directories via an environment variable, use a comma-separated list:
+
+.. code-block:: shell
+
+   LITESTAR_RELOAD_INCLUDES=*.rst,*.yml
+
+--reload-exclude
+++++++++++++++++
+
+The ``--reload-exclude`` flag allows you to specify glob patterns to exclude when watching for file changes. If you specify this flag, the ``--reload`` flag is implied.
+
+You can specify multiple glob patterns by passing the flag multiple times:
+
+.. code-block:: shell
+
+   litestar run --reload-exclude="*.py" --reload-exclude="*.yml"
+
+To set multiple directories via an environment variable, use a comma-separated list:
+
+.. code-block:: shell
+
+   LITESTAR_RELOAD_EXCLUDES=*.py,*.yml
 
 SSL
 +++

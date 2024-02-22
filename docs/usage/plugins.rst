@@ -19,7 +19,7 @@ that can interact with the data that is used to instantiate the application inst
 the contract for plugins that extend serialization functionality of the application.
 
 InitPluginProtocol
-~~~~~~~~~~~~~~~~~~
+------------------
 
 ``InitPluginProtocol`` defines an interface that allows for customization of the application's initialization process.
 Init plugins can define dependencies, add route handlers, configure middleware, and much more!
@@ -37,7 +37,7 @@ they are provided in the ``plugins`` argument of the :class:`app <litestar.app.L
 authors should make it clear in their documentation if their plugin should be invoked before or after other plugins.
 
 Example
--------
++++++++
 
 The following example shows a simple plugin that adds a route handler, and a dependency to the application.
 
@@ -54,7 +54,7 @@ is provided by the ``get_name()`` function, and ``route_handlers`` is updated to
 function. The modified :class:`AppConfig <litestar.config.app.AppConfig>` instance is then returned.
 
 SerializationPluginProtocol
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------
 
 The SerializationPluginProtocol defines a contract for plugins that provide serialization functionality for data types
 that are otherwise unsupported by the framework.
@@ -79,7 +79,7 @@ the plugin, and doesn't otherwise have a ``dto`` or ``return_dto`` defined, the 
 that annotation.
 
 Example
--------
++++++++
 
 The following example shows the actual implementation of the ``SerializationPluginProtocol`` for
 `SQLAlchemy <https://www.sqlalchemy.org/>`_ models that is is provided in ``advanced_alchemy``.
@@ -106,3 +106,20 @@ subtypes are not created for the same model.
 
 If the annotation is not in the ``_type_dto_map`` dictionary, the method creates a new DTO type for the annotation,
 adds it to the ``_type_dto_map`` dictionary, and returns it.
+
+
+DIPlugin
+--------
+
+:class:`~litestar.plugins.DIPlugin` can be used to extend Litestar's dependency
+injection by providing information about injectable types.
+
+Its main purpose it to facilitate the injection of callables with unknown signatures,
+for example Pydantic's ``BaseModel`` classes; These are not supported natively since,
+while they are callables, their type information is not contained within their callable
+signature (their :func:`__init__` method).
+
+
+.. literalinclude:: /examples/plugins/di_plugin.py
+   :language: python
+   :caption: Dynamically generating signature information for a custom type

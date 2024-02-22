@@ -15,14 +15,7 @@ if TYPE_CHECKING:
     from litestar.background_tasks import BackgroundTask, BackgroundTasks
     from litestar.connection import Request
     from litestar.datastructures import Cookie, ResponseHeader
-    from litestar.types import (
-        AfterRequestHookHandler,
-        ASGIApp,
-        AsyncAnyCallable,
-        Method,
-        ResponseType,
-        TypeEncodersMap,
-    )
+    from litestar.types import AfterRequestHookHandler, ASGIApp, AsyncAnyCallable, Method, TypeEncodersMap
     from litestar.typing import FieldDefinition
 
 __all__ = (
@@ -42,7 +35,7 @@ def create_data_handler(
     cookies: frozenset[Cookie],
     headers: frozenset[ResponseHeader],
     media_type: str,
-    response_class: ResponseType,
+    response_class: type[Response],
     status_code: int,
     type_encoders: TypeEncodersMap | None,
 ) -> AsyncAnyCallable:

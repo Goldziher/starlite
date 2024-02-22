@@ -74,13 +74,7 @@ from .composite_types import (
 from .empty import Empty, EmptyType
 from .file_types import FileInfo, FileSystemProtocol
 from .helper_types import AnyIOBackend, MaybePartial, OptionalSequence, SSEData, StreamType, SyncOrAsyncUnion
-from .internal_types import (
-    ControllerRouterHandler,
-    ReservedKwargs,
-    ResponseType,
-    RouteHandlerMapItem,
-    RouteHandlerType,
-)
+from .internal_types import ControllerRouterHandler, ReservedKwargs, RouteHandlerMapItem, RouteHandlerType
 from .protocols import DataclassProtocol, Logger
 from .serialization import DataContainerType, LitestarEncodableType
 
@@ -146,7 +140,6 @@ __all__ = (
     "ReservedKwargs",
     "ResponseCookies",
     "ResponseHeaders",
-    "ResponseType",
     "RouteHandlerMapItem",
     "RouteHandlerType",
     "Scope",

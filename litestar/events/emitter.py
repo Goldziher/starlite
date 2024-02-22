@@ -87,7 +87,7 @@ class SimpleEventEmitter(BaseEventEmitterBackend):
                 fn, args, kwargs = item
                 if kwargs:
                     fn = partial(fn, **kwargs)
-                task_group.start_soon(fn, *args)
+                task_group.start_soon(fn, *args)  # pyright: ignore[reportGeneralTypeIssues]
 
     async def __aenter__(self) -> SimpleEventEmitter:
         self._exit_stack = AsyncExitStack()

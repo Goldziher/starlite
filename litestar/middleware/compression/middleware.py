@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-from gzip import GzipFile
 from io import BytesIO
 from typing import TYPE_CHECKING, Any, Literal
 
 from litestar.datastructures import Headers, MutableScopeHeaders
 from litestar.enums import CompressionEncoding, ScopeType
-from litestar.exceptions import MissingDependencyException
 from litestar.middleware.base import AbstractMiddleware
+from litestar.middleware.compression.gzip_facade import GzipCompression
 from litestar.utils.empty import value_or_default
 from litestar.utils.scope.state import ScopeState
 
 if TYPE_CHECKING:
     from litestar.config.compression import CompressionConfig
+    from litestar.middleware.compression.facade import CompressionFacade
     from litestar.types import (
         ASGIApp,
         HTTPResponseStartEvent,
@@ -26,76 +26,6 @@ if TYPE_CHECKING:
         from brotli import Compressor
     except ImportError:
         Compressor = Any
-
-__all__ = ("CompressionFacade", "CompressionMiddleware")
-
-
-class CompressionFacade:
-    """A unified facade offering a uniform interface for different compression libraries."""
-
-    __slots__ = ("compressor", "buffer", "compression_encoding")
-
-    compressor: GzipFile | Compressor  # pyright: ignore
-
-    def __init__(self, buffer: BytesIO, compression_encoding: CompressionEncoding, config: CompressionConfig) -> None:
-        """Initialize ``CompressionFacade``.
-
-        Args:
-            buffer: A bytes IO buffer to write the compressed data into.
-            compression_encoding: The compression encoding used.
-            config: The app compression config.
-        """
-        self.buffer = buffer
-        self.compression_encoding = compression_encoding
-
-        if compression_encoding == CompressionEncoding.BROTLI:
-            try:
-                import brotli  # noqa: F401
-            except ImportError as e:
-                raise MissingDependencyException("brotli") from e
-
-            from brotli import MODE_FONT, MODE_GENERIC, MODE_TEXT, Compressor
-
-            modes: dict[Literal["generic", "text", "font"], int] = {
-                "text": int(MODE_TEXT),
-                "font": int(MODE_FONT),
-                "generic": int(MODE_GENERIC),
-            }
-            self.compressor = Compressor(
-                quality=config.brotli_quality,
-                mode=modes[config.brotli_mode],
-                lgwin=config.brotli_lgwin,
-                lgblock=config.brotli_lgblock,
-            )
-        else:
-            self.compressor = GzipFile(mode="wb", fileobj=buffer, compresslevel=config.gzip_compress_level)
-
-    def write(self, body: bytes) -> None:
-        """Write compressed bytes.
-
-        Args:
-            body: Message body to process
-
-        Returns:
-            None
-        """
-
-        if self.compression_encoding == CompressionEncoding.BROTLI:
-            self.buffer.write(self.compressor.process(body) + self.compressor.flush())  # type: ignore
-        else:
-            self.compressor.write(body)
-            self.compressor.flush()
-
-    def close(self) -> None:
-        """Close the compression stream.
-
-        Returns:
-            None
-        """
-        if self.compression_encoding == CompressionEncoding.BROTLI:
-            self.buffer.write(self.compressor.finish())  # type: ignore
-        else:
-            self.compressor.close()
 
 
 class CompressionMiddleware(AbstractMiddleware):
@@ -128,20 +58,19 @@ class CompressionMiddleware(AbstractMiddleware):
             None
         """
         accept_encoding = Headers.from_scope(scope).get("accept-encoding", "")
+        config = self.config
 
-        if CompressionEncoding.BROTLI in accept_encoding and self.config.backend == "brotli":
+        if config.compression_facade.encoding in accept_encoding:
             await self.app(
                 scope,
                 receive,
                 self.create_compression_send_wrapper(
-                    send=send, compression_encoding=CompressionEncoding.BROTLI, scope=scope
+                    send=send, compression_encoding=config.compression_facade.encoding, scope=scope
                 ),
             )
             return
 
-        if CompressionEncoding.GZIP in accept_encoding and (
-            self.config.backend == "gzip" or self.config.brotli_gzip_fallback
-        ):
+        if config.gzip_fallback and CompressionEncoding.GZIP in accept_encoding:
             await self.app(
                 scope,
                 receive,
@@ -156,7 +85,7 @@ class CompressionMiddleware(AbstractMiddleware):
     def create_compression_send_wrapper(
         self,
         send: Send,
-        compression_encoding: Literal[CompressionEncoding.BROTLI, CompressionEncoding.GZIP],
+        compression_encoding: Literal[CompressionEncoding.BROTLI, CompressionEncoding.GZIP] | str,
         scope: Scope,
     ) -> Send:
         """Wrap ``send`` to handle brotli compression.
@@ -170,12 +99,19 @@ class CompressionMiddleware(AbstractMiddleware):
             An ASGI send function.
         """
         bytes_buffer = BytesIO()
-        facade = CompressionFacade(buffer=bytes_buffer, compression_encoding=compression_encoding, config=self.config)
+
+        facade: CompressionFacade
+        # We can't use `self.config.compression_facade` directly if the compression is `gzip` since
+        # it may be being used as a fallback.
+        if compression_encoding == CompressionEncoding.GZIP:
+            facade = GzipCompression(buffer=bytes_buffer, compression_encoding=compression_encoding, config=self.config)
+        else:
+            facade = self.config.compression_facade(
+                buffer=bytes_buffer, compression_encoding=compression_encoding, config=self.config
+            )
 
         initial_message: HTTPResponseStartEvent | None = None
         started = False
-
-        _own_encoding = compression_encoding.encode("latin-1")
 
         connection_state = ScopeState.from_scope(scope)
 

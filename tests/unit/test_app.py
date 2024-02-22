@@ -6,7 +6,7 @@ import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from dataclasses import fields
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING, Callable, List, Tuple
 from unittest.mock import MagicMock, Mock, PropertyMock
 
 import pytest
@@ -164,15 +164,7 @@ def test_app_config_object_used(app_config_object: AppConfig, monkeypatch: pytes
     # have been accessed during app instantiation.
     property_mocks: List[Tuple[str, Mock]] = []
     for field in fields(AppConfig):
-        if field.name == "response_cache_config":
-            property_mock = PropertyMock(return_value=ResponseCacheConfig())
-        if field.name in ["event_emitter_backend", "response_cache_config"]:
-            property_mock = PropertyMock(return_value=Mock())
-        else:
-            # default iterable return value allows the mock properties that need to be iterated over in
-            # `Litestar.__init__()` to not blow up, for other properties it shouldn't matter what the value is for the
-            # sake of this test.
-            property_mock = PropertyMock(return_value=[])
+        property_mock = PropertyMock()
         property_mocks.append((field.name, property_mock))
         monkeypatch.setattr(type(app_config_object), field.name, property_mock, raising=False)
 
@@ -219,6 +211,22 @@ def test_set_state() -> None:
 
     app = Litestar(state=State({"a": "b", "c": "d"}), on_app_init=[modify_state_in_hook])
     assert app.state._state == {"a": "b", "c": "D", "e": "f"}
+
+
+async def test_dont_override_initial_state(create_scope: Callable[..., Scope]) -> None:
+    app = Litestar()
+
+    scope = create_scope(headers=[], state={"foo": "bar"})
+
+    async def send(message: Message) -> None:
+        pass
+
+    async def receive() -> None:
+        pass
+
+    await app(scope, receive, send)  # type: ignore[arg-type]
+
+    assert scope["state"].get("foo") == "bar"
 
 
 def test_app_from_config(app_config_object: AppConfig) -> None:

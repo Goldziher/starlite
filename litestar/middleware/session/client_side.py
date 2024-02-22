@@ -108,7 +108,10 @@ class ClientSideSessionBackend(BaseSessionBackend["CookieBackendConfig"]):
         return sorted(key for key in connection.cookies if self.cookie_re.fullmatch(key))
 
     def _create_session_cookies(self, data: list[bytes], cookie_params: dict[str, Any] | None = None) -> list[Cookie]:
-        """Create a list of cookies containing the session data."""
+        """Create a list of cookies containing the session data.
+        If the data is split into multiple cookies, the key will be of the format ``session-{segment number}``,
+        however if only one cookie is needed, the key will be ``session``.
+        """
         if cookie_params is None:
             cookie_params = dict(
                 extract_dataclass_items(
@@ -117,6 +120,16 @@ class ClientSideSessionBackend(BaseSessionBackend["CookieBackendConfig"]):
                     include={f for f in Cookie.__dict__ if f not in ("key", "secret")},
                 )
             )
+
+        if len(data) == 1:
+            return [
+                Cookie(
+                    value=data[0].decode("utf-8"),
+                    key=self.config.key,
+                    **cookie_params,
+                )
+            ]
+
         return [
             Cookie(
                 value=datum.decode("utf-8"),

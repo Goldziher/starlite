@@ -5,7 +5,10 @@ from typing import Any, Callable
 import pytest
 from msgspec import Struct
 
-from litestar import post
+from litestar import delete, post
+from litestar.openapi import ResponseSpec
+from litestar.openapi.spec import OpenAPI
+from litestar.status_codes import HTTP_204_NO_CONTENT
 from litestar.testing import create_test_client
 from tests.models import DataclassPerson, MsgSpecStructPerson, TypedDictPerson
 
@@ -45,6 +48,33 @@ def test_spec_generation(cls: Any) -> None:
             "type": "object",
             "required": ["complex", "first_name", "id", "last_name"],
             "title": f"{cls.__name__}",
+        }
+
+
+def test_spec_generation_no_content() -> None:
+    @delete(
+        "/",
+        status_code=HTTP_204_NO_CONTENT,
+        responses={204: ResponseSpec(None, description="Custom response")},
+    )
+    def handler() -> None:
+        return None
+
+    with create_test_client(handler) as client:
+        schema: OpenAPI = client.app.openapi_schema
+        assert schema.to_schema()["paths"] == {
+            "/": {
+                "delete": {
+                    "summary": "Handler",
+                    "deprecated": False,
+                    "operationId": "Handler",
+                    "responses": {
+                        "204": {
+                            "description": "Custom response",
+                        }
+                    },
+                },
+            },
         }
 
 

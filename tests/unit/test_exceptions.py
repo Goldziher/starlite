@@ -111,15 +111,13 @@ def test_create_exception_response_utility_litestar_http_exception(media_type: M
 
 @pytest.mark.parametrize("media_type", [MediaType.JSON, MediaType.TEXT])
 def test_create_exception_response_utility_starlette_http_exception(media_type: MediaType) -> None:
-    exc = StarletteHTTPException(detail="starlette http exception", status_code=HTTP_400_BAD_REQUEST)
-    request = RequestFactory(handler_kwargs={"media_type": media_type}).get()
-    response = create_exception_response(request=request, exc=exc)
-    assert response.status_code == HTTP_400_BAD_REQUEST
-    assert response.media_type == media_type
-    if media_type == MediaType.JSON:
-        assert response.content == {"status_code": 400, "detail": "starlette http exception"}
-    else:
-        assert response.content == b'{"status_code":400,"detail":"starlette http exception"}'
+    @get("/", media_type=media_type)
+    def handler() -> str:
+        raise StarletteHTTPException(status_code=400)
+
+    with create_test_client(handler) as client:
+        response = client.get("/", headers={"Accept": media_type})
+        assert response.json() == {"status_code": 400, "detail": "Bad Request"}
 
 
 @pytest.mark.parametrize("media_type", [MediaType.JSON, MediaType.TEXT])
@@ -171,3 +169,30 @@ def test_default_exception_handling_of_internal_server_errors(media_type: MediaT
             assert response.json().get("details").startswith("Traceback (most recent call last")
         else:
             assert response.text.startswith("Traceback (most recent call last")
+
+
+def test_non_litestar_exception_with_status_code_is_500() -> None:
+    # https://github.com/litestar-org/litestar/issues/3082
+    class MyException(Exception):
+        status_code: int = 400
+
+    @get("/")
+    def handler() -> None:
+        raise MyException("hello")
+
+    with create_test_client([handler]) as client:
+        assert client.get("/").status_code == 500
+
+
+def test_non_litestar_exception_with_detail_is_not_included() -> None:
+    # https://github.com/litestar-org/litestar/issues/3082
+    class MyException(Exception):
+        status_code: int = 400
+        detail: str = "hello"
+
+    @get("/")
+    def handler() -> None:
+        raise MyException()
+
+    with create_test_client([handler], debug=False) as client:
+        assert client.get("/", headers={"Accept": MediaType.JSON}).json().get("detail") == "Internal Server Error"

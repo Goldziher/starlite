@@ -16,7 +16,7 @@ __all__ = ("ResponseSpec",)
 class ResponseSpec:
     """Container type of additional responses."""
 
-    data_container: DataContainerType
+    data_container: DataContainerType | None
     """A model that describes the content of the response."""
     generate_examples: bool = field(default=True)
     """Generate examples for the response content."""

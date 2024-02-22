@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from dataclasses import replace
 from decimal import Decimal
 from typing import Any, Generator, Generic, List, Optional, TypeVar
@@ -9,7 +10,7 @@ from typing_extensions import Annotated
 
 from litestar.dto import AbstractDTO, DTOField, Mark
 from litestar.dto.data_structures import DTOFieldDefinition
-from litestar.exceptions import MissingDependencyException
+from litestar.exceptions import LitestarWarning, MissingDependencyException
 from litestar.types import Empty
 from litestar.typing import FieldDefinition
 from litestar.utils import warn_deprecation
@@ -38,12 +39,22 @@ def __getattr__(name: str) -> Any:
 
 
 def _parse_piccolo_type(column: Column, extra: dict[str, Any]) -> FieldDefinition:
+    is_optional = not column._meta.required
+
     if isinstance(column, (column_types.Decimal, column_types.Numeric)):
         column_type: Any = Decimal
         meta = Meta(extra=extra)
     elif isinstance(column, (column_types.Email, column_types.Varchar)):
         column_type = str
-        meta = Meta(max_length=column.length, extra=extra)
+        if is_optional:
+            meta = Meta(extra=extra)
+            warnings.warn(
+                f"Dropping max_length constraint for column {column!r} because the " "column is optional",
+                category=LitestarWarning,
+                stacklevel=2,
+            )
+        else:
+            meta = Meta(max_length=column.length, extra=extra)
     elif isinstance(column, column_types.Array):
         column_type = List[column.base_column.value_type]  # type: ignore
         meta = Meta(extra=extra)
@@ -57,7 +68,7 @@ def _parse_piccolo_type(column: Column, extra: dict[str, Any]) -> FieldDefinitio
         column_type = column.value_type
         meta = Meta(extra=extra)
 
-    if not column._meta.required:
+    if is_optional:
         column_type = Optional[column_type]
 
     return FieldDefinition.from_annotation(Annotated[column_type, meta])
@@ -79,10 +90,11 @@ class PiccoloDTO(AbstractDTO[T], Generic[T]):
     @classmethod
     def generate_field_definitions(cls, model_type: type[Table]) -> Generator[DTOFieldDefinition, None, None]:
         for column in model_type._meta.columns:
+            mark = Mark.WRITE_ONLY if column._meta.secret else Mark.READ_ONLY if column._meta.primary_key else None
             yield replace(
                 DTOFieldDefinition.from_field_definition(
                     field_definition=_parse_piccolo_type(column, _create_column_extra(column)),
-                    dto_field=DTOField(mark=Mark.READ_ONLY if column._meta.primary_key else None),
+                    dto_field=DTOField(mark=mark),
                     model_name=model_type.__name__,
                     default_factory=None,
                 ),

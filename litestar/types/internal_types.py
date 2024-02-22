@@ -9,7 +9,6 @@ __all__ = (
     "PathParameterDefinition",
     "PathParameterDefinition",
     "ReservedKwargs",
-    "ResponseType",
     "RouteHandlerMapItem",
     "RouteHandlerType",
 )
@@ -22,7 +21,6 @@ if TYPE_CHECKING:
     from litestar.handlers.asgi_handlers import ASGIRouteHandler
     from litestar.handlers.http_handlers import HTTPRouteHandler
     from litestar.handlers.websocket_handlers import WebsocketRouteHandler
-    from litestar.response import Response
     from litestar.router import Router
     from litestar.template import TemplateConfig
     from litestar.template.config import EngineType
@@ -30,7 +28,6 @@ if TYPE_CHECKING:
 
 ReservedKwargs: TypeAlias = Literal["request", "socket", "headers", "query", "cookies", "state", "data"]
 RouteHandlerType: TypeAlias = "HTTPRouteHandler | WebsocketRouteHandler | ASGIRouteHandler"
-ResponseType: TypeAlias = "type[Response]"
 ControllerRouterHandler: TypeAlias = "type[Controller] | RouteHandlerType | Router | Callable[..., Any]"
 RouteHandlerMapItem: TypeAlias = 'dict[Method | Literal["websocket", "asgi"], RouteHandlerType]'
 TemplateConfigType: TypeAlias = "TemplateConfig[EngineType]"

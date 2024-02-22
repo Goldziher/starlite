@@ -1,4 +1,6 @@
-from typing import AsyncIterator, Callable, Literal
+import zlib
+from io import BytesIO
+from typing import AsyncIterator, Callable, Literal, Union
 from unittest.mock import MagicMock
 
 import pytest
@@ -9,6 +11,7 @@ from litestar.enums import CompressionEncoding
 from litestar.exceptions import ImproperlyConfiguredException
 from litestar.handlers import HTTPRouteHandler
 from litestar.middleware.compression import CompressionMiddleware
+from litestar.middleware.compression.facade import CompressionFacade
 from litestar.response.streaming import Stream
 from litestar.status_codes import HTTP_200_OK
 from litestar.testing import create_test_client
@@ -146,9 +149,9 @@ def test_config_minimum_size_validation(minimum_size: int, should_raise: bool) -
 def test_config_gzip_compress_level_validation(gzip_compress_level: int, should_raise: bool) -> None:
     if should_raise:
         with pytest.raises(ImproperlyConfiguredException):
-            CompressionConfig(backend="brotli", brotli_gzip_fallback=False, gzip_compress_level=gzip_compress_level)
+            CompressionConfig(backend="gzip", brotli_gzip_fallback=False, gzip_compress_level=gzip_compress_level)
     else:
-        CompressionConfig(backend="brotli", brotli_gzip_fallback=False, gzip_compress_level=gzip_compress_level)
+        CompressionConfig(backend="gzip", brotli_gzip_fallback=False, gzip_compress_level=gzip_compress_level)
 
 
 @pytest.mark.parametrize("brotli_quality, should_raise", ((0, False), (1, False), (-1, True), (12, True), (11, False)))
@@ -216,3 +219,33 @@ def test_dont_recompress_cached(backend: Literal["gzip", "brotli"], compression_
     assert response.text == "_litestar_" * 4000
     assert response.headers["Content-Encoding"] == compression_encoding
     assert int(response.headers["Content-Length"]) < 40000
+
+
+def test_compression_with_custom_backend(handler: HTTPRouteHandler) -> None:
+    class ZlibCompression(CompressionFacade):
+        encoding = "deflate"
+
+        def __init__(
+            self,
+            buffer: BytesIO,
+            compression_encoding: Union[Literal[CompressionEncoding.GZIP], str],
+            config: CompressionConfig,
+        ) -> None:
+            self.buffer = buffer
+            self.compression_encoding = compression_encoding
+            self.config = config
+
+        def write(self, body: bytes) -> None:
+            self.buffer.write(zlib.compress(body, level=self.config.backend_config["level"]))
+
+        def close(self) -> None:
+            ...
+
+    zlib_config = {"level": 9}
+    config = CompressionConfig(backend="deflate", compression_facade=ZlibCompression, backend_config=zlib_config)
+    with create_test_client([handler], compression_config=config) as client:
+        response = client.get("/", headers={"Accept-Encoding": "deflate"})
+        assert response.status_code == HTTP_200_OK
+        assert response.text == "_litestar_" * 4000
+        assert response.headers["Content-Encoding"] == "deflate"
+        assert int(response.headers["Content-Length"]) < 40000

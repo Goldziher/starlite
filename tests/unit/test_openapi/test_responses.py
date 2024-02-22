@@ -11,7 +11,7 @@ from unittest.mock import MagicMock
 import pytest
 from typing_extensions import TypeAlias
 
-from litestar import Controller, Litestar, MediaType, Response, get, post
+from litestar import Controller, Litestar, MediaType, Response, delete, get, post
 from litestar._openapi.datastructures import OpenAPIContext
 from litestar._openapi.responses import (
     ResponseFactory,
@@ -35,6 +35,7 @@ from litestar.response.base import T
 from litestar.routes import HTTPRoute
 from litestar.status_codes import (
     HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
     HTTP_307_TEMPORARY_REDIRECT,
     HTTP_400_BAD_REQUEST,
     HTTP_406_NOT_ACCEPTABLE,
@@ -280,6 +281,29 @@ def test_create_success_response_redirect_override(create_factory: CreateFactory
     assert isinstance(location.schema, Schema)
     assert location.schema.type == OpenAPIType.STRING
     assert location.description
+
+
+def test_create_success_response_no_content_explicit_responsespec(
+    create_factory: CreateFactoryFixture,
+) -> None:
+    @delete(
+        path="/test",
+        responses={HTTP_204_NO_CONTENT: ResponseSpec(None, description="Custom description")},
+        name="test",
+    )
+    def handler() -> None:
+        return None
+
+    handler = get_registered_route_handler(handler, "test")
+    factory = create_factory(handler)
+    responses = factory.create_additional_responses()
+    status, response = next(responses)
+    assert status == "204"
+    assert response.description == "Custom description"
+    assert not response.content
+
+    with pytest.raises(StopIteration):
+        next(responses)
 
 
 def test_create_success_response_file_data(create_factory: CreateFactoryFixture) -> None:

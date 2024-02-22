@@ -113,16 +113,28 @@ def test_set_session_cookies(cookie_session_backend_config: "CookieBackendConfig
         # Then you only need to check if number of cookies set are more than the multiplying number.
         request.session.update(create_session(size=CHUNK_SIZE * chunks_multiplier))
 
+    @get(path="/test_short_cookie")
+    def handler_short_cookie(request: Request) -> None:
+        # Check the naming of a cookie that's short enough to not get broken into chunks
+        request.session.update(create_session())
+
     with create_test_client(
         route_handlers=[handler],
         middleware=[cookie_session_backend_config.middleware],
     ) as client:
         response = client.get("/test")
 
-    assert len(response.cookies) > chunks_multiplier
-    # If it works for the multiple chunks of session, it works for the single chunk too. So, just check if "session-0"
-    # exists.
-    assert "session-0" in response.cookies
+        assert len(response.cookies) > chunks_multiplier
+        assert "session-0" in response.cookies
+
+    with create_test_client(
+        route_handlers=[handler_short_cookie],
+        middleware=[cookie_session_backend_config.middleware],
+    ) as client:
+        response = client.get("/test_short_cookie")
+
+        assert len(response.cookies) == 1
+        assert "session" in response.cookies
 
 
 def test_session_cookie_name_matching(cookie_session_backend_config: "CookieBackendConfig") -> None:

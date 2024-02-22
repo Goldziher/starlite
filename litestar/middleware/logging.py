@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from inspect import isawaitable
 from typing import TYPE_CHECKING, Any, Iterable
 
 from litestar.constants import (
@@ -81,6 +80,7 @@ class LoggingMiddleware(AbstractMiddleware):
             obfuscate_headers=self.config.request_headers_to_obfuscate,
             parse_body=self.is_struct_logger,
             parse_query=self.is_struct_logger,
+            skip_parse_malformed_body=True,
         )
         self.response_extractor = ResponseDataExtractor(
             extract_body="body" in self.config.response_log_fields,
@@ -172,12 +172,11 @@ class LoggingMiddleware(AbstractMiddleware):
 
         data: dict[str, Any] = {"message": self.config.request_log_message}
         serializer = get_serializer_from_scope(request.scope)
-        extracted_data = self.request_extractor(connection=request)
+
+        extracted_data = await self.request_extractor.extract(connection=request, fields=self.config.request_log_fields)
+
         for key in self.config.request_log_fields:
-            value = extracted_data.get(key)
-            if isawaitable(value):
-                value = await value
-            data[key] = self._serialize_value(serializer, value)
+            data[key] = self._serialize_value(serializer, extracted_data.get(key))
         return data
 
     def extract_response_data(self, scope: Scope) -> dict[str, Any]:
@@ -344,9 +343,11 @@ class LoggingMiddlewareConfig:
 
                 logging_middleware_config = LoggingMiddlewareConfig()
 
+
                 @get("/")
                 def my_handler(request: Request) -> None:
                     ...
+
 
                 app = Litestar(
                     route_handlers=[my_handler],

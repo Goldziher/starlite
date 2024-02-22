@@ -85,8 +85,7 @@ class _ServerSentEventIterator(AsyncIteratorWrapper[bytes]):
                 yield await sync_to_thread(self._call_next)
             except ValueError:
                 async for value in self.content_async_iterator:
-                    data = self.ensure_bytes(value, DEFAULT_SEPARATOR)
-                    yield data
+                    yield self.ensure_bytes(value, DEFAULT_SEPARATOR)
                 break
 
 

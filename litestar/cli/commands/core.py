@@ -69,6 +69,8 @@ def _run_uvicorn_in_subprocess(
     workers: int | None,
     reload: bool,
     reload_dirs: tuple[str, ...] | None,
+    reload_include: tuple[str, ...] | None,
+    reload_exclude: tuple[str, ...] | None,
     fd: int | None,
     uds: str | None,
     certfile_path: str | None,
@@ -87,6 +89,10 @@ def _run_uvicorn_in_subprocess(
         process_args["uds"] = uds
     if reload_dirs:
         process_args["reload-dir"] = reload_dirs
+    if reload_include:
+        process_args["reload-include"] = reload_include
+    if reload_exclude:
+        process_args["reload-exclude"] = reload_exclude
     if certfile_path is not None:
         process_args["ssl-certfile"] = certfile_path
     if keyfile_path is not None:
@@ -116,6 +122,12 @@ def info_command(app: Litestar) -> None:
 @command(name="run")
 @option("-r", "--reload", help="Reload server on changes", default=False, is_flag=True)
 @option("-R", "--reload-dir", help="Directories to watch for file changes", multiple=True)
+@option(
+    "-I", "--reload-include", help="Glob patterns for files to include when watching for file changes", multiple=True
+)
+@option(
+    "-E", "--reload-exclude", help="Glob patterns for files to exclude when watching for file changes", multiple=True
+)
 @option("-p", "--port", help="Serve under this port", type=int, default=8000, show_default=True)
 @option(
     "-W",
@@ -155,6 +167,8 @@ def run_command(
     uds: str | None,
     debug: bool,
     reload_dir: tuple[str, ...],
+    reload_include: tuple[str, ...],
+    reload_exclude: tuple[str, ...],
     pdb: bool,
     ssl_certfile: str | None,
     ssl_keyfile: str | None,
@@ -194,12 +208,14 @@ def run_command(
     app = env.app
 
     reload_dirs = env.reload_dirs or reload_dir
+    reload_include = env.reload_include or reload_include
+    reload_exclude = env.reload_exclude or reload_exclude
 
     host = env.host or host
     port = env.port if env.port is not None else port
     fd = env.fd if env.fd is not None else fd
     uds = env.uds or uds
-    reload = env.reload or reload or bool(reload_dirs)
+    reload = env.reload or reload or bool(reload_dirs) or bool(reload_include) or bool(reload_exclude)
     workers = env.web_concurrency or wc
 
     ssl_certfile = ssl_certfile or env.certfile_path
@@ -248,6 +264,8 @@ def run_command(
                 workers=workers,
                 reload=reload,
                 reload_dirs=reload_dirs,
+                reload_include=reload_include,
+                reload_exclude=reload_exclude,
                 fd=fd,
                 uds=uds,
                 certfile_path=certfile_path,

@@ -207,7 +207,7 @@ def test_backend_create_openapi_schema(dto_factory: type[DataclassDTO]) -> None:
     assert c.type == "array"
     assert isinstance(c.items, Schema)
     assert c.items.type == "integer"
-    assert isinstance(nested := schema.properties["nested"], Reference)
+    assert isinstance(nested := schema.properties["nested"], Reference)  # noqa: RUF018
     nested_schema = schemas[nested.value]
     assert nested_schema.properties is not None
     nested_a, nested_b = nested_schema.properties["a"], nested_schema.properties["b"]
