@@ -1,3 +1,4 @@
+from docs.examples.request_data.custom_request import app as custom_request_class_app
 from docs.examples.request_data.msgpack_request import app as msgpack_app
 from docs.examples.request_data.request_data_1 import app
 from docs.examples.request_data.request_data_2 import app as app_2
@@ -99,3 +100,9 @@ def test_msgpack_app() -> None:
     with TestClient(app=msgpack_app) as client:
         response = client.post("/", content=encode_msgpack(test_data))
         assert response.json() == test_data
+
+
+def test_custom_request_app() -> None:
+    with TestClient(app=custom_request_class_app) as client:
+        response = client.get("/kitten-name")
+        assert response.content == b"Whiskers"

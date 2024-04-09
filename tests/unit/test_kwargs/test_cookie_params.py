@@ -27,12 +27,12 @@ def test_cookie_params(t_type: Type, param_dict: dict, param: ParameterKwarg, ex
     test_path = "/test"
 
     @get(path=test_path)
-    def test_method(special_cookie: t_type = param) -> None:  # type: ignore
+    def test_method(special_cookie: t_type = param) -> None:  # type: ignore[valid-type]
         if special_cookie:
-            assert special_cookie in (param_dict.get("special-cookie"), int(param_dict.get("special-cookie")))  # type: ignore
+            assert special_cookie in (param_dict.get("special-cookie"), int(param_dict.get("special-cookie")))  # type: ignore[arg-type]
 
     with create_test_client(test_method) as client:
         # Set cookies on the client to avoid warnings about per-request cookies.
-        client.cookies = param_dict  # type: ignore
+        client.cookies = param_dict  # type: ignore[assignment]
         response = client.get(test_path)
         assert response.status_code == expected_code, response.json()

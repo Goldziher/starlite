@@ -238,8 +238,7 @@ def test_compression_with_custom_backend(handler: HTTPRouteHandler) -> None:
         def write(self, body: bytes) -> None:
             self.buffer.write(zlib.compress(body, level=self.config.backend_config["level"]))
 
-        def close(self) -> None:
-            ...
+        def close(self) -> None: ...
 
     zlib_config = {"level": 9}
     config = CompressionConfig(backend="deflate", compression_facade=ZlibCompression, backend_config=zlib_config)

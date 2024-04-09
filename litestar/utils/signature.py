@@ -14,7 +14,7 @@ from litestar import connection, datastructures, types
 from litestar.exceptions import ImproperlyConfiguredException
 from litestar.types import Empty
 from litestar.typing import FieldDefinition
-from litestar.utils.typing import unwrap_annotation
+from litestar.utils.typing import expand_type_var_in_type_hint, unwrap_annotation
 
 if TYPE_CHECKING:
     from typing import Sequence
@@ -25,8 +25,7 @@ if sys.version_info < (3, 11):
     from typing import _get_defaults  # type: ignore[attr-defined]
 else:
 
-    def _get_defaults(_: Any) -> Any:
-        ...
+    def _get_defaults(_: Any) -> Any: ...
 
 
 __all__ = (
@@ -58,8 +57,7 @@ def _unwrap_implicit_optional_hints(defaults: dict[str, Any], hints: dict[str, A
 
     .. code-block:: python
 
-        def foo(a: Optional[Union[str, int]] = None):
-            ...
+        def foo(a: Optional[Union[str, int]] = None): ...
 
     ...will become `Union[str, int, NoneType]`.
 
@@ -67,8 +65,7 @@ def _unwrap_implicit_optional_hints(defaults: dict[str, Any], hints: dict[str, A
 
     .. code-block:: python
 
-        def foo(a: Annotated[Optional[Union[str, int]], ...] = None):
-            ...
+        def foo(a: Annotated[Optional[Union[str, int]], ...] = None): ...
 
     ... becomes `Union[Annotated[Union[str, int, NoneType], ...], NoneType]`
 
@@ -215,8 +212,9 @@ class ParsedSignature:
         """
         signature = Signature.from_callable(fn)
         fn_type_hints = get_fn_type_hints(fn, namespace=signature_namespace)
+        expanded_type_hints = expand_type_var_in_type_hint(fn_type_hints, signature_namespace)
 
-        return cls.from_signature(signature, fn_type_hints)
+        return cls.from_signature(signature, expanded_type_hints)
 
     @classmethod
     def from_signature(cls, signature: Signature, fn_type_hints: dict[str, type]) -> Self:

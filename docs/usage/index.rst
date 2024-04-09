@@ -21,8 +21,8 @@ Usage
     logging
     metrics/index
     middleware/index
-    openapi
-    plugins
+    openapi/index
+    plugins/index
     responses
     security/index
     static-files

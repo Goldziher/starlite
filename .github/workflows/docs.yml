@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - main
+      - develop
+      - v3.0
 
 jobs:
   docs:
@@ -22,7 +24,7 @@ jobs:
       - uses: pdm-project/setup-pdm@v4
         name: Set up PDM
         with:
-          python-version: "3.11"
+          python-version: "3.12"
           allow-python-prereleases: false
           cache: true
           cache-dependency-path: |
@@ -38,9 +40,17 @@ jobs:
         run: pdm run python tools/build_docs.py docs-build
         if: github.event_name == 'release'
 
-      - name: Build dev docs
-        run: pdm run python tools/build_docs.py docs-build --version dev
-        if: github.event_name == 'push'
+      - name: Build docs (main branch)
+        run: pdm run python tools/build_docs.py docs-build --version main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+      - name: Build docs (develop branch)
+        run: pdm run python tools/build_docs.py docs-build --version develop
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+
+      - name: Build docs (v3.0 branch)
+        run: pdm run python tools/build_docs.py docs-build --version 3-dev
+        if: github.event_name == 'push' && github.ref == 'refs/heads/v3.0'
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4

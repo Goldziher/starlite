@@ -15,16 +15,14 @@ class AsyncPgChannelsBackend(ChannelsBackend):
     _listener_conn: asyncpg.Connection
 
     @overload
-    def __init__(self, dsn: str) -> None:
-        ...
+    def __init__(self, dsn: str) -> None: ...
 
     @overload
     def __init__(
         self,
         *,
         make_connection: Callable[[], Awaitable[asyncpg.Connection]],
-    ) -> None:
-        ...
+    ) -> None: ...
 
     def __init__(
         self,

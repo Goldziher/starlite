@@ -178,9 +178,7 @@ class AbstractDTO(Generic[T]):
                     )
 
             if backend_cls is None:
-                backend_cls = DTOCodegenBackend if cls.config.experimental_codegen_backend else DTOBackend
-            elif backend_cls is DTOCodegenBackend and cls.config.experimental_codegen_backend is False:
-                backend_cls = DTOBackend
+                backend_cls = DTOCodegenBackend if cls.config.experimental_codegen_backend is not False else DTOBackend
 
             backend_context[key] = backend_cls(  # type: ignore[literal-required]
                 dto_factory=cls,

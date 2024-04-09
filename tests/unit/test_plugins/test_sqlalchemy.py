@@ -1,5 +1,5 @@
-import advanced_alchemy
 from advanced_alchemy import base as sa_base
+from advanced_alchemy import filters as sa_filters
 from advanced_alchemy import types as sa_types
 from advanced_alchemy.extensions import litestar as sa_litestar
 
@@ -7,7 +7,7 @@ from litestar.plugins import sqlalchemy
 
 
 def test_re_exports() -> None:
-    assert sqlalchemy.filters is advanced_alchemy.filters
+    assert sqlalchemy.filters is sa_filters
     assert sqlalchemy.types is sa_types
 
     assert sqlalchemy.AuditColumns is sa_base.AuditColumns

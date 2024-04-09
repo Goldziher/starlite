@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import itertools
+import re
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Iterable, Literal, Mapping, TypeVar, overload
 
 from litestar.datastructures.cookie import Cookie
@@ -34,6 +35,8 @@ if TYPE_CHECKING:
 __all__ = ("ASGIResponse", "Response")
 
 T = TypeVar("T")
+
+MEDIA_TYPE_APPLICATION_JSON_PATTERN = re.compile(r"^application/(?:.+\+)?json")
 
 
 class ASGIResponse:
@@ -259,8 +262,7 @@ class Response(Generic[T]):
         self.response_type_encoders = {**(self.type_encoders or {}), **(type_encoders or {})}
 
     @overload
-    def set_cookie(self, /, cookie: Cookie) -> None:
-        ...
+    def set_cookie(self, /, cookie: Cookie) -> None: ...
 
     @overload
     def set_cookie(
@@ -274,8 +276,7 @@ class Response(Generic[T]):
         secure: bool = False,
         httponly: bool = False,
         samesite: Literal["lax", "strict", "none"] = "lax",
-    ) -> None:
-        ...
+    ) -> None: ...
 
     def set_cookie(  # type: ignore[misc]
         self,
@@ -385,7 +386,9 @@ class Response(Generic[T]):
             if media_type == MediaType.MESSAGEPACK:
                 return encode_msgpack(content, enc_hook)
 
-            if media_type.startswith("application/json"):
+            if MEDIA_TYPE_APPLICATION_JSON_PATTERN.match(
+                media_type,
+            ):
                 return encode_json(content, enc_hook)
 
             raise ImproperlyConfiguredException(f"unsupported media_type {media_type} for content {content!r}")

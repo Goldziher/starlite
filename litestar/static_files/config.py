@@ -162,12 +162,17 @@ def create_static_files_router(
     _validate_config(path=path, directories=directories, file_system=file_system)
     path = normalize_path(path)
 
+    headers = None
+    if cache_control:
+        headers = {cache_control.HEADER_NAME: cache_control.to_header()}
+
     static_files = StaticFiles(
         is_html_mode=html_mode,
         directories=directories,
         file_system=file_system,
         send_as_attachment=send_as_attachment,
         resolve_symlinks=resolve_symlinks,
+        headers=headers,
     )
 
     @get("{file_path:path}", name=name)

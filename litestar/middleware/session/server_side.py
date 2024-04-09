@@ -77,6 +77,26 @@ class ServerSideSessionBackend(BaseSessionBackend["ServerSideSessionConfig"]):
         """
         await store.delete(session_id)
 
+    def get_session_id(self, connection: ASGIConnection) -> str:
+        """Try to fetch session id from the connection. If one does not exist, generate one.
+
+        If a session ID already exists in the cookies, it is returned.
+        If there is no ID in the cookies but one in the connection state, then the session exists but has not yet
+        been returned to the user.
+        Otherwise, a new session must be created.
+
+        Args:
+            connection: Originating ASGIConnection containing the scope
+        Returns:
+            Session id str or None if the concept of a session id does not apply.
+        """
+        session_id = connection.cookies.get(self.config.key)
+        if not session_id or session_id == "null":
+            session_id = connection.get_session_id()
+            if not session_id:
+                session_id = self.generate_session_id()
+        return session_id
+
     def generate_session_id(self) -> str:
         """Generate a new session-ID, with
         n=:attr:`session_id_bytes <ServerSideSessionConfig.session_id_bytes>` random bytes.
@@ -104,9 +124,7 @@ class ServerSideSessionBackend(BaseSessionBackend["ServerSideSessionConfig"]):
         scope = connection.scope
         store = self.config.get_store_from_app(scope["app"])
         headers = MutableScopeHeaders.from_message(message)
-        session_id = connection.cookies.get(self.config.key)
-        if not session_id or session_id == "null":
-            session_id = self.generate_session_id()
+        session_id = self.get_session_id(connection)
 
         cookie_params = dict(extract_dataclass_items(self.config, exclude_none=True, include=Cookie.__dict__.keys()))
 

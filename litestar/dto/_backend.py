@@ -1,6 +1,7 @@
 """DTO backends do the heavy lifting of decoding and validating raw bytes into domain models, and
 back again, to bytes.
 """
+
 from __future__ import annotations
 
 from dataclasses import replace
@@ -58,8 +59,7 @@ class CompositeTypeHandler(Protocol):
         rename_fields: dict[str, str],
         unique_name: str,
         nested_depth: int,
-    ) -> CompositeType:
-        ...
+    ) -> CompositeType: ...
 
 
 class DTOBackend:
@@ -406,6 +406,8 @@ class DTOBackend:
             if nested_depth == self.dto_factory.config.max_nested_depth:
                 raise RecursionError
 
+            unique_name = f"{unique_name}{field_definition.raw.__name__}"
+
             nested_field_definitions = self.parse_model(
                 model_type=field_definition.annotation,
                 exclude=exclude,
@@ -750,14 +752,17 @@ def _create_struct_field_meta_for_field_definition(field_definition: TransferDTO
         return None
 
     return msgspec.Meta(
-        gt=kwarg_definition.gt,
+        description=kwarg_definition.description,
+        examples=[e.value for e in kwarg_definition.examples or []],
         ge=kwarg_definition.ge,
-        lt=kwarg_definition.lt,
+        gt=kwarg_definition.gt,
         le=kwarg_definition.le,
-        multiple_of=kwarg_definition.multiple_of,
-        min_length=kwarg_definition.min_length if not field_definition.is_partial else None,
+        lt=kwarg_definition.lt,
         max_length=kwarg_definition.max_length if not field_definition.is_partial else None,
+        min_length=kwarg_definition.min_length if not field_definition.is_partial else None,
+        multiple_of=kwarg_definition.multiple_of,
         pattern=kwarg_definition.pattern,
+        title=kwarg_definition.title,
     )
 
 

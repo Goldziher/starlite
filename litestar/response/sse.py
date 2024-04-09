@@ -91,7 +91,7 @@ class _ServerSentEventIterator(AsyncIteratorWrapper[bytes]):
 
 @dataclass
 class ServerSentEventMessage:
-    data: str | int | bytes | None = None
+    data: str | int | bytes | None = ""
     event: str | None = None
     id: int | str | None = None
     retry: int | None = None

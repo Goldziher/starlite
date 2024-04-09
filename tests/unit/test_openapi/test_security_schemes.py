@@ -14,8 +14,7 @@ if TYPE_CHECKING:
 @pytest.fixture()
 def public_route() -> "HTTPRouteHandler":
     @get("/handler")
-    def _handler() -> Any:
-        ...
+    def _handler() -> Any: ...
 
     return _handler
 
@@ -23,8 +22,7 @@ def public_route() -> "HTTPRouteHandler":
 @pytest.fixture()
 def protected_route() -> "HTTPRouteHandler":
     @get("/protected", security=[{"BearerToken": []}])
-    def _handler() -> Any:
-        ...
+    def _handler() -> Any: ...
 
     return _handler
 
@@ -102,8 +100,7 @@ def test_layered_security_declaration() -> None:
         security = [{"controllerToken": []}]  # pyright: ignore
 
         @get("", security=[{"handlerToken": []}])
-        def my_handler(self) -> None:
-            ...
+        def my_handler(self) -> None: ...
 
     router = Router("/router", route_handlers=[MyController], security=[{"routerToken": []}])
 

@@ -22,7 +22,6 @@ if TYPE_CHECKING:
     from httpx._types import CookieTypes
 
     from litestar.middleware.session.base import BaseBackendConfig, BaseSessionBackend
-    from litestar.middleware.session.client_side import ClientSideSessionBackend
     from litestar.types.asgi_types import HTTPScope, Receive, Scope, Send
 
 T = TypeVar("T", bound=ASGIApp)
@@ -155,20 +154,16 @@ class BaseTestClient(Generic[T]):
             ) as portal:
                 yield portal
 
-    @staticmethod
-    def _create_session_cookies(backend: ClientSideSessionBackend, data: dict[str, Any]) -> dict[str, str]:
-        encoded_data = backend.dump_data(data=data)
-        return {cookie.key: cast("str", cookie.value) for cookie in backend._create_session_cookies(encoded_data)}
-
     async def _set_session_data(self, data: dict[str, Any]) -> None:
         mutable_headers = MutableScopeHeaders()
+        connection = fake_asgi_connection(
+            app=self.app,
+            cookies=dict(self.cookies),  # type: ignore[arg-type]
+        )
+        session_id = self.session_backend.get_session_id(connection)
+        connection._connection_state.session_id = session_id  # pyright: ignore [reportGeneralTypeIssues]
         await self.session_backend.store_in_message(
-            scope_session=data,
-            message=fake_http_send_message(mutable_headers),
-            connection=fake_asgi_connection(
-                app=self.app,
-                cookies=dict(self.cookies),  # type: ignore[arg-type]
-            ),
+            scope_session=data, message=fake_http_send_message(mutable_headers), connection=connection
         )
         response = Response(200, request=Request("GET", self.base_url), headers=mutable_headers.headers)
 

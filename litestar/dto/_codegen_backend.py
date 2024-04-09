@@ -1,6 +1,7 @@
 """DTO backends do the heavy lifting of decoding and validating raw bytes into domain models, and
 back again, to bytes.
 """
+
 from __future__ import annotations
 
 import re
@@ -182,8 +183,7 @@ class DTOCodegenBackend(DTOBackend):
 
 
 class FieldAccessManager(Protocol):
-    def __call__(self, source_name: str, field_name: str, expect_optional: bool) -> ContextManager[str]:
-        ...
+    def __call__(self, source_name: str, field_name: str, expect_optional: bool) -> ContextManager[str]: ...
 
 
 class TransferFunctionFactory:

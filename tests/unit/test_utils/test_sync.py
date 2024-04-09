@@ -32,10 +32,10 @@ async def test_function_wrapper_wraps_async_method_correctly() -> None:
 
     wrapped_method = ensure_async_callable(instance.my_method)
 
-    await wrapped_method(1)  # type: ignore
+    await wrapped_method(1)  # type: ignore[unused-coroutine]
     assert instance.value == 1
 
-    await wrapped_method(value=10)  # type: ignore
+    await wrapped_method(value=10)  # type: ignore[unused-coroutine]
     assert instance.value == 10
 
 
@@ -62,10 +62,10 @@ async def test_function_wrapper_wraps_async_function_correctly() -> None:
 
     wrapped_function = ensure_async_callable(my_function)
 
-    await wrapped_function(1)  # type: ignore
+    await wrapped_function(1)  # type: ignore[unused-coroutine]
     assert obj["value"] == 1
 
-    await wrapped_function(new_value=10)  # type: ignore
+    await wrapped_function(new_value=10)  # type: ignore[unused-coroutine]
     assert obj["value"] == 10
 
 
@@ -98,8 +98,8 @@ async def test_function_wrapper_wraps_async_class_correctly() -> None:
 
     wrapped_class = ensure_async_callable(instance)
 
-    await wrapped_class(1)  # type: ignore
+    await wrapped_class(1)  # type: ignore[unused-coroutine]
     assert instance.value == 1
 
-    await wrapped_class(new_value=10)  # type: ignore
+    await wrapped_class(new_value=10)  # type: ignore[unused-coroutine]
     assert instance.value == 10

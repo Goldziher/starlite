@@ -25,6 +25,7 @@ if TYPE_CHECKING:
         TimeoutTypes,
         URLTypes,
     )
+    from typing_extensions import Self
 
     from litestar.middleware.session.base import BaseBackendConfig
     from litestar.testing.websocket_test_session import WebSocketTestSession
@@ -76,7 +77,6 @@ class TestClient(Client, BaseTestClient, Generic[T]):  # type: ignore[misc]
 
         Client.__init__(
             self,
-            app=self.app,
             base_url=base_url,
             headers={"user-agent": "testclient"},
             follow_redirects=True,
@@ -89,7 +89,7 @@ class TestClient(Client, BaseTestClient, Generic[T]):  # type: ignore[misc]
             timeout=timeout,
         )
 
-    def __enter__(self) -> TestClient[T]:
+    def __enter__(self) -> Self:
         with ExitStack() as stack:
             self.blocking_portal = portal = stack.enter_context(self.portal())
             self.lifespan_handler = LifeSpanHandler(client=self)
@@ -512,7 +512,7 @@ class TestClient(Client, BaseTestClient, Generic[T]):  # type: ignore[misc]
                 self,
                 "GET",
                 url,
-                headers={**dict(headers or {}), **default_headers},  # type: ignore
+                headers={**dict(headers or {}), **default_headers},  # type: ignore[misc]
                 params=params,
                 cookies=cookies,
                 auth=auth,

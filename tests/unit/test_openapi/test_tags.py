@@ -12,8 +12,7 @@ if TYPE_CHECKING:
 @pytest.fixture()
 def handler() -> HTTPRouteHandler:
     @get("/handler", tags=["handler"])
-    def _handler() -> Any:
-        ...
+    def _handler() -> Any: ...
 
     return _handler
 
@@ -25,8 +24,7 @@ def controller() -> Type[Controller]:
         tags = ["controller"]
 
         @get(tags=["handler", "a"])
-        def _handler(self) -> Any:
-            ...
+        def _handler(self) -> Any: ...
 
     return _Controller
 
@@ -47,12 +45,12 @@ def openapi_schema(app: Litestar) -> "OpenAPI":
 
 
 def test_openapi_schema_handler_tags(openapi_schema: "OpenAPI") -> None:
-    assert openapi_schema.paths["/handler"].get.tags == ["handler"]  # type: ignore
+    assert openapi_schema.paths["/handler"].get.tags == ["handler"]  # type: ignore[index, union-attr]
 
 
 def test_openapi_schema_controller_tags(openapi_schema: "OpenAPI") -> None:
-    assert openapi_schema.paths["/controller"].get.tags == ["a", "controller", "handler"]  # type: ignore
+    assert openapi_schema.paths["/controller"].get.tags == ["a", "controller", "handler"]  # type: ignore[index, union-attr]
 
 
 def test_openapi_schema_router_tags(openapi_schema: "OpenAPI") -> None:
-    assert openapi_schema.paths["/router/controller"].get.tags == ["a", "controller", "handler", "router"]  # type: ignore
+    assert openapi_schema.paths["/router/controller"].get.tags == ["a", "controller", "handler", "router"]  # type: ignore[index, union-attr]

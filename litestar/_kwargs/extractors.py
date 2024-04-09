@@ -11,6 +11,7 @@ from litestar._parsers import (
 )
 from litestar.datastructures import Headers
 from litestar.datastructures.upload_file import UploadFile
+from litestar.datastructures.url import URL
 from litestar.enums import ParamType, RequestEncodingType
 from litestar.exceptions import ValidationException
 from litestar.params import BodyKwarg
@@ -106,8 +107,12 @@ def create_connection_value_extractor(
             values.update(connection_mapping)
         except KeyError as e:
             param = alias_to_params[e.args[0]]
+            path = URL.from_components(
+                path=connection.url.path,
+                query=connection.url.query,
+            )
             raise ValidationException(
-                f"Missing required {param.param_type.value} parameter {param.field_alias!r} for url {connection.url}"
+                f"Missing required {param.param_type.value} parameter {param.field_alias!r} for path {path}"
             ) from e
 
     return extractor
@@ -130,7 +135,7 @@ def create_query_default_dict(
 
     for k, v in parsed_query:
         if k in sequence_query_parameter_names:
-            output[k].append(v)  # type: ignore
+            output[k].append(v)  # type: ignore[union-attr]
         else:
             output[k] = v
 

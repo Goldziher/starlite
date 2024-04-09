@@ -90,7 +90,7 @@ def test_request_body_multi_part(t_type: type) -> None:
     data = asdict(Form(name="Moishe Zuchmir", age=30, programmer=True, value="100"))
 
     @post(path=test_path, signature_namespace={"t_type": t_type})
-    def test_method(data: Annotated[t_type, Body(media_type=RequestEncodingType.MULTI_PART)]) -> None:  # type: ignore
+    def test_method(data: Annotated[t_type, Body(media_type=RequestEncodingType.MULTI_PART)]) -> None:  # type: ignore[valid-type]
         assert data
 
     with create_test_client(test_method) as client:

@@ -910,7 +910,9 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/35638715?v=4",
       "profile": "https://github.com/kedod",
       "contributions": [
-        "doc"
+        "doc",
+        "code",
+        "test"
       ]
     },
     {
@@ -1628,6 +1630,81 @@
       "profile": "https://github.com/bunny-therapist",
       "contributions": [
         "code"
+      ]
+    },
+    {
+      "login": "benluo",
+      "name": "Ben Luo",
+      "avatar_url": "https://avatars.githubusercontent.com/u/70398?v=4",
+      "profile": "http://www.benluo.cc",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "hugovk",
+      "name": "Hugo van Kemenade",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1324225?v=4",
+      "profile": "https://github.com/hugovk",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "error418",
+      "name": "Michael Gerbig",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7716544?v=4",
+      "profile": "https://error418.github.io",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "crisog",
+      "name": "CrisOG",
+      "avatar_url": "https://avatars.githubusercontent.com/u/40803711?v=4",
+      "profile": "https://github.com/crisog",
+      "contributions": [
+        "bug",
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "haryle",
+      "name": "harryle",
+      "avatar_url": "https://avatars.githubusercontent.com/u/64817481?v=4",
+      "profile": "https://github.com/haryle",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "ubernostrum",
+      "name": "James Bennett",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12384?v=4",
+      "profile": "http://www.b-list.org/",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "sherbang",
+      "name": "sherbang",
+      "avatar_url": "https://avatars.githubusercontent.com/u/275015?v=4",
+      "profile": "https://github.com/sherbang",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "carlsmedstad",
+      "name": "Carl Smedstad",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6952324?v=4",
+      "profile": "https://github.com/carlsmedstad",
+      "contributions": [
+        "test"
       ]
     }
   ],

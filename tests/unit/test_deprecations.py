@@ -146,3 +146,25 @@ def test_is_sync_or_async_generator_deprecation() -> None:
 
     with pytest.warns(DeprecationWarning):
         from litestar.utils import is_sync_or_async_generator as _  # noqa: F401
+
+
+def test_openapi_config_openapi_controller_deprecation() -> None:
+    from litestar.openapi.config import OpenAPIConfig
+    from litestar.openapi.controller import OpenAPIController
+
+    with pytest.warns(DeprecationWarning):
+        OpenAPIConfig(title="API", version="1.0", openapi_controller=OpenAPIController)
+
+
+def test_openapi_config_root_schema_site_deprecation() -> None:
+    from litestar.openapi.config import OpenAPIConfig
+
+    with pytest.warns(DeprecationWarning):
+        OpenAPIConfig(title="API", version="1.0", root_schema_site="redoc")
+
+
+def test_openapi_config_enabled_endpoints_deprecation() -> None:
+    from litestar.openapi.config import OpenAPIConfig
+
+    with pytest.warns(DeprecationWarning):
+        OpenAPIConfig(title="API", version="1.0", enabled_endpoints={"redoc"})

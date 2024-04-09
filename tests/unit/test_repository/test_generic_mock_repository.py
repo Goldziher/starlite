@@ -26,8 +26,7 @@ AuditModelType = Type[Union[base.UUIDAuditBase, base.BigIntAuditBase]]
 
 
 class CreateAuditModelFixture(Protocol):
-    def __call__(self, extra_columns: dict[str, type[Mapped] | Mapped] | None = None) -> AuditModelType:
-        ...
+    def __call__(self, extra_columns: dict[str, type[Mapped] | Mapped] | None = None) -> AuditModelType: ...
 
 
 @pytest.fixture(name="authors")

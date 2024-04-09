@@ -175,7 +175,7 @@ async def test_jwt_cookie_auth(
         key=auth_cookie,
         auth_header=auth_header,
         default_token_expiration=default_token_expiration,
-        retrieve_user_handler=retrieve_user_handler,  # type: ignore
+        retrieve_user_handler=retrieve_user_handler,  # type: ignore[var-annotated]
         token_secret=token_secret,
     )
 
@@ -298,7 +298,7 @@ async def test_path_exclusion() -> None:
 
 
 def test_jwt_auth_openapi() -> None:
-    jwt_auth = JWTAuth[Any](token_secret="abc123", retrieve_user_handler=lambda _: None)  # type: ignore
+    jwt_auth = JWTAuth[Any](token_secret="abc123", retrieve_user_handler=lambda _: None)  # type: ignore[arg-type, misc]
     assert jwt_auth.openapi_components.to_schema() == {
         "schemas": {},
         "securitySchemes": {
@@ -348,7 +348,7 @@ async def test_oauth2_password_bearer_auth_openapi(mock_db: "MemoryStore") -> No
     jwt_auth = OAuth2PasswordBearerAuth(
         token_url="/login",
         token_secret="abc123",
-        retrieve_user_handler=retrieve_user_handler,  # type: ignore
+        retrieve_user_handler=retrieve_user_handler,  # type: ignore[var-annotated]
     )
 
     @get("/login")

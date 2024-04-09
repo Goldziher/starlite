@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Generator, Type
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from pytest_lazyfixture import lazy_fixture
+from pytest_lazy_fixtures import lf
 from redis.asyncio import Redis as AsyncRedis
 from redis.client import Redis
 from time_machine import travel
@@ -24,6 +24,7 @@ from litestar.middleware.session import SessionMiddleware
 from litestar.middleware.session.base import BaseSessionBackend
 from litestar.middleware.session.client_side import ClientSideSessionBackend, CookieBackendConfig
 from litestar.middleware.session.server_side import ServerSideSessionBackend, ServerSideSessionConfig
+from litestar.openapi.config import OpenAPIConfig
 from litestar.stores.base import Store
 from litestar.stores.file import FileStore
 from litestar.stores.memory import MemoryStore
@@ -70,8 +71,7 @@ def anyio_backend(request: pytest.FixtureRequest) -> str:
 
 @pytest.fixture()
 def mock_asgi_app() -> ASGIApp:
-    async def asgi_app(scope: Scope, receive: Receive, send: Send) -> None:
-        ...
+    async def asgi_app(scope: Scope, receive: Receive, send: Send) -> None: ...
 
     return asgi_app
 
@@ -110,8 +110,8 @@ def cookie_session_backend(cookie_session_backend_config: CookieBackendConfig) -
 
 @pytest.fixture(
     params=[
-        pytest.param(lazy_fixture("cookie_session_backend_config"), id="cookie"),
-        pytest.param(lazy_fixture("server_side_session_config"), id="server-side"),
+        pytest.param(lf("cookie_session_backend_config"), id="cookie"),
+        pytest.param(lf("server_side_session_config"), id="server-side"),
     ]
 )
 def session_backend_config(request: pytest.FixtureRequest) -> ServerSideSessionConfig | CookieBackendConfig:
@@ -316,3 +316,8 @@ async def redis_client(docker_ip: str, redis_service: None) -> AsyncGenerator[As
         await client.aclose()  # type: ignore[attr-defined]
     except RuntimeError:
         pass
+
+
+@pytest.fixture(autouse=True)
+def _patch_openapi_config(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("litestar.app.DEFAULT_OPENAPI_CONFIG", OpenAPIConfig(title="Litestar API", version="1.0.0"))

@@ -9,6 +9,7 @@ import pytest
 from typing_extensions import Annotated
 
 from litestar.utils.typing import (
+    expand_type_var_in_type_hint,
     get_origin_or_inner_type,
     get_type_hints_with_generics_resolved,
     make_non_optional_union,
@@ -134,3 +135,27 @@ class NestedFoo(Generic[T]):
 )
 def test_get_type_hints_with_generics(annotation: Any, expected_type_hints: dict[str, Any]) -> None:
     assert get_type_hints_with_generics_resolved(annotation, include_extras=True) == expected_type_hints
+
+
+class ConcreteT: ...
+
+
+@pytest.mark.parametrize(
+    ("type_hint", "namespace", "expected"),
+    (
+        ({"arg1": T, "return": int}, {}, {"arg1": T, "return": int}),
+        ({"arg1": T, "return": int}, None, {"arg1": T, "return": int}),
+        ({"arg1": T, "return": int}, {U: ConcreteT}, {"arg1": T, "return": int}),
+        ({"arg1": T, "return": int}, {T: ConcreteT}, {"arg1": ConcreteT, "return": int}),
+        ({"arg1": T, "return": int}, {T: int}, {"arg1": int, "return": int}),
+        ({"arg1": int, "return": int}, {}, {"arg1": int, "return": int}),
+        ({"arg1": int, "return": int}, None, {"arg1": int, "return": int}),
+        ({"arg1": int, "return": int}, {T: int}, {"arg1": int, "return": int}),
+        ({"arg1": T, "return": T}, {T: ConcreteT}, {"arg1": ConcreteT, "return": ConcreteT}),
+        ({"arg1": T, "return": T}, {T: int}, {"arg1": int, "return": int}),
+    ),
+)
+def test_expand_type_var_in_type_hints(
+    type_hint: dict[str, Any], namespace: dict[str, Any] | None, expected: dict[str, Any]
+) -> None:
+    assert expand_type_var_in_type_hint(type_hint, namespace) == expected

@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, AsyncGenerator, Callable
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, call
 
+import anyio
 import pytest
 from pytest_mock import MockerFixture
 
@@ -194,3 +195,33 @@ async def test_lifespan_shutdown_failure(mock_format_exc: MagicMock) -> None:
 
     assert send.call_count == 2
     assert send.call_args_list[1][0][0] == {"type": "lifespan.shutdown.failed", "message": mock_format_exc.return_value}
+
+
+async def test_lifespan_context_exception_after_startup(mock_format_exc: MagicMock) -> None:
+    receive = AsyncMock()
+    receive.return_value = {"type": "lifespan.startup"}
+    send = AsyncMock()
+    mock_format_exc.return_value = "foo"
+
+    async def sleep_and_raise() -> None:
+        await anyio.sleep(0)
+        raise RuntimeError("An error occurred")
+
+    @asynccontextmanager
+    async def lifespan(_: Litestar) -> AsyncGenerator[None, None]:
+        async with anyio.create_task_group() as tg:
+            tg.start_soon(sleep_and_raise)
+            yield
+
+    router = ASGIRouter(app=Litestar(lifespan=[lifespan]))
+
+    with pytest.raises(_ExceptionGroup):
+        await router.lifespan(receive, send)
+
+    assert receive.call_count == 2
+    send.assert_has_calls(
+        [
+            call({"type": "lifespan.startup.complete"}),
+            call({"type": "lifespan.shutdown.failed", "message": mock_format_exc.return_value}),
+        ]
+    )

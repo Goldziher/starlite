@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Optional, Type, cast
+from typing import TYPE_CHECKING, Any, List, Optional, Type, cast
 from uuid import UUID
 
 import pytest
@@ -38,7 +38,7 @@ def create_factory(route: BaseRoute, handler: HTTPRouteHandler) -> ParameterFact
 def _create_parameters(app: Litestar, path: str) -> List["OpenAPIParameter"]:
     index = find_index(app.routes, lambda x: x.path_format == path)
     route = app.routes[index]
-    route_handler = route.route_handler_map["GET"][0]  # type: ignore
+    route_handler = route.route_handler_map["GET"][0]  # type: ignore[union-attr]
     handler = route_handler.fn
     assert callable(handler)
     return create_factory(route, route_handler).create_parameters_for_handler()
@@ -71,8 +71,8 @@ def test_create_parameters(person_controller: Type[Controller]) -> None:
     assert page_size.schema.type == OpenAPIType.INTEGER
     assert page_size.required
     assert page_size.description == "Page Size Description"
-    assert page_size.schema.examples
-    assert next(iter(page_size.schema.examples.values())).value == 1
+    assert page_size.examples
+    assert page_size.schema.examples == [1]
 
     assert name.param_in == ParamType.QUERY
     assert name.name == "name"
@@ -107,19 +107,19 @@ def test_create_parameters(person_controller: Type[Controller]) -> None:
             Schema(
                 type=OpenAPIType.STRING,
                 enum=["M", "F", "O", "A"],
-                examples={"gender-example-1": Example(description="Example  value", value="M")},
+                examples=["M"],
             ),
             Schema(
                 type=OpenAPIType.ARRAY,
                 items=Schema(
                     type=OpenAPIType.STRING,
                     enum=["M", "F", "O", "A"],
-                    examples={"gender-example-1": Example(description="Example  value", value="F")},
+                    examples=["F"],
                 ),
-                examples={"list-example-1": Example(description="Example  value", value=["A"])},
+                examples=[["A"]],
             ),
         ],
-        examples={"gender-example-1": Example(value="M"), "gender-example-2": Example(value=["M", "O"])},
+        examples=["M", ["M", "O"]],
     )
     assert not gender.required
 
@@ -138,14 +138,11 @@ def test_create_parameters(person_controller: Type[Controller]) -> None:
 
 def test_deduplication_for_param_where_key_and_type_are_equal() -> None:
     class BaseDep:
-        def __init__(self, query_param: str) -> None:
-            ...
+        def __init__(self, query_param: str) -> None: ...
 
-    class ADep(BaseDep):
-        ...
+    class ADep(BaseDep): ...
 
-    class BDep(BaseDep):
-        ...
+    class BDep(BaseDep): ...
 
     async def c_dep(other_param: float) -> float:
         return other_param
@@ -167,10 +164,10 @@ def test_deduplication_for_param_where_key_and_type_are_equal() -> None:
 
     app = Litestar(route_handlers=[handler])
     assert isinstance(app.openapi_schema, OpenAPI)
-    open_api_path_item = app.openapi_schema.paths["/test"]  # type: ignore
-    open_api_parameters = open_api_path_item.get.parameters  # type: ignore
-    assert len(open_api_parameters) == 2  # type: ignore
-    assert {p.name for p in open_api_parameters} == {"query_param", "other_param"}  # type: ignore
+    open_api_path_item = app.openapi_schema.paths["/test"]  # type: ignore[index]
+    open_api_parameters = open_api_path_item.get.parameters  # type: ignore[union-attr]
+    assert len(open_api_parameters) == 2  # type: ignore[arg-type]
+    assert {p.name for p in open_api_parameters} == {"query_param", "other_param"}  # type: ignore[union-attr]
 
 
 def test_raise_for_multiple_parameters_of_same_name_and_differing_types() -> None:
@@ -199,7 +196,7 @@ def test_dependency_params_in_docs_if_dependency_provided() -> None:
         return None
 
     app = Litestar(route_handlers=[handler])
-    param_name_set = {p.name for p in cast("OpenAPI", app.openapi_schema).paths["/"].get.parameters}  # type: ignore
+    param_name_set = {p.name for p in cast("OpenAPI", app.openapi_schema).paths["/"].get.parameters}  # type: ignore[index, redundant-cast, union-attr]
     assert "dep" not in param_name_set
     assert "param" in param_name_set
 
@@ -210,7 +207,7 @@ def test_dependency_not_in_doc_params_if_not_provided() -> None:
         return None
 
     app = Litestar(route_handlers=[handler])
-    assert cast("OpenAPI", app.openapi_schema).paths["/"].get.parameters is None  # type: ignore
+    assert cast("OpenAPI", app.openapi_schema).paths["/"].get.parameters is None  # type: ignore[index, redundant-cast, union-attr]
 
 
 def test_non_dependency_in_doc_params_if_not_provided() -> None:
@@ -219,7 +216,7 @@ def test_non_dependency_in_doc_params_if_not_provided() -> None:
         return None
 
     app = Litestar(route_handlers=[handler])
-    param_name_set = {p.name for p in cast("OpenAPI", app.openapi_schema).paths["/"].get.parameters}  # type: ignore
+    param_name_set = {p.name for p in cast("OpenAPI", app.openapi_schema).paths["/"].get.parameters}  # type: ignore[index, redundant-cast, union-attr]
     assert "param" in param_name_set
 
 
@@ -267,48 +264,48 @@ def test_layered_parameters() -> None:
     local, app3, controller1, router1, router3, app4, app2, controller3 = tuple(parameters)
 
     assert app4.param_in == ParamType.COOKIE
-    assert app4.schema.type == OpenAPIType.STRING  # type: ignore
+    assert app4.schema.type == OpenAPIType.STRING  # type: ignore[union-attr]
     assert app4.required
-    assert app4.schema.examples  # type: ignore
+    assert app4.schema.examples  # type: ignore[union-attr]
 
     assert app2.param_in == ParamType.QUERY
-    assert app2.schema.type == OpenAPIType.ARRAY  # type: ignore
+    assert app2.schema.type == OpenAPIType.ARRAY  # type: ignore[union-attr]
     assert app2.required
-    assert app2.schema.examples  # type: ignore
+    assert app2.schema.examples  # type: ignore[union-attr]
 
     assert app3.param_in == ParamType.QUERY
-    assert app3.schema.type == OpenAPIType.BOOLEAN  # type: ignore
+    assert app3.schema.type == OpenAPIType.BOOLEAN  # type: ignore[union-attr]
     assert not app3.required
-    assert app3.schema.examples  # type: ignore
+    assert app3.schema.examples  # type: ignore[union-attr]
 
     assert router1.param_in == ParamType.QUERY
-    assert router1.schema.type == OpenAPIType.STRING  # type: ignore
+    assert router1.schema.type == OpenAPIType.STRING  # type: ignore[union-attr]
     assert router1.required
-    assert router1.schema.pattern == "^[a-zA-Z]$"  # type: ignore
-    assert router1.schema.examples  # type: ignore
+    assert router1.schema.pattern == "^[a-zA-Z]$"  # type: ignore[union-attr]
+    assert router1.schema.examples  # type: ignore[union-attr]
 
     assert router3.param_in == ParamType.HEADER
-    assert router3.schema.type == OpenAPIType.NUMBER  # type: ignore
+    assert router3.schema.type == OpenAPIType.NUMBER  # type: ignore[union-attr]
     assert router3.required
-    assert router3.schema.multiple_of == 5.0  # type: ignore
-    assert router3.schema.examples  # type: ignore
+    assert router3.schema.multiple_of == 5.0  # type: ignore[union-attr]
+    assert router3.schema.examples  # type: ignore[union-attr]
 
     assert controller1.param_in == ParamType.QUERY
-    assert controller1.schema.type == OpenAPIType.INTEGER  # type: ignore
+    assert controller1.schema.type == OpenAPIType.INTEGER  # type: ignore[union-attr]
     assert controller1.required
-    assert controller1.schema.exclusive_maximum == 100.0  # type: ignore
-    assert controller1.schema.examples  # type: ignore
+    assert controller1.schema.exclusive_maximum == 100.0  # type: ignore[union-attr]
+    assert controller1.schema.examples  # type: ignore[union-attr]
 
     assert controller3.param_in == ParamType.QUERY
-    assert controller3.schema.type == OpenAPIType.NUMBER  # type: ignore
+    assert controller3.schema.type == OpenAPIType.NUMBER  # type: ignore[union-attr]
     assert controller3.required
-    assert controller3.schema.minimum == 5.0  # type: ignore
-    assert controller3.schema.examples  # type: ignore
+    assert controller3.schema.minimum == 5.0  # type: ignore[union-attr]
+    assert controller3.schema.examples  # type: ignore[union-attr]
 
     assert local.param_in == ParamType.PATH
-    assert local.schema.type == OpenAPIType.INTEGER  # type: ignore
+    assert local.schema.type == OpenAPIType.INTEGER  # type: ignore[union-attr]
     assert local.required
-    assert local.schema.examples  # type: ignore
+    assert local.schema.examples  # type: ignore[union-attr]
 
 
 def test_parameter_examples() -> None:
@@ -325,6 +322,46 @@ def test_parameter_examples() -> None:
         assert response.json()["paths"]["/"]["get"]["parameters"][0]["examples"] == {
             "text-example-1": {"summary": "example summary", "value": "example value"}
         }
+
+
+def test_parameter_schema_extra() -> None:
+    @get()
+    async def handler(
+        query1: Annotated[
+            str,
+            Parameter(
+                schema_extra={
+                    "schema_not": Schema(
+                        any_of=[
+                            Schema(type=OpenAPIType.STRING, pattern=r"^somePrefix:.*$"),
+                            Schema(type=OpenAPIType.STRING, enum=["denied", "values"]),
+                        ]
+                    ),
+                }
+            ),
+        ],
+    ) -> Any:
+        return query1
+
+    @get()
+    async def error_handler(query1: Annotated[str, Parameter(schema_extra={"invalid": "dummy"})]) -> Any:
+        return query1
+
+    # Success
+    app = Litestar([handler])
+    schema = app.openapi_schema.to_schema()
+    assert schema["paths"]["/"]["get"]["parameters"][0]["schema"]["not"] == {
+        "anyOf": [
+            {"type": "string", "pattern": r"^somePrefix:.*$"},
+            {"type": "string", "enum": ["denied", "values"]},
+        ]
+    }
+
+    # Attempt to pass invalid key
+    app = Litestar([error_handler])
+    with pytest.raises(ValueError) as e:
+        app.openapi_schema
+    assert str(e.value).startswith("`schema_extra` declares key")
 
 
 def test_uuid_path_description_generation() -> None:

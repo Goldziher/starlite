@@ -26,7 +26,7 @@ Recap
 
 
 A route handler set up with ``get("/")`` responds to ``GET`` requests and returns a list
-of all items on our TODO-list. The optional query parameter ``done`` allows filtering
+of all items on our TODO list. The optional query parameter ``done`` allows filtering
 the items by status. The type annotation of ``bool`` converts the query parameter into
 a :class:`bool`, and wrapping it in :class:`Optional <typing.Optional>` makes it optional.
 
@@ -39,7 +39,7 @@ a :class:`bool`, and wrapping it in :class:`Optional <typing.Optional>` makes it
 
 
 A route handler set up with ``post("/")`` responds to ``POST`` requests and adds an item
-to the TODO-list. The data for the new item is received via the request data, which the
+to the TODO list. The data for the new item is received via the request data, which the
 route handler accesses by specifying the ``data`` parameter. The type annotation of
 ``TodoItem`` means the request data will parsed as JSON, which is then used to create an
 instance of the ``TodoItem`` dataclass, which - finally - gets passed into the function.

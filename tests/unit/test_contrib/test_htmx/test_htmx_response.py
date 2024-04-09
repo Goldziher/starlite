@@ -187,7 +187,7 @@ async def test_trigger_event_response_invalid_after() -> None:
         return TriggerEvent(
             content="Success!",
             name="alert",
-            after="invalid",  # type: ignore
+            after="invalid",  # type: ignore[arg-type]
             params={"warning": "Confirm your choice!"},
         )
 
@@ -361,7 +361,7 @@ def test_htmx_template_response_bad_trigger_params(engine: Any, template: str, e
             context={"request": {"scope": {"path": "nope"}}},
             trigger_event="showMessage",
             params={"alert": "Confirm your Choice."},
-            after="begin",  # type: ignore
+            after="begin",  # type: ignore[arg-type]
         )
 
     with create_test_client(

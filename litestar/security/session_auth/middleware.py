@@ -8,7 +8,6 @@ from litestar.middleware.authentication import (
     AuthenticationResult,
 )
 from litestar.middleware.exceptions import ExceptionHandlerMiddleware
-from litestar.middleware.session.base import SessionMiddleware
 from litestar.types import Empty, Method, Scopes
 
 __all__ = ("MiddlewareWrapper", "SessionAuthMiddleware")
@@ -54,14 +53,14 @@ class MiddlewareWrapper:
                 exclude_http_methods=self.config.exclude_http_methods,
                 exclude_opt_key=self.config.exclude_opt_key,
                 scopes=self.config.scopes,
-                retrieve_user_handler=self.config.retrieve_user_handler,  # type: ignore
+                retrieve_user_handler=self.config.retrieve_user_handler,  # type: ignore[arg-type]
             )
             exception_middleware = ExceptionHandlerMiddleware(
                 app=auth_middleware,
                 exception_handlers=litestar_app.exception_handlers or {},  # pyright: ignore
                 debug=None,
             )
-            self.app = SessionMiddleware(
+            self.app = self.config.session_backend_config.middleware.middleware(
                 app=exception_middleware,
                 backend=self.config.session_backend,
             )

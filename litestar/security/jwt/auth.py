@@ -212,7 +212,7 @@ class BaseJWTAuth(Generic[UserType], AbstractSecurityConfig[UserType, Token]):
         Returns:
             The encoded token formatted for the HTTP headers
         """
-        security = self.openapi_components.security_schemes.get(self.openapi_security_scheme_name, None)  # type: ignore
+        security = self.openapi_components.security_schemes.get(self.openapi_security_scheme_name, None)  # type: ignore[union-attr]
         return f"{security.scheme} {encoded_token}" if isinstance(security, SecurityScheme) else encoded_token
 
 

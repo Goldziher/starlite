@@ -21,5 +21,4 @@ __all__ = (
 )
 
 
-class SQLAlchemySyncConfig(_SQLAlchemySyncConfig, _CreateEngineMixin[Engine]):
-    ...
+class SQLAlchemySyncConfig(_SQLAlchemySyncConfig, _CreateEngineMixin[Engine]): ...

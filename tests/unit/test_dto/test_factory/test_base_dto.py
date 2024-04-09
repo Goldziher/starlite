@@ -33,8 +33,7 @@ def test_forward_referenced_type_argument_raises_exception() -> None:
 
 
 def test_union_type_argument_raises_exception() -> None:
-    class ModelB(Model):
-        ...
+    class ModelB(Model): ...
 
     with pytest.raises(InvalidAnnotationException):
         DataclassDTO[Union[Model, ModelB]]

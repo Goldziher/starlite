@@ -235,6 +235,7 @@ def get_type_hints_with_generics_resolved(
     globalns: dict[str, Any] | None = None,
     localns: dict[str, Any] | None = None,
     include_extras: bool = False,
+    type_hints: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Get the type hints for the given object after resolving the generic types as much as possible.
 
@@ -243,19 +244,37 @@ def get_type_hints_with_generics_resolved(
         globalns: The global namespace.
         localns: The local namespace.
         include_extras: A flag indicating whether to include the ``Annotated[T, ...]`` or not.
+        type_hints: Already resolved type hints
     """
     origin = get_origin(annotation)
 
     if origin is None:
         # Implies the generic types have not been specified in the annotation
-        type_hints = get_type_hints(annotation, globalns=globalns, localns=localns, include_extras=include_extras)
+        if type_hints is None:  # pragma: no cover
+            type_hints = get_type_hints(annotation, globalns=globalns, localns=localns, include_extras=include_extras)
         typevar_map = {p: p for p in annotation.__parameters__}
     else:
-        type_hints = get_type_hints(origin, globalns=globalns, localns=localns, include_extras=include_extras)
+        if type_hints is None:  # pragma: no cover
+            type_hints = get_type_hints(origin, globalns=globalns, localns=localns, include_extras=include_extras)
         # the __parameters__ is only available on the origin itself and not the annotation
         typevar_map = dict(zip(origin.__parameters__, get_args(annotation)))
 
     return {n: _substitute_typevars(type_, typevar_map) for n, type_ in type_hints.items()}
+
+
+def expand_type_var_in_type_hint(type_hint: dict[str, Any], namespace: dict[str, Any] | None) -> dict[str, Any]:
+    """Expand TypeVar for any parameters in type_hint
+
+    Args:
+        type_hint: mapping of parameter to type obtained from calling `get_type_hints` or `get_fn_type_hints`
+        namespace: mapping of TypeVar to concrete type
+
+    Returns:
+        type_hint with any TypeVar parameter expanded
+    """
+    if namespace:
+        return {name: _substitute_typevars(hint, namespace) for name, hint in type_hint.items()}
+    return type_hint
 
 
 def _substitute_typevars(obj: Any, typevar_map: Mapping[Any, Any]) -> Any:

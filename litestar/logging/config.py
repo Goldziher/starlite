@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import sys
 from abc import ABC, abstractmethod
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, fields
 from importlib.util import find_spec
 from logging import INFO
 from typing import TYPE_CHECKING, Any, Callable, Literal, cast
 
 from litestar.exceptions import ImproperlyConfiguredException, MissingDependencyException
-from litestar.serialization import encode_json
 from litestar.serialization.msgspec_hooks import _msgspec_json_encoder
 from litestar.utils.deprecation import deprecated
 
@@ -27,14 +26,6 @@ if TYPE_CHECKING:
     from litestar.types.callable_types import ExceptionLoggingHandler, GetLogger
 
 
-try:
-    from structlog.types import BindableLogger, Processor, WrappedLogger
-except ImportError:
-    BindableLogger = Any  # type: ignore
-    Processor = Any  # type: ignore
-    WrappedLogger = Any  # type: ignore
-
-
 default_handlers: dict[str, dict[str, Any]] = {
     "console": {
         "class": "logging.StreamHandler",
@@ -49,7 +40,20 @@ default_handlers: dict[str, dict[str, Any]] = {
 }
 
 if sys.version_info >= (3, 12, 0):
-    default_handlers["queue_listener"]["handlers"] = ["console"]
+    default_handlers["queue_listener"].update(
+        {
+            "class": "logging.handlers.QueueHandler",
+            "queue": {
+                "()": "queue.Queue",
+                "maxsize": -1,
+            },
+            "listener": "litestar.logging.standard.LoggingQueueListener",
+            "handlers": ["console"],
+        }
+    )
+
+    # do not format twice, the console handler will do the job
+    del default_handlers["queue_listener"]["formatter"]
 
 
 default_picologging_handlers: dict[str, dict[str, Any]] = {
@@ -228,21 +232,25 @@ class LoggingConfig(BaseLoggingConfig):
             A 'logging.getLogger' like function.
         """
 
-        if "picologging" in str(encode_json(self.handlers)):
+        excluded_fields: tuple[str, ...]
+        if "picologging" in " ".join([handler["class"] for handler in self.handlers.values()]):
             try:
                 from picologging import config, getLogger
             except ImportError as e:
                 raise MissingDependencyException("picologging") from e
 
-            values = {
-                k: v
-                for k, v in asdict(self).items()
-                if v is not None and k not in ("incremental", "configure_root_logger")
-            }
+            excluded_fields = ("incremental", "configure_root_logger")
         else:
             from logging import config, getLogger  # type: ignore[no-redef, assignment]
 
-            values = {k: v for k, v in asdict(self).items() if v is not None and k not in ("configure_root_logger",)}
+            excluded_fields = ("configure_root_logger",)
+
+        values = {
+            _field.name: getattr(self, _field.name)
+            for _field in fields(self)
+            if getattr(self, _field.name) is not None and _field.name not in excluded_fields
+        }
+
         if not self.configure_root_logger:
             values.pop("root")
         config.dictConfig(values)

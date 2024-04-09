@@ -9,7 +9,6 @@ from litestar.utils.predicates import is_non_string_sequence
 if TYPE_CHECKING:
     from litestar.openapi.spec.discriminator import Discriminator
     from litestar.openapi.spec.enums import OpenAPIFormat, OpenAPIType
-    from litestar.openapi.spec.example import Example
     from litestar.openapi.spec.external_documentation import ExternalDocumentation
     from litestar.openapi.spec.reference import Reference
     from litestar.openapi.spec.xml import XML
@@ -610,12 +609,8 @@ class Schema(BaseSchemaObject):
     Omitting these keywords has the same behavior as values of false.
     """
 
-    examples: Mapping[str, Example] | None = None
-    """The value of this must be an array containing the example values directly or a mapping of string
-    to an ``Example`` instance.
-
-    This is based on the ``examples`` keyword of JSON Schema.
-    """
+    examples: list[Any] | None = None
+    """The value of this must be an array containing the example values."""
 
     discriminator: Discriminator | None = None
     """Adds support for polymorphism.

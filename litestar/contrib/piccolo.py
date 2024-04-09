@@ -56,7 +56,7 @@ def _parse_piccolo_type(column: Column, extra: dict[str, Any]) -> FieldDefinitio
         else:
             meta = Meta(max_length=column.length, extra=extra)
     elif isinstance(column, column_types.Array):
-        column_type = List[column.base_column.value_type]  # type: ignore
+        column_type = List[column.base_column.value_type]  # type: ignore[name-defined]
         meta = Meta(extra=extra)
     elif isinstance(column, (column_types.JSON, column_types.JSONB)):
         column_type = str

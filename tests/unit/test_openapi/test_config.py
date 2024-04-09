@@ -1,14 +1,17 @@
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, List, Type
 
 import pytest
 
 from litestar import Litestar, get
 from litestar.exceptions import ImproperlyConfiguredException
 from litestar.openapi.config import OpenAPIConfig
+from litestar.openapi.controller import OpenAPIController
+from litestar.openapi.plugins import RedocRenderPlugin, SwaggerRenderPlugin
 from litestar.openapi.spec import Components, Example, OpenAPIHeader, OpenAPIType, Schema
 
 if TYPE_CHECKING:
     from litestar.handlers.http_handlers import HTTPRouteHandler
+    from litestar.openapi.plugins import OpenAPIRenderPlugin
 
 
 def test_merged_components_correct() -> None:
@@ -83,14 +86,36 @@ def test_allows_customization_of_operation_id_creator() -> None:
 
 def test_allows_customization_of_path() -> None:
     app = Litestar(
-        openapi_config=OpenAPIConfig(title="my title", version="1.0.0", path="/custom_schema_path"),
+        openapi_config=OpenAPIConfig(
+            title="my title", version="1.0.0", openapi_controller=OpenAPIController, path="/custom_schema_path"
+        ),
     )
 
     assert app.openapi_config
     assert app.openapi_config.path == "/custom_schema_path"
+    assert app.openapi_config.openapi_controller is not None
     assert app.openapi_config.openapi_controller.path == "/custom_schema_path"
 
 
 def test_raises_exception_when_no_config_in_place() -> None:
     with pytest.raises(ImproperlyConfiguredException):
         Litestar(route_handlers=[], openapi_config=None).update_openapi_schema()
+
+
+@pytest.mark.parametrize(
+    ("plugins", "exp"),
+    [
+        ((), RedocRenderPlugin),
+        ([RedocRenderPlugin()], RedocRenderPlugin),
+        ([SwaggerRenderPlugin(), RedocRenderPlugin()], SwaggerRenderPlugin),
+        ([RedocRenderPlugin(), SwaggerRenderPlugin(path="/")], SwaggerRenderPlugin),
+    ],
+)
+def test_default_plugin(plugins: "List[OpenAPIRenderPlugin]", exp: "Type[OpenAPIRenderPlugin]") -> None:
+    config = OpenAPIConfig(title="my title", version="1.0.0", render_plugins=plugins)
+    assert isinstance(config.default_plugin, exp)
+
+
+def test_default_plugin_legacy() -> None:
+    config = OpenAPIConfig(title="my title", version="1.0.0", openapi_controller=OpenAPIController)
+    assert config.default_plugin is None

@@ -428,8 +428,8 @@ by accessing the store directly as described in :doc:`stores </usage/stores>`
 DTOs
 ----
 
-DTOs are now defined using the ``dto`` and ``return_dto`` arguments to
-handlers/controllers/routers and the application.
+Data Transfer Objects are now defined using the ``dto`` and ``return_dto``
+arguments to handlers/controllers/routers and the application.
 
 A DTO is any type that inherits from :class:`litestar.dto.base_dto.AbstractDTO`.
 

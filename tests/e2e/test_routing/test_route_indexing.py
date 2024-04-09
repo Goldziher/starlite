@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 @pytest.mark.parametrize("decorator", [get, post, patch, put, delete])
 def test_indexes_handlers(decorator: Type[HTTPRouteHandler]) -> None:
-    @decorator("/path-one/{param:str}", name="handler-name")  # type: ignore
+    @decorator("/path-one/{param:str}", name="handler-name")  # type: ignore[call-arg]
     def handler() -> None:
         return None
 
@@ -59,18 +59,18 @@ def test_indexes_handlers(decorator: Type[HTTPRouteHandler]) -> None:
 
 @pytest.mark.parametrize("decorator", [get, post, patch, put, delete])
 def test_default_indexes_handlers(decorator: Type[HTTPRouteHandler]) -> None:
-    @decorator("/handler")  # type: ignore
+    @decorator("/handler")  # type: ignore[call-arg]
     def handler() -> None:
         pass
 
-    @decorator("/named_handler", name="named_handler")  # type: ignore
+    @decorator("/named_handler", name="named_handler")  # type: ignore[call-arg]
     def named_handler() -> None:
         pass
 
     class MyController(Controller):
         path = "/test"
 
-        @decorator()  # type: ignore
+        @decorator()  # type: ignore[call-arg]
         def handler(self) -> None:
             pass
 
@@ -95,11 +95,11 @@ def test_default_indexes_handlers(decorator: Type[HTTPRouteHandler]) -> None:
 
 @pytest.mark.parametrize("decorator", [get, post, patch, put, delete])
 def test_indexes_handlers_with_multiple_paths(decorator: Type[HTTPRouteHandler]) -> None:
-    @decorator(["/path-one", "/path-one/{param:str}"], name="handler")  # type: ignore
+    @decorator(["/path-one", "/path-one/{param:str}"], name="handler")  # type: ignore[call-arg]
     def handler() -> None:
         return None
 
-    @decorator(["/path-two"], name="handler-two")  # type: ignore
+    @decorator(["/path-two"], name="handler-two")  # type: ignore[call-arg]
     def handler_two() -> None:
         return None
 

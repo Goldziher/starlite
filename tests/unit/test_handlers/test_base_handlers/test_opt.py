@@ -20,16 +20,13 @@ if TYPE_CHECKING:
     from litestar.types import Receive, RouteHandlerType, Scope, Send
 
 
-def regular_handler() -> None:
-    ...
+def regular_handler() -> None: ...
 
 
-async def asgi_handler(scope: "Scope", receive: "Receive", send: "Send") -> None:
-    ...
+async def asgi_handler(scope: "Scope", receive: "Receive", send: "Send") -> None: ...
 
 
-async def socket_handler(socket: "WebSocket") -> None:
-    ...
+async def socket_handler(socket: "WebSocket") -> None: ...
 
 
 @pytest.mark.parametrize(
@@ -46,7 +43,7 @@ async def socket_handler(socket: "WebSocket") -> None:
 )
 def test_opt_settings(decorator: "RouteHandlerType", handler: Callable) -> None:
     base_opt = {"base": 1, "kwarg_value": 0}
-    result = decorator("/", opt=base_opt, kwarg_value=2)(handler)  # type: ignore
+    result = decorator("/", opt=base_opt, kwarg_value=2)(handler)  # type: ignore[arg-type, call-arg]
     assert result.opt == {"base": 1, "kwarg_value": 2}
 
 
@@ -82,8 +79,7 @@ def test_opt_resolution(
         opt = controller_opt
 
         @get(opt=route_opt)
-        def handler(self) -> None:
-            ...
+        def handler(self) -> None: ...
 
     router = Router("/router", route_handlers=[MyController], opt=router_opt)
     app = Litestar(route_handlers=[router], opt=app_opt)
@@ -97,12 +93,10 @@ def test_opt_not_affected_by_route_handler_copying() -> None:
         path = "/controller"
 
         @get(opt={"route": "route"})
-        def handler(self) -> None:
-            ...
+        def handler(self) -> None: ...
 
     @get("/fn_handler", opt={"fn_route": "fn_route"})
-    def fn_handler() -> None:
-        ...
+    def fn_handler() -> None: ...
 
     router = Router("/router", route_handlers=[MyController, fn_handler], opt={"router": "router"})
     another_router = Router("/another_router", route_handlers=[MyController, fn_handler])

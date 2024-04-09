@@ -137,7 +137,7 @@ class KwargsModel:
             "headers": headers_extractor,
             "cookies": cookies_extractor,
             "query": query_extractor,
-            "body": body_extractor,  # type: ignore
+            "body": body_extractor,  # type: ignore[dict-item]
         }
 
         extractors: list[Callable[[dict[str, Any], ASGIConnection], None]] = [
@@ -457,16 +457,16 @@ class KwargsModel:
             *list(layered_parameters.keys()),
         }
 
-        for intersection in (
+        intersection = (
             path_parameters.intersection(dependency_keys)
             or path_parameters.intersection(parameter_names)
             or dependency_keys.intersection(parameter_names)
-        ):
-            if intersection:
-                raise ImproperlyConfiguredException(
-                    f"Kwarg resolution ambiguity detected for the following keys: {', '.join(intersection)}. "
-                    f"Make sure to use distinct keys for your dependencies, path parameters and aliased parameters."
-                )
+        )
+        if intersection:
+            raise ImproperlyConfiguredException(
+                f"Kwarg resolution ambiguity detected for the following keys: {', '.join(intersection)}. "
+                f"Make sure to use distinct keys for your dependencies, path parameters, and aliased parameters."
+            )
 
         if used_reserved_kwargs := {
             *parameter_names,

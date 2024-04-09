@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 class CompressionFacade(Protocol):
     """A unified facade offering a uniform interface for different compression libraries."""
 
+    __slots__ = ()
+
     encoding: ClassVar[str]
     """The encoding of the compression."""
 

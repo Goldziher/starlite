@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 from contextlib import AsyncExitStack
-from typing import TYPE_CHECKING, Any, Generic, Mapping, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Mapping, Sequence, TypeVar
+from urllib.parse import urljoin
 
 from httpx import USE_CLIENT_DEFAULT, AsyncClient, Response
 
 from litestar import HttpMethod
 from litestar.testing.client.base import BaseTestClient
 from litestar.testing.life_span_handler import LifeSpanHandler
-from litestar.testing.transport import TestClientTransport
+from litestar.testing.transport import ConnectionUpgradeExceptionError, TestClientTransport
 from litestar.types import AnyIOBackend, ASGIApp
 
 if TYPE_CHECKING:
@@ -24,8 +25,10 @@ if TYPE_CHECKING:
         TimeoutTypes,
         URLTypes,
     )
+    from typing_extensions import Self
 
     from litestar.middleware.session.base import BaseBackendConfig
+    from litestar.testing.websocket_test_session import WebSocketTestSession
 
 
 T = TypeVar("T", bound=ASGIApp)
@@ -73,7 +76,6 @@ class AsyncTestClient(AsyncClient, BaseTestClient, Generic[T]):  # type: ignore[
         )
         AsyncClient.__init__(
             self,
-            app=app,
             base_url=base_url,
             headers={"user-agent": "testclient"},
             follow_redirects=True,
@@ -86,7 +88,7 @@ class AsyncTestClient(AsyncClient, BaseTestClient, Generic[T]):  # type: ignore[
             timeout=timeout,
         )
 
-    async def __aenter__(self) -> AsyncTestClient[T]:
+    async def __aenter__(self) -> Self:
         async with AsyncExitStack() as stack:
             self.blocking_portal = portal = stack.enter_context(self.portal())
             self.lifespan_handler = LifeSpanHandler(client=self)
@@ -467,6 +469,59 @@ class AsyncTestClient(AsyncClient, BaseTestClient, Generic[T]):  # type: ignore[
             timeout=timeout,
             extensions=None if extensions is None else dict(extensions),
         )
+
+    async def websocket_connect(
+        self,
+        url: str,
+        subprotocols: Sequence[str] | None = None,
+        params: QueryParamTypes | None = None,
+        headers: HeaderTypes | None = None,
+        cookies: CookieTypes | None = None,
+        auth: AuthTypes | UseClientDefault = USE_CLIENT_DEFAULT,
+        follow_redirects: bool | UseClientDefault = USE_CLIENT_DEFAULT,
+        timeout: TimeoutTypes | UseClientDefault = USE_CLIENT_DEFAULT,
+        extensions: Mapping[str, Any] | None = None,
+    ) -> WebSocketTestSession:
+        """Sends a GET request to establish a websocket connection.
+
+        Args:
+            url: Request URL.
+            subprotocols: Websocket subprotocols.
+            params: Query parameters.
+            headers: Request headers.
+            cookies: Request cookies.
+            auth: Auth headers.
+            follow_redirects: Whether to follow redirects.
+            timeout: Request timeout.
+            extensions: Dictionary of ASGI extensions.
+
+        Returns:
+            A `WebSocketTestSession <litestar.testing.WebSocketTestSession>` instance.
+        """
+        url = urljoin("ws://testserver", url)
+        default_headers: dict[str, str] = {}
+        default_headers.setdefault("connection", "upgrade")
+        default_headers.setdefault("sec-websocket-key", "testserver==")
+        default_headers.setdefault("sec-websocket-version", "13")
+        if subprotocols is not None:
+            default_headers.setdefault("sec-websocket-protocol", ", ".join(subprotocols))
+        try:
+            await AsyncClient.request(
+                self,
+                "GET",
+                url,
+                headers={**dict(headers or {}), **default_headers},  # type: ignore[misc]
+                params=params,
+                cookies=cookies,
+                auth=auth,
+                follow_redirects=follow_redirects,
+                timeout=timeout,
+                extensions=None if extensions is None else dict(extensions),
+            )
+        except ConnectionUpgradeExceptionError as exc:
+            return exc.session
+
+        raise RuntimeError("Expected WebSocket upgrade")  # pragma: no cover
 
     async def get_session_data(self) -> dict[str, Any]:
         """Get session data.

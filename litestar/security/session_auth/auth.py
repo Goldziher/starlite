@@ -86,8 +86,7 @@ class SessionAuth(Generic[UserType, BaseSessionBackendT], AbstractSecurityConfig
 
 
                 @get("/")
-                def my_handler(request: Request) -> None:
-                    ...
+                def my_handler(request: Request) -> None: ...
 
 
                 app = Litestar(route_handlers=[my_handler], middleware=[session_auth_config.middleware])

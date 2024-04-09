@@ -1,4 +1,5 @@
 """Example domain objects for testing."""
+
 from __future__ import annotations
 
 from datetime import date, datetime

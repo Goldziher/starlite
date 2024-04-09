@@ -7,7 +7,7 @@ from msgspec import NODEFAULT, Struct, structs
 
 from litestar.dto.base_dto import AbstractDTO
 from litestar.dto.data_structures import DTOFieldDefinition
-from litestar.dto.field import DTO_FIELD_META_KEY, DTOField
+from litestar.dto.field import DTO_FIELD_META_KEY, extract_dto_field
 from litestar.types.empty import Empty
 
 if TYPE_CHECKING:
@@ -36,7 +36,8 @@ class MsgspecDTO(AbstractDTO[T], Generic[T]):
 
         for key, field_definition in cls.get_model_type_hints(model_type).items():
             msgspec_field = msgspec_fields[key]
-            dto_field = (field_definition.extra or {}).pop(DTO_FIELD_META_KEY, DTOField())
+            dto_field = extract_dto_field(field_definition, field_definition.extra)
+            field_definition.extra.pop(DTO_FIELD_META_KEY, None)
 
             yield replace(
                 DTOFieldDefinition.from_field_definition(

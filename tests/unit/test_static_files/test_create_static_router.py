@@ -1,4 +1,7 @@
-from typing import Any
+from pathlib import Path
+from typing import Any, Optional
+
+import pytest
 
 from litestar import Litestar, Request, Response, Router
 from litestar.connection import ASGIConnection
@@ -6,6 +9,8 @@ from litestar.datastructures import CacheControlHeader
 from litestar.exceptions import ValidationException
 from litestar.handlers import BaseRouteHandler
 from litestar.static_files import create_static_files_router
+from litestar.status_codes import HTTP_200_OK
+from litestar.testing.helpers import create_test_client
 
 
 def test_route_reverse() -> None:
@@ -71,3 +76,21 @@ def test_custom_router_class() -> None:
 
     router = create_static_files_router("/", directories=["some"], router_class=MyRouter)
     assert isinstance(router, MyRouter)
+
+
+@pytest.mark.parametrize("cache_control", (None, CacheControlHeader(max_age=3600)))
+def test_cache_control(tmp_path: Path, cache_control: Optional[CacheControlHeader]) -> None:
+    static_dir = tmp_path / "foo"
+    static_dir.mkdir()
+    static_dir.joinpath("test.txt").write_text("hello")
+
+    router = create_static_files_router("/static", [static_dir], name="static", cache_control=cache_control)
+
+    with create_test_client([router]) as client:
+        response = client.get("static/test.txt")
+
+        assert response.status_code == HTTP_200_OK
+        if cache_control is not None:
+            assert response.headers["cache-control"] == cache_control.to_header()
+        else:
+            assert "cache-control" not in response.headers

@@ -6,4 +6,5 @@ openapi
     :maxdepth: 1
 
     openapi
+    plugins
     spec

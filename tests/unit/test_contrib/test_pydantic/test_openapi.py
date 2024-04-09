@@ -17,7 +17,7 @@ from litestar._openapi.schema_generation.constrained_fields import (
 from litestar._openapi.schema_generation.schema import SchemaCreator
 from litestar.contrib.pydantic import PydanticPlugin, PydanticSchemaPlugin
 from litestar.openapi import OpenAPIConfig
-from litestar.openapi.spec import Example, Reference, Schema
+from litestar.openapi.spec import Reference, Schema
 from litestar.openapi.spec.enums import OpenAPIFormat, OpenAPIType
 from litestar.params import KwargDefinition
 from litestar.status_codes import HTTP_200_OK
@@ -346,6 +346,7 @@ def test_spec_generation(cls: Any) -> None:
                         "items": {"type": "object", "additionalProperties": {"type": "string"}},
                     },
                 },
+                "union": {"oneOf": [{"type": "integer"}, {"items": {"type": "string"}, "type": "array"}]},
                 "pets": {
                     "oneOf": [
                         {"type": "null"},
@@ -357,7 +358,7 @@ def test_spec_generation(cls: Any) -> None:
                 },
             },
             "type": "object",
-            "required": ["complex", "first_name", "id", "last_name"],
+            "required": ["complex", "first_name", "id", "last_name", "union"],
             "title": f"{cls.__name__}",
         }
 
@@ -392,7 +393,7 @@ def test_schema_generation_v1(create_examples: bool) -> None:
         assert response.status_code == HTTP_200_OK
         assert response.json()["components"]["schemas"]["test_schema_generation_v1.Lookup"]["properties"]["id"] == {
             "description": "A unique identifier",
-            "examples": {"id-example-1": {"value": "e4eaaaf2-d142-11e1-b3e4-080027620cdd"}},
+            "examples": ["e4eaaaf2-d142-11e1-b3e4-080027620cdd"],
             "maxLength": 16,
             "minLength": 12,
             "type": "string",
@@ -429,7 +430,7 @@ def test_schema_generation_v2(create_examples: bool) -> None:
         assert response.status_code == HTTP_200_OK
         assert response.json()["components"]["schemas"]["test_schema_generation_v2.Lookup"]["properties"]["id"] == {
             "description": "A unique identifier",
-            "examples": {"id-example-1": {"value": "e4eaaaf2-d142-11e1-b3e4-080027620cdd"}},
+            "examples": ["e4eaaaf2-d142-11e1-b3e4-080027620cdd"],
             "maxLength": 16,
             "minLength": 12,
             "type": "string",
@@ -529,7 +530,7 @@ def test_create_schema_for_field_v1() -> None:
     assert isinstance(value, Schema)
     assert value.description == "description"
     assert value.title == "title"
-    assert value.examples == {"value-example-1": Example(value="example")}
+    assert value.examples == ["example"]
 
 
 def test_create_schema_for_field_v2() -> None:
@@ -549,7 +550,27 @@ def test_create_schema_for_field_v2() -> None:
     assert isinstance(value, Schema)
     assert value.description == "description"
     assert value.title == "title"
-    assert value.examples == {"value-example-1": Example(value="example")}
+    assert value.examples == ["example"]
+
+
+def test_create_schema_for_field_v2__examples() -> None:
+    class Model(pydantic_v2.BaseModel):
+        value: str = pydantic_v2.Field(
+            title="title", description="description", max_length=16, json_schema_extra={"examples": ["example"]}
+        )
+
+    schema = get_schema_for_field_definition(
+        FieldDefinition.from_kwarg(name="Model", annotation=Model), plugins=[PydanticSchemaPlugin()]
+    )
+
+    assert schema.properties
+
+    value = schema.properties["value"]
+
+    assert isinstance(value, Schema)
+    assert value.description == "description"
+    assert value.title == "title"
+    assert value.examples == ["example"]
 
 
 @pytest.mark.parametrize("with_future_annotations", [True, False])
@@ -561,7 +582,7 @@ def test_create_schema_for_pydantic_model_with_annotated_model_attribute(
         f"""
 {'from __future__ import annotations' if with_future_annotations else ''}
 from typing_extensions import Annotated
-{'from pydantic import BaseModel' if pydantic_version == 'v1' else 'from pydantic.v1 import BaseModel'}
+{'from pydantic import BaseModel' if pydantic_version == 'v2' else 'from pydantic.v1 import BaseModel'}
 
 class Foo(BaseModel):
     foo: Annotated[int, "Foo description"]

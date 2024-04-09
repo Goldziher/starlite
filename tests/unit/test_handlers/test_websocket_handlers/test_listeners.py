@@ -4,7 +4,7 @@ from typing import Any, AsyncGenerator, Dict, List, Optional, Type, Union, cast
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from pytest_lazyfixture import lazy_fixture
+from pytest_lazy_fixtures import lf
 
 from litestar import Controller, Litestar, Request, WebSocket
 from litestar.datastructures import State
@@ -47,9 +47,9 @@ def async_listener_callable(mock: MagicMock) -> websocket_listener:
 @pytest.mark.parametrize(
     "listener",
     [
-        lazy_fixture("sync_listener_callable"),
-        lazy_fixture("async_listener_callable"),
-        lazy_fixture("listener_class"),
+        lf("sync_listener_callable"),
+        lf("async_listener_callable"),
+        lf("listener_class"),
     ],
 )
 def test_basic_listener(mock: MagicMock, listener: Union[websocket_listener, Type[WebsocketListener]]) -> None:
@@ -233,8 +233,7 @@ def test_listener_callback_no_data_arg_raises() -> None:
     with pytest.raises(ImproperlyConfiguredException):
 
         @websocket_listener("/")
-        def handler() -> None:
-            ...
+        def handler() -> None: ...
 
         handler.on_registration(Litestar())
 
@@ -243,16 +242,14 @@ def test_listener_callback_request_and_body_arg_raises() -> None:
     with pytest.raises(ImproperlyConfiguredException):
 
         @websocket_listener("/")
-        def handler_request(data: str, request: Request) -> None:
-            ...
+        def handler_request(data: str, request: Request) -> None: ...
 
         handler_request.on_registration(Litestar())
 
     with pytest.raises(ImproperlyConfiguredException):
 
         @websocket_listener("/")
-        def handler_body(data: str, body: bytes) -> None:
-            ...
+        def handler_body(data: str, body: bytes) -> None: ...
 
         handler_body.on_registration(Litestar())
 

@@ -212,6 +212,8 @@ class OpenAPISchemaPluginProtocol(Protocol):
 class OpenAPISchemaPlugin(OpenAPISchemaPluginProtocol):
     """Plugin to extend the support of OpenAPI schema generation for non-library types."""
 
+    __slots__ = ()
+
     @staticmethod
     def is_plugin_supported_type(value: Any) -> bool:
         """Given a value of indeterminate type, determine if this value is supported by the plugin.

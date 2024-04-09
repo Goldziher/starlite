@@ -144,8 +144,7 @@ def test_handler_multi_paths() -> None:
 )
 def test_path_validation(handler_path: str, request_path: str, expected_status_code: int) -> None:
     @get(handler_path)
-    def handler_fn(**kwargs: Any) -> None:
-        ...
+    def handler_fn(**kwargs: Any) -> None: ...
 
     with create_test_client(handler_fn) as client:
         response = client.get(request_path)

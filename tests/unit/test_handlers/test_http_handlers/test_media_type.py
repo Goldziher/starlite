@@ -11,8 +11,7 @@ class MyEnum(Enum):
     first = 1
 
 
-class MyBytes(bytes):
-    ...
+class MyBytes(bytes): ...
 
 
 class CustomStrEnum(str, Enum):

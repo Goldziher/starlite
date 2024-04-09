@@ -12,8 +12,7 @@ from litestar.cli.main import litestar_group as cli_command
 
 
 class GetClickExceptionFixture(Protocol):
-    def __call__(self, exception: SystemExit) -> ClickException:
-        ...
+    def __call__(self, exception: SystemExit) -> ClickException: ...
 
 
 @pytest.fixture

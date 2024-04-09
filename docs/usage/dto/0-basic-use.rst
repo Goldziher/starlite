@@ -78,15 +78,16 @@ DTOs can similarly be defined on :class:`Routers <litestar.router.Router>` and
 Improving performance with the codegen backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. admonition:: Experimental feature
-    :class: danger
+.. note::
 
-    This is an experimental feature and should be approached with caution. It may
-    behave unexpectedly, contain bugs and may disappear again in a future version.
+    This feature was introduced in ``2.2.0`` and hidden behind the ``DTO_CODEGEN``
+    feature flag. As of ``2.8.0`` it is considered stable and enabled by default. It can
+    still be disabled selectively by using the
+    ``DTOConfig(experimental_codegen_backend=True)`` override.
 
 
 The DTO backend is the part that does the heavy lifting for all the DTO features. It
-is responsible for the transforming, parsing, validation and parsing. Because of this,
+is responsible for the transforming, validation and parsing. Because of this,
 it is also the part with the most significant performance impact. To reduce the overhead
 introduced by the DTOs, the DTO codegen backend was introduced; A DTO backend that
 increases efficiency by generating optimized Python code at runtime to perform all the

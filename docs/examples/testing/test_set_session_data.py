@@ -14,6 +14,8 @@ def get_session_data(request: Request) -> Dict[str, Any]:
 
 app = Litestar(route_handlers=[get_session_data], middleware=[session_config.middleware])
 
-with TestClient(app=app, session_config=session_config) as client:
-    client.set_session_data({"foo": "bar"})
-    assert client.get("/test").json() == {"foo": "bar"}
+
+def test_get_session_data() -> None:
+    with TestClient(app=app, session_config=session_config) as client:
+        client.set_session_data({"foo": "bar"})
+        assert client.get("/test").json() == {"foo": "bar"}

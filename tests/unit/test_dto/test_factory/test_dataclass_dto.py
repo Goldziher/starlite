@@ -6,6 +6,7 @@ from typing import ClassVar, List
 from unittest.mock import ANY
 
 import pytest
+from typing_extensions import Annotated
 
 from litestar.dto import DataclassDTO, DTOField
 from litestar.dto.data_structures import DTOFieldDefinition
@@ -121,3 +122,20 @@ def test_dataclass_field_definitions(dto_type: type[DataclassDTO[Model]]) -> Non
 def test_dataclass_detect_nested(dto_type: type[DataclassDTO[Model]]) -> None:
     assert dto_type.detect_nested_field(FieldDefinition.from_annotation(Model)) is True
     assert dto_type.detect_nested_field(FieldDefinition.from_annotation(int)) is False
+
+
+ReadOnlyInt = Annotated[int, DTOField("read-only")]
+
+
+def test_dataclass_dto_annotated_dto_field() -> None:
+    Annotated[int, DTOField("read-only")]
+
+    @dataclass
+    class Model:
+        a: Annotated[int, DTOField("read-only")]
+        b: ReadOnlyInt
+
+    dto_type = DataclassDTO[Model]
+    fields = list(dto_type.generate_field_definitions(Model))
+    assert fields[0].dto_field == DTOField("read-only")
+    assert fields[1].dto_field == DTOField("read-only")

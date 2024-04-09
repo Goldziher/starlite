@@ -261,13 +261,16 @@ Parameters that support layering are:
 * :ref:`etag <usage/responses:etag>`
 * :doc:`exception_handlers </usage/exceptions>`
 * :doc:`guards </usage/security/guards>`
-* :ref:`include_in_schema <usage/openapi:configuring schema generation on a route handler>`
+* :ref:`include_in_schema <usage/openapi/schema_generation:configuring schema generation on a route handler>`
 * :doc:`middleware </usage/middleware/index>`
 * :ref:`opt <handler_opts>`
+* :ref:`request_class <usage/requests:custom request>`
 * :ref:`response_class <usage/responses:custom responses>`
 * :ref:`response_cookies <usage/responses:setting response cookies>`
 * :ref:`response_headers <usage/responses:setting response headers>`
 * :doc:`return_dto </usage/dto/0-basic-use>`
 * ``security``
 * ``tags``
+* ``type_decoders``
 * ``type_encoders``
+* :ref:`websocket_class <usage/websockets:custom websocket>`

@@ -33,7 +33,7 @@ def test_parses_values_from_connection_kwargs_raises() -> None:
 
 def test_create_signature_validation() -> None:
     @get()
-    def my_fn(typed: int, untyped) -> None:  # type: ignore
+    def my_fn(typed: int, untyped) -> None:  # type: ignore[no-untyped-def]
         pass
 
     with pytest.raises(ImproperlyConfiguredException):
@@ -50,8 +50,7 @@ def test_dependency_validation_failure_raises_500() -> None:
     dependencies = {"dep": Provide(lambda: "thirteen", sync_to_thread=False)}
 
     @get("/")
-    def test(dep: int, param: int, optional_dep: Optional[int] = Dependency()) -> None:
-        ...
+    def test(dep: int, param: int, optional_dep: Optional[int] = Dependency()) -> None: ...
 
     with create_test_client(
         route_handlers=[test],
@@ -67,14 +66,13 @@ def test_validation_failure_raises_400() -> None:
     dependencies = {"dep": Provide(lambda: 13, sync_to_thread=False)}
 
     @get("/")
-    def test(dep: int, param: int, optional_dep: Optional[int] = Dependency()) -> None:
-        ...
+    def test(dep: int, param: int, optional_dep: Optional[int] = Dependency()) -> None: ...
 
     with create_test_client(route_handlers=[test], dependencies=dependencies) as client:
         response = client.get("/?param=thirteen")
 
     assert response.json() == {
-        "detail": "Validation failed for GET http://testserver.local/?param=thirteen",
+        "detail": "Validation failed for GET /?param=thirteen",
         "extra": [{"key": "param", "message": "Expected `int`, got `str`", "source": "query"}],
         "status_code": 400,
     }
@@ -87,14 +85,13 @@ def test_client_backend_error_precedence_over_server_error() -> None:
     }
 
     @get("/")
-    def test(dep: int, param: int, optional_dep: Optional[int] = Dependency()) -> None:
-        ...
+    def test(dep: int, param: int, optional_dep: Optional[int] = Dependency()) -> None: ...
 
     with create_test_client(route_handlers=[test], dependencies=dependencies) as client:
         response = client.get("/?param=thirteen")
 
     assert response.json() == {
-        "detail": "Validation failed for GET http://testserver.local/?param=thirteen",
+        "detail": "Validation failed for GET /?param=thirteen",
         "extra": [{"key": "param", "message": "Expected `int`, got `str`", "source": "query"}],
         "status_code": 400,
     }
@@ -159,8 +156,7 @@ def test_invalid_input_attrs() -> None:
         int_param: int,
         int_header: int = Parameter(header="X-SOME-INT"),
         int_cookie: int = Parameter(cookie="int-cookie"),
-    ) -> None:
-        ...
+    ) -> None: ...
 
     with create_test_client(route_handlers=[test]) as client:
         client.cookies.update({"int-cookie": "cookie"})
@@ -206,8 +202,7 @@ def test_invalid_input_dataclass() -> None:
         length_param: str = Parameter(min_length=2),
         int_header: int = Parameter(header="X-SOME-INT"),
         int_cookie: int = Parameter(cookie="int-cookie"),
-    ) -> None:
-        ...
+    ) -> None: ...
 
     with create_test_client(route_handlers=[test]) as client:
         client.cookies.update({"int-cookie": "cookie"})
@@ -251,8 +246,7 @@ def test_invalid_input_typed_dict() -> None:
         length_param: str = Parameter(min_length=2),
         int_header: int = Parameter(header="X-SOME-INT"),
         int_cookie: int = Parameter(cookie="int-cookie"),
-    ) -> None:
-        ...
+    ) -> None: ...
 
     with create_test_client(route_handlers=[test]) as client:
         client.cookies.update({"int-cookie": "cookie"})

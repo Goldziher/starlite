@@ -121,6 +121,17 @@ def test_duplicate_path_param_validation() -> None:
         Litestar(route_handlers=[test_method])
 
 
+def test_path_param_defined_in_layered_params_error() -> None:
+    @get(path="/{param:int}")
+    def test_method(param: int) -> None:
+        raise AssertionError("should not be called")
+
+    with pytest.raises(ImproperlyConfiguredException) as exc_info:
+        Litestar(route_handlers=[test_method], parameters={"param": Parameter(gt=3)})
+
+    assert "Kwarg resolution ambiguity detected for the following keys: param." in str(exc_info.value)
+
+
 @pytest.mark.parametrize(
     "param_type_name, param_type_class, value, expected_value",
     [

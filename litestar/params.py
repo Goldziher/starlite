@@ -112,6 +112,13 @@ class KwargDefinition:
     """A sequence of valid values."""
     read_only: bool | None = field(default=None)
     """A boolean flag dictating whether this parameter is read only."""
+    schema_extra: dict[str, Any] | None = field(default=None)
+    """Extensions to the generated schema.
+
+    If set, will overwrite the matching fields in the generated schema.
+
+    .. versionadded:: 2.8.0
+    """
 
     @property
     def is_constrained(self) -> bool:
@@ -187,6 +194,7 @@ def Parameter(
     query: str | None = None,
     required: bool | None = None,
     title: str | None = None,
+    schema_extra: dict[str, Any] | None = None,
 ) -> Any:
     """Create an extended parameter kwarg definition.
 
@@ -227,6 +235,10 @@ def Parameter(
         required: A boolean flag dictating whether this parameter is required.
             If set to False, None values will be allowed. Defaults to True.
         title: String value used in the title section of the OpenAPI schema for the given parameter.
+        schema_extra: Extensions to the generated schema. If set, will overwrite the matching fields in the generated
+            schema.
+
+            .. versionadded:: 2.8.0
     """
     return ParameterKwarg(
         annotation=annotation,
@@ -251,6 +263,7 @@ def Parameter(
         min_length=min_length,
         max_length=max_length,
         pattern=pattern,
+        schema_extra=schema_extra,
     )
 
 
@@ -294,6 +307,7 @@ def Body(
     multiple_of: float | None = None,
     pattern: str | None = None,
     title: str | None = None,
+    schema_extra: dict[str, Any] | None = None,
 ) -> Any:
     """Create an extended request body kwarg definition.
 
@@ -331,6 +345,10 @@ def Body(
         pattern: A string representing a regex against which the given string will be matched.
             Equivalent to pattern in the OpenAPI specification.
         title: String value used in the title section of the OpenAPI schema for the given parameter.
+        schema_extra: Extensions to the generated schema. If set, will overwrite the matching fields in the generated
+            schema.
+
+            .. versionadded:: 2.8.0
     """
     return BodyKwarg(
         media_type=media_type,
@@ -352,6 +370,7 @@ def Body(
         max_length=max_length,
         pattern=pattern,
         multipart_form_part_limit=multipart_form_part_limit,
+        schema_extra=schema_extra,
     )
 
 

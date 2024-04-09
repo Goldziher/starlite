@@ -3,6 +3,7 @@
 https://github.com/encode/starlette/blob/master/tests/test_responses.py And are meant to ensure our compatibility with
 their API.
 """
+
 from typing import TYPE_CHECKING, Optional
 
 import pytest

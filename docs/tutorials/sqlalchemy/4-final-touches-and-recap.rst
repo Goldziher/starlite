@@ -13,7 +13,7 @@ Here is our final application:
 .. literalinclude:: /examples/contrib/sqlalchemy/plugins/tutorial/full_app_with_plugin.py
     :language: python
     :linenos:
-    :emphasize-lines: 11,79
+    :emphasize-lines: 11,83
 
 Recap
 =====
@@ -59,7 +59,7 @@ engine and session lifecycle, and register our ``transaction`` dependency.
 .. literalinclude:: /examples/contrib/sqlalchemy/plugins/tutorial/full_app_with_plugin.py
     :language: python
     :linenos:
-    :lines: 77-81
+    :lines: 80-84
 
 .. seealso::
 

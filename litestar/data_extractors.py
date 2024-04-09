@@ -152,7 +152,7 @@ class ConnectionDataExtractor:
             A string keyed dictionary of extracted values.
         """
         extractors = (
-            {**self.connection_extractors, **self.request_extractors}  # type: ignore
+            {**self.connection_extractors, **self.request_extractors}  # type: ignore[misc]
             if isinstance(connection, Request)
             else self.connection_extractors
         )
@@ -162,7 +162,7 @@ class ConnectionDataExtractor:
         self, connection: ASGIConnection[Any, Any, Any, Any], fields: Iterable[str]
     ) -> ExtractedRequestData:
         extractors = (
-            {**self.connection_extractors, **self.request_extractors}  # type: ignore
+            {**self.connection_extractors, **self.request_extractors}  # type: ignore[misc]
             if isinstance(connection, Request)
             else self.connection_extractors
         )

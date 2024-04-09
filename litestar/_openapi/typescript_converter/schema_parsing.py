@@ -70,13 +70,11 @@ def is_schema_value(value: Any) -> TypeGuard[Schema]:
 
 
 @overload
-def create_interface(properties: dict[str, Schema], required: set[str] | None) -> TypeScriptAnonymousInterface:
-    ...
+def create_interface(properties: dict[str, Schema], required: set[str] | None) -> TypeScriptAnonymousInterface: ...
 
 
 @overload
-def create_interface(properties: dict[str, Schema], required: set[str] | None, name: str) -> TypeScriptInterface:
-    ...
+def create_interface(properties: dict[str, Schema], required: set[str] | None, name: str) -> TypeScriptInterface: ...
 
 
 def create_interface(

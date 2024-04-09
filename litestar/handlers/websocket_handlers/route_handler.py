@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Mapping
 
+from litestar.connection import WebSocket
 from litestar.exceptions import ImproperlyConfiguredException
 from litestar.handlers import BaseRouteHandler
 from litestar.types.builtin_types import NoneType
@@ -17,6 +18,8 @@ class WebsocketRouteHandler(BaseRouteHandler):
     Use this decorator to decorate websocket handler functions.
     """
 
+    __slots__ = ("websocket_class",)
+
     def __init__(
         self,
         path: str | list[str] | None = None,
@@ -28,6 +31,7 @@ class WebsocketRouteHandler(BaseRouteHandler):
         name: str | None = None,
         opt: dict[str, Any] | None = None,
         signature_namespace: Mapping[str, Any] | None = None,
+        websocket_class: type[WebSocket] | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize ``WebsocketRouteHandler``
@@ -46,7 +50,10 @@ class WebsocketRouteHandler(BaseRouteHandler):
             signature_namespace: A mapping of names to types for use in forward reference resolution during signature modelling.
             type_encoders: A mapping of types to callables that transform them into types supported for serialization.
             **kwargs: Any additional kwarg - will be set in the opt dictionary.
+            websocket_class: A custom subclass of :class:`WebSocket <.connection.WebSocket>` to be used as route handler's
+                default websocket class.
         """
+        self.websocket_class = websocket_class
 
         super().__init__(
             path=path,
@@ -58,6 +65,19 @@ class WebsocketRouteHandler(BaseRouteHandler):
             opt=opt,
             signature_namespace=signature_namespace,
             **kwargs,
+        )
+
+    def resolve_websocket_class(self) -> type[WebSocket]:
+        """Return the closest custom WebSocket class in the owner graph or the default Websocket class.
+
+        This method is memoized so the computation occurs only once.
+
+        Returns:
+            The default :class:`WebSocket <.connection.WebSocket>` class for the route handler.
+        """
+        return next(
+            (layer.websocket_class for layer in reversed(self.ownership_layers) if layer.websocket_class is not None),
+            WebSocket,
         )
 
     def _validate_handler_function(self) -> None:

@@ -32,6 +32,7 @@ from litestar._signature.utils import (
     _validate_signature_dependencies,
 )
 from litestar.datastructures.state import ImmutableState
+from litestar.datastructures.url import URL
 from litestar.dto import AbstractDTO, DTOData
 from litestar.enums import ParamType, ScopeType
 from litestar.exceptions import InternalServerException, ValidationException
@@ -119,7 +120,11 @@ class SignatureModel(Struct):
             for err_message in messages
             if ("key" in err_message and err_message["key"] not in cls._dependency_name_set) or "key" not in err_message
         ]:
-            return ValidationException(detail=f"Validation failed for {method} {connection.url}", extra=client_errors)
+            path = URL.from_components(
+                path=connection.url.path,
+                query=connection.url.query,
+            )
+            return ValidationException(detail=f"Validation failed for {method} {path}", extra=client_errors)
         return InternalServerException()
 
     @classmethod

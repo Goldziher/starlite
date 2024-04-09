@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from redis.asyncio import Redis
 from redis.asyncio.connection import ConnectionPool
@@ -14,13 +14,23 @@ from .base import NamespacedStore
 
 __all__ = ("RedisStore",)
 
+if TYPE_CHECKING:
+    from types import TracebackType
+
 
 class RedisStore(NamespacedStore):
     """Redis based, thread and process safe asynchronous key/value store."""
 
-    __slots__ = ("_redis",)
+    __slots__ = (
+        "_delete_all_script",
+        "_get_and_renew_script",
+        "_redis",
+        "handle_client_shutdown",
+    )
 
-    def __init__(self, redis: Redis, namespace: str | None | EmptyType = Empty) -> None:
+    def __init__(
+        self, redis: Redis, namespace: str | None | EmptyType = Empty, handle_client_shutdown: bool = False
+    ) -> None:
         """Initialize :class:`RedisStore`
 
         Args:
@@ -28,9 +38,11 @@ class RedisStore(NamespacedStore):
             namespace: A key prefix to simulate a namespace in redis. If not given,
                 defaults to ``LITESTAR``. Namespacing can be explicitly disabled by passing
                 ``None``. This will make :meth:`.delete_all` unavailable.
+            handle_client_shutdown: If ``True``, handle the shutdown of the `redis` instance automatically during the store's lifespan. Should be set to `True` unless the shutdown is handled externally
         """
         self._redis = redis
         self.namespace: str | None = value_or_default(namespace, "LITESTAR")
+        self.handle_client_shutdown = handle_client_shutdown
 
         # script to get and renew a key in one atomic step
         self._get_and_renew_script = self._redis.register_script(
@@ -64,6 +76,18 @@ class RedisStore(NamespacedStore):
         """
         )
 
+    async def _shutdown(self) -> None:
+        if self.handle_client_shutdown:
+            await self._redis.aclose(close_connection_pool=True)  # type: ignore[attr-defined]
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
+        await self._shutdown()
+
     @classmethod
     def with_client(
         cls,
@@ -93,14 +117,22 @@ class RedisStore(NamespacedStore):
             username=username,
             password=password,
         )
-        return cls(redis=Redis(connection_pool=pool), namespace=namespace)
+        return cls(
+            redis=Redis(connection_pool=pool),
+            namespace=namespace,
+            handle_client_shutdown=True,
+        )
 
     def with_namespace(self, namespace: str) -> RedisStore:
         """Return a new :class:`RedisStore` with a nested virtual key namespace.
         The current instances namespace will serve as a prefix for the namespace, so it
         can be considered the parent namespace.
         """
-        return type(self)(redis=self._redis, namespace=f"{self.namespace}_{namespace}" if self.namespace else namespace)
+        return type(self)(
+            redis=self._redis,
+            namespace=f"{self.namespace}_{namespace}" if self.namespace else namespace,
+            handle_client_shutdown=self.handle_client_shutdown,
+        )
 
     def _make_key(self, key: str) -> str:
         prefix = f"{self.namespace}:" if self.namespace else ""

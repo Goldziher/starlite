@@ -85,8 +85,7 @@ class BaseBackendConfig(ABC, Generic[BaseSessionBackendT]):  # pyright: ignore
 
 
                 @get("/")
-                def my_handler(request: Request) -> None:
-                    ...
+                def my_handler(request: Request) -> None: ...
 
 
                 app = Litestar(route_handlers=[my_handler], middleware=[session_config.middleware])
@@ -144,6 +143,17 @@ class BaseSessionBackend(ABC, Generic[ConfigT]):
             Deserialized data as a dictionary
         """
         return cast("dict[str, Any]", decode_json(value=data))
+
+    @abstractmethod
+    def get_session_id(self, connection: ASGIConnection) -> str | None:
+        """Try to fetch session id from connection ScopeState. If one does not exist, generate one.
+
+        Args:
+            connection: Originating ASGIConnection containing the scope
+
+        Returns:
+            Session id str or None if the concept of a session id does not apply.
+        """
 
     @abstractmethod
     async def store_in_message(self, scope_session: ScopeSession, message: Message, connection: ASGIConnection) -> None:
@@ -241,5 +251,6 @@ class SessionMiddleware(AbstractMiddleware, Generic[BaseSessionBackendT]):
 
         connection = ASGIConnection[Any, Any, Any, Any](scope, receive=receive, send=send)
         scope["session"] = await self.backend.load_from_connection(connection)
+        connection._connection_state.session_id = self.backend.get_session_id(connection)  # pyright: ignore [reportGeneralTypeIssues]
 
         await self.app(scope, receive, self.create_send_wrapper(connection))

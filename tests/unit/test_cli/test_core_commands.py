@@ -1,17 +1,20 @@
+import io
 import os
 import re
 import sys
 from pathlib import Path
-from typing import Callable, Generator, List, Optional, Tuple
+from typing import Callable, Generator, List, Literal, Optional, Tuple, Union
 from unittest.mock import MagicMock
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from click.testing import CliRunner
 from pytest_mock import MockerFixture
+from rich.console import Console
 
 from litestar import __version__ as litestar_version
-from litestar.cli._utils import remove_default_schema_routes, remove_routes_with_patterns
+from litestar.cli import _utils
+from litestar.cli.commands import core
 from litestar.cli.main import litestar_group as cli_command
 from litestar.exceptions import LitestarWarning
 
@@ -55,8 +58,11 @@ def mock_show_app_info(mocker: MockerFixture) -> MagicMock:
         (False, None, None, None, 2),
     ],
 )
+@pytest.mark.parametrize("tty_enabled", [True, False])
+@pytest.mark.parametrize("quiet_console", [True, False])
 def test_run_command(
     mock_show_app_info: MagicMock,
+    mocker: MockerFixture,
     runner: CliRunner,
     monkeypatch: MonkeyPatch,
     reload: Optional[bool],
@@ -72,10 +78,17 @@ def test_run_command(
     custom_app_file: Optional[Path],
     create_app_file: CreateAppFileFixture,
     set_in_env: bool,
+    tty_enabled: bool,
+    quiet_console: bool,
     mock_subprocess_run: MagicMock,
     mock_uvicorn_run: MagicMock,
     tmp_project_dir: Path,
 ) -> None:
+    monkeypatch.delenv("LITESTAR_QUIET_CONSOLE", raising=False)
+    if quiet_console:
+        monkeypatch.setenv("LITESTAR_QUIET_CONSOLE", "true")
+    mocker.patch.object(core, "isatty", return_value=tty_enabled)
+    mocker.patch.object(_utils, "isatty", return_value=tty_enabled)
     args = []
     if custom_app_file:
         args.extend(["--app", f"{custom_app_file.stem}:app"])
@@ -115,7 +128,7 @@ def test_run_command(
     else:
         uds = None
 
-    if fd:
+    if fd is not None:
         if set_in_env:
             monkeypatch.setenv("LITESTAR_FILE_DESCRIPTOR", str(fd))
         else:
@@ -126,7 +139,7 @@ def test_run_command(
     if web_concurrency is None:
         web_concurrency = 1
     elif set_in_env:
-        monkeypatch.setenv("WEB_CONCURRENCY", str(web_concurrency))
+        monkeypatch.setenv("LITESTAR_WEB_CONCURRENCY", str(web_concurrency))
     else:
         args.extend(["--web-concurrency", str(web_concurrency)])
 
@@ -149,7 +162,6 @@ def test_run_command(
             args.extend([f"--reload-exclude={s}" for s in reload_exclude])
 
     path = create_app_file(custom_app_file or "app.py", directory=app_dir)
-
     result = runner.invoke(cli_command, args)
 
     assert result.exception is None
@@ -193,9 +205,14 @@ def test_run_command(
             ssl_keyfile=None,
         )
 
-    mock_show_app_info.assert_called_once()
+    if tty_enabled and not quiet_console:
+        mock_show_app_info.assert_called_once()
+    else:
+        mock_show_app_info.assert_not_called()
 
 
+@pytest.mark.parametrize("quiet_console", [True, False])
+@pytest.mark.parametrize("tty_enabled", [True, False])
 @pytest.mark.parametrize(
     "file_name,file_content,factory_name",
     [
@@ -212,12 +229,20 @@ def test_run_command_with_autodiscover_app_factory(
     file_content: str,
     factory_name: str,
     patch_autodiscovery_paths: Callable[[List[str]], None],
+    tty_enabled: bool,
+    quiet_console: bool,
     create_app_file: CreateAppFileFixture,
+    mocker: MockerFixture,
+    monkeypatch: MonkeyPatch,
 ) -> None:
+    monkeypatch.delenv("LITESTAR_QUIET_CONSOLE", raising=False)
+    if quiet_console:
+        monkeypatch.setenv("LITESTAR_QUIET_CONSOLE", "true")
+    mocker.patch.object(core, "isatty", return_value=tty_enabled)
+    mocker.patch.object(_utils, "isatty", return_value=tty_enabled)
     patch_autodiscovery_paths([file_name])
     path = create_app_file(file_name, content=file_content)
     result = runner.invoke(cli_command, "run")
-
     assert result.exception is None
     assert result.exit_code == 0
 
@@ -231,11 +256,28 @@ def test_run_command_with_autodiscover_app_factory(
         ssl_certfile=None,
         ssl_keyfile=None,
     )
+    if tty_enabled and not quiet_console:
+        assert len(result.output) > 0
+    else:
+        assert len(result.output) == 0
 
 
+@pytest.mark.parametrize("quiet_console", [True, False])
+@pytest.mark.parametrize("tty_enabled", [True, False])
 def test_run_command_with_app_factory(
-    runner: CliRunner, mock_uvicorn_run: MagicMock, create_app_file: CreateAppFileFixture
+    runner: CliRunner,
+    mock_uvicorn_run: MagicMock,
+    create_app_file: CreateAppFileFixture,
+    tty_enabled: bool,
+    quiet_console: bool,
+    mocker: MockerFixture,
+    monkeypatch: MonkeyPatch,
 ) -> None:
+    monkeypatch.delenv("LITESTAR_QUIET_CONSOLE", raising=False)
+    if quiet_console:
+        monkeypatch.setenv("LITESTAR_QUIET_CONSOLE", "true")
+    mocker.patch.object(core, "isatty", return_value=tty_enabled)
+    mocker.patch.object(_utils, "isatty", return_value=tty_enabled)
     path = create_app_file("_create_app_with_path.py", content=CREATE_APP_FILE_CONTENT)
     app_path = f"{path.stem}:create_app"
     result = runner.invoke(cli_command, ["--app", app_path, "run"])
@@ -253,6 +295,119 @@ def test_run_command_with_app_factory(
         ssl_certfile=None,
         ssl_keyfile=None,
     )
+    if tty_enabled and not quiet_console:
+        assert len(result.output) > 0
+    else:
+        assert len(result.output) == 0
+
+
+@pytest.mark.parametrize(
+    "cli, env, expected",
+    (
+        (
+            ("--reload", True),
+            ("LITESTAR_RELOAD", False),
+            "--reload",
+        ),
+        (
+            ("--reload-dir", [".", "../somewhere_else"]),
+            ("LITESTAR_RELOAD_DIRS", ["../somewhere_else3", "../somewhere_else2"]),
+            ["--reload-dir=.", "--reload-dir=../somewhere_else"],
+        ),
+        (
+            ("--reload-include", ["*.rst", "*.yml"]),
+            ("LITESTAR_RELOAD_INCLUDES", ["*.rst2", "*.yml2"]),
+            ["--reload-include=*.rst", "--reload-include=*.yml"],
+        ),
+        (
+            ("--reload-exclude", ["*.rst", "*.yml"]),
+            ("LITESTAR_RELOAD_EXCLUDES", ["*.rst2", "*.yml2"]),
+            ["--reload-exclude=*.rst", "--reload-exclude=*.yml"],
+        ),
+        (
+            ("--wc", 2),
+            ("LITESTAR_WEB_CONCURRENCY", 4),
+            "--workers=2",
+        ),
+        (
+            ("--fd", 0),
+            ("LITESTAR_FILE_DESCRIPTOR", 1),
+            "--fd=0",
+        ),
+        (
+            ("--uds", "/run/uvicorn/litestar_test.sock"),
+            ("LITESTAR_UNIX_DOMAIN_SOCKET", "/run/uvicorn/litestar_test2.sock"),
+            "--uds=/run/uvicorn/litestar_test.sock",
+        ),
+        (
+            ("-d", True),
+            ("LITESTAR_DEBUG", False),
+            ("LITESTAR_DEBUG", "1"),
+        ),
+        (
+            ("--pdb", True),
+            ("LITESTAR_PDB", False),
+            ("LITESTAR_PDB", "1"),
+        ),
+    ),
+)
+def test_run_command_arguments_precedence(
+    cli: Tuple[str, Union[Literal[True], List[str], str]],
+    env: Tuple[str, Union[Literal[True], List[str], str]],
+    expected: str,
+    runner: CliRunner,
+    monkeypatch: MonkeyPatch,
+    mock_subprocess_run: MagicMock,
+    tmp_project_dir: Path,
+    create_app_file: CreateAppFileFixture,
+    mock_uvicorn_run: MagicMock,
+) -> None:
+    args = []
+    args.extend(["--app", f"{Path('my_app.py').stem}:app"])
+    args.extend(["--app-dir", str(Path(tmp_project_dir / "custom_subfolder"))])
+    args.extend(["run"])
+    create_app_file("my_app.py", directory="custom_subfolder")
+
+    env_name, env_value = env
+    cli_name, cli_value = cli
+
+    if env_name:
+        if isinstance(env_value, list):
+            monkeypatch.setenv(env_name, "".join(env_value))
+        else:
+            monkeypatch.setenv(env_name, env_value)  # type: ignore[arg-type] # pyright: ignore (reportGeneralTypeIssues)
+
+    if cli_name:
+        if cli_value is True:
+            args.append(cli_name)
+        elif isinstance(cli_value, list):
+            for value in cli_value:
+                args.extend([cli_name, value])
+        else:
+            args.extend([cli_name, cli_value])
+
+    result = runner.invoke(cli_command, args)
+
+    assert result.exception is None
+    assert result.exit_code == 0
+
+    if cli_name in ["--fd", "--uds"]:
+        mock_subprocess_run.assert_not_called()
+        if isinstance(expected, list):  # type: ignore[unreachable]
+            assert all(_ in mock_uvicorn_run.call_args_list[0].args[0] for _ in expected)  # type: ignore[unreachable]
+        else:
+            assert mock_uvicorn_run.call_args_list[0].kwargs.get(cli_name.strip("--")) == cli_value
+
+    elif cli_name in ["-d", "--pdb"]:
+        assert os.environ.get(expected[0]) == expected[1]
+
+    else:
+        mock_subprocess_run.assert_called_once()
+
+        if isinstance(expected, list):  # type: ignore[unreachable]
+            assert all(_ in mock_subprocess_run.call_args_list[0].args[0] for _ in expected)  # type: ignore[unreachable]
+        else:
+            assert expected in mock_subprocess_run.call_args_list[0].args[0]
 
 
 @pytest.fixture()
@@ -276,6 +431,71 @@ def test_run_command_debug(
 
     assert result.exit_code == 0
     assert os.getenv("LITESTAR_DEBUG") == "1"
+
+
+@pytest.mark.usefixtures("mock_uvicorn_run", "unset_env")
+def test_run_command_quiet_console(
+    app_file: Path,
+    mocker: MockerFixture,
+    runner: CliRunner,
+    monkeypatch: MonkeyPatch,
+    create_app_file: CreateAppFileFixture,
+) -> None:
+    mocker.patch.object(core, "isatty", return_value=True)
+    mocker.patch.object(_utils, "isatty", return_value=True)
+    console = Console(file=io.StringIO(), force_interactive=True)
+    monkeypatch.setattr(_utils, "console", console)
+
+    path = create_app_file("_create_app_with_path.py", content=CREATE_APP_FILE_CONTENT)
+    app_path = f"{path.stem}:create_app"
+    monkeypatch.delenv("LITESTAR_QUIET_CONSOLE", raising=False)
+    result = runner.invoke(cli_command, ["--app", app_path, "run"])
+    assert result.exit_code == 0
+    normal_output = console.file.getvalue()  # type: ignore[attr-defined]
+    assert "Using Litestar app from env:" in normal_output
+    assert "Starting server process" in result.stdout
+    del result
+    console = Console(file=io.StringIO(), force_interactive=True)
+    monkeypatch.setattr(_utils, "console", console)
+    monkeypatch.setenv("LITESTAR_QUIET_CONSOLE", "1")
+    assert os.getenv("LITESTAR_QUIET_CONSOLE") == "1"
+    result = runner.invoke(cli_command, ["--app", app_path, "run"])
+    assert result.exit_code == 0
+    quiet_output = console.file.getvalue()  # type: ignore[attr-defined]
+    assert "Starting server process" not in result.stdout
+    assert "Using Litestar app from env:" not in quiet_output
+    console.clear()
+
+
+@pytest.mark.usefixtures("mock_uvicorn_run", "unset_env")
+def test_run_command_custom_app_name(
+    app_file: Path,
+    runner: CliRunner,
+    monkeypatch: MonkeyPatch,
+    create_app_file: CreateAppFileFixture,
+    mocker: MockerFixture,
+) -> None:
+    mocker.patch.object(core, "isatty", return_value=True)
+    mocker.patch.object(_utils, "isatty", return_value=True)
+
+    console = Console(file=io.StringIO(), force_interactive=True)
+    monkeypatch.setattr(_utils, "console", console)
+
+    path = create_app_file("_create_app_with_path.py", content=CREATE_APP_FILE_CONTENT)
+    app_path = f"{path.stem}:create_app"
+    monkeypatch.delenv("LITESTAR_APP_NAME", raising=False)
+    result = runner.invoke(cli_command, ["--app", app_path, "run"])
+    assert result.exit_code == 0
+    _output = console.file.getvalue()  # type: ignore[attr-defined]
+    assert "Using Litestar app from env:" in _output
+    console = Console(file=io.StringIO(), force_interactive=True)
+    monkeypatch.setattr(_utils, "console", console)
+    monkeypatch.setenv("LITESTAR_APP_NAME", "My Stuff")
+    assert os.getenv("LITESTAR_APP_NAME") == "My Stuff"
+    result = runner.invoke(cli_command, ["--app", app_path, "run"])
+    assert result.exit_code == 0
+    _output = console.file.getvalue()  # type: ignore[attr-defined]
+    assert "Using My Stuff app from env:" in _output
 
 
 @pytest.mark.usefixtures("mock_uvicorn_run", "unset_env")
@@ -350,21 +570,21 @@ def test_run_command_with_server_lifespan_plugin(
 @pytest.mark.parametrize(
     "app_content, schema_enabled, exclude_pattern_list, expected_result_routes_count",
     [
-        pytest.param(APP_FILE_CONTENT_ROUTES_EXAMPLE, False, (), 3, id="schema-enabled_no-exclude"),
+        pytest.param(APP_FILE_CONTENT_ROUTES_EXAMPLE, False, (), 3, id="schema-disabled_no-exclude"),
         pytest.param(
             APP_FILE_CONTENT_ROUTES_EXAMPLE,
             False,
             ("/foo", "/destroy/.*", "/java", "/haskell"),
             2,
-            id="schema-enabled_exclude",
+            id="schema-disabled_exclude",
         ),
-        pytest.param(APP_FILE_CONTENT_ROUTES_EXAMPLE, True, (), 12, id="schema-disabled_no-exclude"),
+        pytest.param(APP_FILE_CONTENT_ROUTES_EXAMPLE, True, (), 13, id="schema-enabled_no-exclude"),
         pytest.param(
             APP_FILE_CONTENT_ROUTES_EXAMPLE,
             True,
             ("/foo", "/destroy/.*", "/java", "/haskell"),
-            11,
-            id="schema-disabled_exclude",
+            12,
+            id="schema-enabled_exclude",
         ),
     ],
 )
@@ -425,7 +645,7 @@ def test_remove_default_schema_routes() -> None:
     api_config = MagicMock()
     api_config.openapi_controller.path = "/schema"
 
-    results = remove_default_schema_routes(http_routes, api_config)  # type: ignore
+    results = _utils.remove_default_schema_routes(http_routes, api_config)  # type: ignore[arg-type]
     assert len(results) == 3
     for result in results:
         words = re.split(r"(^\/[a-z]+)", result.path)
@@ -441,7 +661,7 @@ def test_remove_routes_with_patterns() -> None:
         http_routes.append(http_route)
 
     patterns = ("/destroy", "/pizza", "[]")
-    results = remove_routes_with_patterns(http_routes, patterns)  # type: ignore
+    results = _utils.remove_routes_with_patterns(http_routes, patterns)  # type: ignore[arg-type]
     paths = [route.path for route in results]
     assert len(paths) == 2
     for route in ["/", "/foo"]:

@@ -29,12 +29,12 @@ if TYPE_CHECKING:
     try:
         from pydantic import BaseModel
     except ImportError:
-        BaseModel = Any  # type: ignore
+        BaseModel = Any  # type: ignore[assignment, misc]
 
     try:
         from attrs import AttrsInstance
     except ImportError:
-        AttrsInstance = Any  # type: ignore
+        AttrsInstance = Any  # type: ignore[assignment, misc]
 
 __all__ = (
     "LitestarEncodableType",

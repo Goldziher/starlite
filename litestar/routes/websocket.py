@@ -54,10 +54,13 @@ class WebSocketRoute(BaseRoute):
         Returns:
             None
         """
-        websocket: WebSocket[Any, Any, Any] = scope["app"].websocket_class(scope=scope, receive=receive, send=send)
 
         if not self.handler_parameter_model:  # pragma: no cover
             raise ImproperlyConfiguredException("handler parameter model not defined")
+
+        websocket: WebSocket[Any, Any, Any] = self.route_handler.resolve_websocket_class()(
+            scope=scope, receive=receive, send=send
+        )
 
         if self.route_handler.resolve_guards():
             await self.route_handler.authorize_connection(connection=websocket)

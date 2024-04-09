@@ -27,13 +27,12 @@ def test_resolve_type_encoders() -> None:
         type_encoders = {controller_type: controller_encoder}
 
         @get("/", type_encoders={handler_type: handler_encoder})
-        def handler(self) -> Any:
-            ...
+        def handler(self) -> Any: ...
 
     router = Router("/router", type_encoders={router_type: router_encoder}, route_handlers=[MyController])
     app = Litestar([router], type_encoders={app_type: app_encoder})
 
-    route_handler = app.routes[0].route_handler_map[HttpMethod.GET][0]  # type: ignore
+    route_handler = app.routes[0].route_handler_map[HttpMethod.GET][0]  # type: ignore[union-attr]
     encoders = route_handler.resolve_type_encoders()
     assert encoders.get(handler_type) == handler_encoder
     assert encoders.get(controller_type) == controller_encoder

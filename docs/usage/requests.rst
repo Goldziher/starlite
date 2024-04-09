@@ -17,7 +17,7 @@ The type of ``data`` an be any supported type, including
 * :class:`TypedDicts <typing.TypedDict>`
 * Pydantic models
 * Arbitrary stdlib types
-* Typed supported via :doc:`plugins </usage/plugins>`
+* Typed supported via :doc:`plugins </usage/plugins/index>`
 
 .. literalinclude:: /examples/request_data/request_data_2.py
     :language: python
@@ -138,3 +138,25 @@ for ``Body`` , by using :class:`RequestEncodingType.MESSAGEPACK <.enums.RequestE
 .. literalinclude:: /examples/request_data/msgpack_request.py
    :caption: msgpack_request.py
    :language: python
+
+
+Custom Request
+--------------
+
+.. versionadded:: 2.7.0
+
+Litestar supports custom ``request_class`` instances, which can be used to further configure the default :class:`Request`.
+The example below illustrates how to implement custom request class for the whole application.
+
+.. dropdown:: Example of a custom request at the application level
+
+    .. literalinclude:: /examples/request_data/custom_request.py
+        :language: python
+
+.. admonition:: Layered architecture
+
+   Request classes are part of Litestar's layered architecture, which means you can
+   set a request class on every layer of the application. If you have set a request
+   class on multiple layers, the layer closest to the route handler will take precedence.
+
+   You can read more about this in the :ref:`usage/applications:layered architecture` section

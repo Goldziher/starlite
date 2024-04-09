@@ -12,4 +12,6 @@ authentication and authorization.
     abstract-authentication-middleware
     security-backends
     guards
+    excluding-and-including-endpoints
     jwt
+    secret-datastructures

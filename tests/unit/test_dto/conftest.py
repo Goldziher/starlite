@@ -92,7 +92,6 @@ def ModelReturnDTO() -> type[AbstractDTO]:
 @pytest.fixture()
 def asgi_connection() -> Request[Any, Any, Any]:
     @get("/", name="handler_id", media_type=MediaType.JSON)
-    def _handler() -> None:
-        ...
+    def _handler() -> None: ...
 
     return RequestFactory().get(path="/", route_handler=_handler)

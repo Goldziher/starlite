@@ -3,6 +3,7 @@
 https://github.com/encode/starlette/blob/master/tests/test_requests.py. And are meant to ensure our compatibility with
 their API.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Dict, Generator
@@ -140,7 +141,7 @@ def test_custom_request_class() -> None:
     class MyRequest(Request):
         def __init__(self, *args: Any, **kwargs: Any) -> None:
             super().__init__(*args, **kwargs)
-            self.scope["called"] = True  # type: ignore
+            self.scope["called"] = True  # type: ignore[typeddict-unknown-key]
 
     @get("/", signature_types=[MyRequest])
     def handler(request: MyRequest) -> None:
@@ -382,7 +383,7 @@ def test_request_state() -> None:
     def handler(request: Request[Any, Any, Any]) -> dict[Any, Any]:
         request.state.test = 1
         assert request.state.test == 1
-        return request.state.dict()  # type: ignore
+        return request.state.dict()  # type: ignore[no-any-return]
 
     with create_test_client(handler) as client:
         response = client.get("/")
@@ -431,7 +432,7 @@ def test_chunked_encoding() -> None:
 def test_request_send_push_promise() -> None:
     async def app(scope: Scope, receive: Receive, send: Send) -> None:
         # the server is push-enabled
-        scope["extensions"]["http.response.push"] = {}  # type: ignore
+        scope["extensions"]["http.response.push"] = {}  # type: ignore[index]
 
         request = Request[Any, Any, Any](scope, receive, send)
         await request.send_push_promise("/style.css")
@@ -490,7 +491,7 @@ def test_request_send_push_promise_without_setting_send() -> None:
 
     async def app(scope: Scope, receive: Receive, send: Send) -> None:
         # the server is push-enabled
-        scope["extensions"]["http.response.push"] = {}  # type: ignore
+        scope["extensions"]["http.response.push"] = {}  # type: ignore[index]
 
         data = "OK"
         request = Request[Any, Any, Any](scope)

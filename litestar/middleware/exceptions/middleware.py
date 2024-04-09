@@ -12,7 +12,7 @@ from litestar.enums import MediaType, ScopeType
 from litestar.exceptions import HTTPException, LitestarException, WebSocketException
 from litestar.middleware.cors import CORSMiddleware
 from litestar.middleware.exceptions._debug_response import _get_type_encoders_for_request, create_debug_response
-from litestar.serialization import encode_json
+from litestar.serialization import encode_json, get_serializer
 from litestar.status_codes import HTTP_500_INTERNAL_SERVER_ERROR
 from litestar.utils.deprecation import warn_deprecation
 
@@ -97,16 +97,17 @@ class ExceptionResponseContent:
         from litestar.response import Response
 
         content: Any = {k: v for k, v in asdict(self).items() if k not in ("headers", "media_type") and v is not None}
+        type_encoders = _get_type_encoders_for_request(request) if request is not None else None
 
         if self.media_type != MediaType.JSON:
-            content = encode_json(content)
+            content = encode_json(content, get_serializer(type_encoders))
 
         return Response(
             content=content,
             headers=self.headers,
             status_code=self.status_code,
             media_type=self.media_type,
-            type_encoders=_get_type_encoders_for_request(request) if request is not None else None,
+            type_encoders=type_encoders,
         )
 
 

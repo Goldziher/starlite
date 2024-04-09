@@ -77,8 +77,7 @@ class FileSystemProtocol(Protocol):
         file: PathType,
         mode: OpenBinaryMode,
         buffering: int = -1,
-    ) -> IO[bytes] | Awaitable[AsyncFile[bytes]]:
-        ...
+    ) -> IO[bytes] | Awaitable[AsyncFile[bytes]]: ...
 
     @overload
     def open(
@@ -86,8 +85,7 @@ class FileSystemProtocol(Protocol):
         file: PathType,
         mode: OpenTextMode,
         buffering: int = -1,
-    ) -> IO[str] | Awaitable[AsyncFile[str]]:
-        ...
+    ) -> IO[str] | Awaitable[AsyncFile[str]]: ...
 
     def open(  # pyright: ignore
         self,

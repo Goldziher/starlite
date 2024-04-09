@@ -6,8 +6,8 @@ from litestar.enums import HttpMethod, MediaType
 from litestar.exceptions import HTTPException, ImproperlyConfiguredException
 from litestar.openapi.spec import Operation
 from litestar.response.file import ASGIFileResponse, File
+from litestar.types import Empty, TypeDecodersSequence
 from litestar.types.builtin_types import NoneType
-from litestar.types.empty import Empty
 from litestar.utils import is_class_and_subclass
 
 from .base import HTTPRouteHandler
@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
     from litestar.background_tasks import BackgroundTask, BackgroundTasks
     from litestar.config.response_cache import CACHE_FOREVER
+    from litestar.connection import Request
     from litestar.datastructures import CacheControlHeader, ETag
     from litestar.dto import AbstractDTO
     from litestar.openapi.datastructures import ResponseSpec
@@ -70,6 +71,7 @@ class delete(HTTPRouteHandler):
         middleware: Sequence[Middleware] | None = None,
         name: str | None = None,
         opt: Mapping[str, Any] | None = None,
+        request_class: type[Request] | None = None,
         response_class: type[Response] | None = None,
         response_cookies: ResponseCookies | None = None,
         response_headers: ResponseHeaders | None = None,
@@ -91,6 +93,7 @@ class delete(HTTPRouteHandler):
         security: Sequence[SecurityRequirement] | None = None,
         summary: str | None = None,
         tags: Sequence[str] | None = None,
+        type_decoders: TypeDecodersSequence | None = None,
         type_encoders: TypeEncodersMap | None = None,
         **kwargs: Any,
     ) -> None:
@@ -131,6 +134,8 @@ class delete(HTTPRouteHandler):
             name: A string identifying the route handler.
             opt: A string keyed mapping of arbitrary values that can be accessed in :class:`Guards <.types.Guard>` or
                 wherever you have access to :class:`Request <.connection.Request>` or :class:`ASGI Scope <.types.Scope>`.
+            request_class: A custom subclass of :class:`Request <.connection.Request>` to be used as route handler's
+                default request.
             response_class: A custom subclass of :class:`Response <.response.Response>` to be used as route handler's
                 default response.
             response_cookies: A sequence of :class:`Cookie <.datastructures.Cookie>` instances.
@@ -159,6 +164,8 @@ class delete(HTTPRouteHandler):
             security: A sequence of dictionaries that contain information about which security scheme can be used on the endpoint.
             summary: Text used for the route's schema summary section.
             tags: A sequence of string tags that will be appended to the OpenAPI schema.
+            type_decoders: A sequence of tuples, each composed of a predicate testing for type identity and a msgspec
+                hook for deserialization.
             type_encoders: A mapping of types to callables that transform them into types supported for serialization.
             **kwargs: Any additional kwarg - will be set in the opt dictionary.
         """
@@ -191,6 +198,7 @@ class delete(HTTPRouteHandler):
             opt=opt,
             path=path,
             raises=raises,
+            request_class=request_class,
             response_class=response_class,
             response_cookies=response_cookies,
             response_description=response_description,
@@ -203,6 +211,7 @@ class delete(HTTPRouteHandler):
             summary=summary,
             sync_to_thread=sync_to_thread,
             tags=tags,
+            type_decoders=type_decoders,
             type_encoders=type_encoders,
             **kwargs,
         )
@@ -234,6 +243,7 @@ class get(HTTPRouteHandler):
         middleware: Sequence[Middleware] | None = None,
         name: str | None = None,
         opt: Mapping[str, Any] | None = None,
+        request_class: type[Request] | None = None,
         response_class: type[Response] | None = None,
         response_cookies: ResponseCookies | None = None,
         response_headers: ResponseHeaders | None = None,
@@ -255,6 +265,7 @@ class get(HTTPRouteHandler):
         security: Sequence[SecurityRequirement] | None = None,
         summary: str | None = None,
         tags: Sequence[str] | None = None,
+        type_decoders: TypeDecodersSequence | None = None,
         type_encoders: TypeEncodersMap | None = None,
         **kwargs: Any,
     ) -> None:
@@ -295,6 +306,8 @@ class get(HTTPRouteHandler):
             name: A string identifying the route handler.
             opt: A string keyed mapping of arbitrary values that can be accessed in :class:`Guards <.types.Guard>` or
                 wherever you have access to :class:`Request <.connection.Request>` or :class:`ASGI Scope <.types.Scope>`.
+            request_class: A custom subclass of :class:`Request <.connection.Request>` to be used as route handler's
+                default request.
             response_class: A custom subclass of :class:`Response <.response.Response>` to be used as route handler's
                 default response.
             response_cookies: A sequence of :class:`Cookie <.datastructures.Cookie>` instances.
@@ -323,6 +336,8 @@ class get(HTTPRouteHandler):
             security: A sequence of dictionaries that contain information about which security scheme can be used on the endpoint.
             summary: Text used for the route's schema summary section.
             tags: A sequence of string tags that will be appended to the OpenAPI schema.
+            type_decoders: A sequence of tuples, each composed of a predicate testing for type identity and a msgspec
+                hook for deserialization.
             type_encoders: A mapping of types to callables that transform them into types supported for serialization.
             **kwargs: Any additional kwarg - will be set in the opt dictionary.
         """
@@ -356,6 +371,7 @@ class get(HTTPRouteHandler):
             opt=opt,
             path=path,
             raises=raises,
+            request_class=request_class,
             response_class=response_class,
             response_cookies=response_cookies,
             response_description=response_description,
@@ -368,6 +384,7 @@ class get(HTTPRouteHandler):
             summary=summary,
             sync_to_thread=sync_to_thread,
             tags=tags,
+            type_decoders=type_decoders,
             type_encoders=type_encoders,
             **kwargs,
         )
@@ -399,6 +416,7 @@ class head(HTTPRouteHandler):
         middleware: Sequence[Middleware] | None = None,
         name: str | None = None,
         opt: Mapping[str, Any] | None = None,
+        request_class: type[Request] | None = None,
         response_class: type[Response] | None = None,
         response_cookies: ResponseCookies | None = None,
         response_headers: ResponseHeaders | None = None,
@@ -420,6 +438,7 @@ class head(HTTPRouteHandler):
         security: Sequence[SecurityRequirement] | None = None,
         summary: str | None = None,
         tags: Sequence[str] | None = None,
+        type_decoders: TypeDecodersSequence | None = None,
         type_encoders: TypeEncodersMap | None = None,
         **kwargs: Any,
     ) -> None:
@@ -464,6 +483,8 @@ class head(HTTPRouteHandler):
             name: A string identifying the route handler.
             opt: A string keyed mapping of arbitrary values that can be accessed in :class:`Guards <.types.Guard>` or
                 wherever you have access to :class:`Request <.connection.Request>` or :class:`ASGI Scope <.types.Scope>`.
+            request_class: A custom subclass of :class:`Request <.connection.Request>` to be used as route handler's
+                default request.
             response_class: A custom subclass of :class:`Response <.response.Response>` to be used as route handler's
                 default response.
             response_cookies: A sequence of :class:`Cookie <.datastructures.Cookie>` instances.
@@ -492,6 +513,8 @@ class head(HTTPRouteHandler):
             security: A sequence of dictionaries that contain information about which security scheme can be used on the endpoint.
             summary: Text used for the route's schema summary section.
             tags: A sequence of string tags that will be appended to the OpenAPI schema.
+            type_decoders: A sequence of tuples, each composed of a predicate testing for type identity and a msgspec
+                hook for deserialization.
             type_encoders: A mapping of types to callables that transform them into types supported for serialization.
             **kwargs: Any additional kwarg - will be set in the opt dictionary.
         """
@@ -525,6 +548,7 @@ class head(HTTPRouteHandler):
             opt=opt,
             path=path,
             raises=raises,
+            request_class=request_class,
             response_class=response_class,
             response_cookies=response_cookies,
             response_description=response_description,
@@ -537,6 +561,7 @@ class head(HTTPRouteHandler):
             summary=summary,
             sync_to_thread=sync_to_thread,
             tags=tags,
+            type_decoders=type_decoders,
             type_encoders=type_encoders,
             **kwargs,
         )
@@ -581,6 +606,7 @@ class patch(HTTPRouteHandler):
         middleware: Sequence[Middleware] | None = None,
         name: str | None = None,
         opt: Mapping[str, Any] | None = None,
+        request_class: type[Request] | None = None,
         response_class: type[Response] | None = None,
         response_cookies: ResponseCookies | None = None,
         response_headers: ResponseHeaders | None = None,
@@ -602,6 +628,7 @@ class patch(HTTPRouteHandler):
         security: Sequence[SecurityRequirement] | None = None,
         summary: str | None = None,
         tags: Sequence[str] | None = None,
+        type_decoders: TypeDecodersSequence | None = None,
         type_encoders: TypeEncodersMap | None = None,
         **kwargs: Any,
     ) -> None:
@@ -642,6 +669,8 @@ class patch(HTTPRouteHandler):
             name: A string identifying the route handler.
             opt: A string keyed mapping of arbitrary values that can be accessed in :class:`Guards <.types.Guard>` or
                 wherever you have access to :class:`Request <.connection.Request>` or :class:`ASGI Scope <.types.Scope>`.
+            request_class: A custom subclass of :class:`Request <.connection.Request>` to be used as route handler's
+                default request.
             response_class: A custom subclass of :class:`Response <.response.Response>` to be used as route handler's
                 default response.
             response_cookies: A sequence of :class:`Cookie <.datastructures.Cookie>` instances.
@@ -670,6 +699,8 @@ class patch(HTTPRouteHandler):
             security: A sequence of dictionaries that contain information about which security scheme can be used on the endpoint.
             summary: Text used for the route's schema summary section.
             tags: A sequence of string tags that will be appended to the OpenAPI schema.
+            type_decoders: A sequence of tuples, each composed of a predicate testing for type identity and a msgspec
+                hook for deserialization.
             type_encoders: A mapping of types to callables that transform them into types supported for serialization.
             **kwargs: Any additional kwarg - will be set in the opt dictionary.
         """
@@ -702,6 +733,7 @@ class patch(HTTPRouteHandler):
             opt=opt,
             path=path,
             raises=raises,
+            request_class=request_class,
             response_class=response_class,
             response_cookies=response_cookies,
             response_description=response_description,
@@ -714,6 +746,7 @@ class patch(HTTPRouteHandler):
             summary=summary,
             sync_to_thread=sync_to_thread,
             tags=tags,
+            type_decoders=type_decoders,
             type_encoders=type_encoders,
             **kwargs,
         )
@@ -745,6 +778,7 @@ class post(HTTPRouteHandler):
         middleware: Sequence[Middleware] | None = None,
         name: str | None = None,
         opt: Mapping[str, Any] | None = None,
+        request_class: type[Request] | None = None,
         response_class: type[Response] | None = None,
         response_cookies: ResponseCookies | None = None,
         response_headers: ResponseHeaders | None = None,
@@ -766,6 +800,7 @@ class post(HTTPRouteHandler):
         security: Sequence[SecurityRequirement] | None = None,
         summary: str | None = None,
         tags: Sequence[str] | None = None,
+        type_decoders: TypeDecodersSequence | None = None,
         type_encoders: TypeEncodersMap | None = None,
         **kwargs: Any,
     ) -> None:
@@ -806,6 +841,8 @@ class post(HTTPRouteHandler):
             name: A string identifying the route handler.
             opt: A string keyed mapping of arbitrary values that can be accessed in :class:`Guards <.types.Guard>` or
                 wherever you have access to :class:`Request <.connection.Request>` or :class:`ASGI Scope <.types.Scope>`.
+            request_class: A custom subclass of :class:`Request <.connection.Request>` to be used as route handler's
+                default request.
             response_class: A custom subclass of :class:`Response <.response.Response>` to be used as route handler's
                 default response.
             response_cookies: A sequence of :class:`Cookie <.datastructures.Cookie>` instances.
@@ -834,6 +871,8 @@ class post(HTTPRouteHandler):
             security: A sequence of dictionaries that contain information about which security scheme can be used on the endpoint.
             summary: Text used for the route's schema summary section.
             tags: A sequence of string tags that will be appended to the OpenAPI schema.
+            type_decoders: A sequence of tuples, each composed of a predicate testing for type identity and a msgspec
+                hook for deserialization.
             type_encoders: A mapping of types to callables that transform them into types supported for serialization.
             **kwargs: Any additional kwarg - will be set in the opt dictionary.
         """
@@ -866,6 +905,7 @@ class post(HTTPRouteHandler):
             opt=opt,
             path=path,
             raises=raises,
+            request_class=request_class,
             response_class=response_class,
             response_cookies=response_cookies,
             response_description=response_description,
@@ -878,6 +918,7 @@ class post(HTTPRouteHandler):
             summary=summary,
             sync_to_thread=sync_to_thread,
             tags=tags,
+            type_decoders=type_decoders,
             type_encoders=type_encoders,
             **kwargs,
         )
@@ -909,6 +950,7 @@ class put(HTTPRouteHandler):
         middleware: Sequence[Middleware] | None = None,
         name: str | None = None,
         opt: Mapping[str, Any] | None = None,
+        request_class: type[Request] | None = None,
         response_class: type[Response] | None = None,
         response_cookies: ResponseCookies | None = None,
         response_headers: ResponseHeaders | None = None,
@@ -930,6 +972,7 @@ class put(HTTPRouteHandler):
         security: Sequence[SecurityRequirement] | None = None,
         summary: str | None = None,
         tags: Sequence[str] | None = None,
+        type_decoders: TypeDecodersSequence | None = None,
         type_encoders: TypeEncodersMap | None = None,
         **kwargs: Any,
     ) -> None:
@@ -970,6 +1013,8 @@ class put(HTTPRouteHandler):
             name: A string identifying the route handler.
             opt: A string keyed mapping of arbitrary values that can be accessed in :class:`Guards <.types.Guard>` or
                 wherever you have access to :class:`Request <.connection.Request>` or :class:`ASGI Scope <.types.Scope>`.
+            request_class: A custom subclass of :class:`Request <.connection.Request>` to be used as route handler's
+                default request.
             response_class: A custom subclass of :class:`Response <.response.Response>` to be used as route handler's
                 default response.
             response_cookies: A sequence of :class:`Cookie <.datastructures.Cookie>` instances.
@@ -998,6 +1043,8 @@ class put(HTTPRouteHandler):
             security: A sequence of dictionaries that contain information about which security scheme can be used on the endpoint.
             summary: Text used for the route's schema summary section.
             tags: A sequence of string tags that will be appended to the OpenAPI schema.
+            type_decoders: A sequence of tuples, each composed of a predicate testing for type identity and a msgspec
+                hook for deserialization.
             type_encoders: A mapping of types to callables that transform them into types supported for serialization.
             **kwargs: Any additional kwarg - will be set in the opt dictionary.
         """
@@ -1030,6 +1077,7 @@ class put(HTTPRouteHandler):
             opt=opt,
             path=path,
             raises=raises,
+            request_class=request_class,
             response_class=response_class,
             response_cookies=response_cookies,
             response_description=response_description,
@@ -1042,6 +1090,7 @@ class put(HTTPRouteHandler):
             summary=summary,
             sync_to_thread=sync_to_thread,
             tags=tags,
+            type_decoders=type_decoders,
             type_encoders=type_encoders,
             **kwargs,
         )

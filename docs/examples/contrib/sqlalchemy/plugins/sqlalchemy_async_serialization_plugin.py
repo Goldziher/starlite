@@ -11,8 +11,7 @@ if TYPE_CHECKING:
     from typing import List
 
 
-class Base(DeclarativeBase):
-    ...
+class Base(DeclarativeBase): ...
 
 
 class TodoItem(Base):

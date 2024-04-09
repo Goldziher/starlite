@@ -55,8 +55,8 @@ def __getattr__(name: str) -> Any:
             version="2.4",
             kind="import",
             removal_in="3.0",
-            info=f"'litestar.utils.scope.{name}' is deprecated. The Litestar scope state is private and should not be used."
-            "Plugin authors should maintain their own scope state namespace.",
+            info=f"'litestar.utils.scope.{name}' is deprecated. The Litestar scope state is private and should not be "
+            f"used. Plugin authors should maintain their own scope state namespace.",
         )
         return globals()["_deprecated_names"][name]
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")  # pragma: no cover

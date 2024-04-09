@@ -259,3 +259,11 @@ with minimal boilerplate:
 
 Without any extra configuration, every call to ``app.stores.get`` with a unique name will return a namespace for this
 name only, while re-using the underlying Redis instance.
+
+
+Store lifetime
+++++++++++++++
+
+Stores may not be automatically closed when the application is shut down.
+This is the case in particular for the RedisStore if you are not using the class method :meth:`RedisStore.with_client <.redis.RedisStore.with_client>` and passing in your own Redis instance.
+In this case you're responsible to close the Redis instance yourself.

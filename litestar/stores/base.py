@@ -9,6 +9,8 @@ from msgspec.msgpack import decode as msgpack_decode
 from msgspec.msgpack import encode as msgpack_encode
 
 if TYPE_CHECKING:
+    from types import TracebackType
+
     from typing_extensions import Self
 
 
@@ -17,6 +19,8 @@ __all__ = ("Store", "NamespacedStore", "StorageObject")
 
 class Store(ABC):
     """Thread and process safe asynchronous key/value store."""
+
+    __slots__ = ()
 
     @abstractmethod
     async def set(self, key: str, value: str | bytes, expires_in: int | timedelta | None = None) -> None:
@@ -76,6 +80,17 @@ class Store(ABC):
         """
         raise NotImplementedError
 
+    async def __aenter__(self) -> None:  # noqa: B027
+        pass
+
+    async def __aexit__(  # noqa: B027
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
+        pass
+
 
 class NamespacedStore(Store):
     """A subclass of :class:`Store`, offering hierarchical namespacing.
@@ -83,6 +98,8 @@ class NamespacedStore(Store):
     Bulk actions on a parent namespace should affect all child namespaces, whereas other operations on all namespaces
     should be isolated.
     """
+
+    __slots__ = ("namespace",)
 
     @abstractmethod
     def with_namespace(self, namespace: str) -> Self:

@@ -79,16 +79,22 @@ Since we would probably need to use the client in multiple places, it's better t
         .. code-block:: python
             :caption: tests/conftest.py
 
+            from typing import TYPE_CHECKING, Iterator
+
             import pytest
 
             from litestar.testing import TestClient
 
             from my_app.main import app
 
+            if TYPE_CHECKING:
+                from litestar import Litestar
+
 
             @pytest.fixture(scope="function")
-            def test_client() -> TestClient:
-                return TestClient(app=app)
+            def test_client() -> Iterator[TestClient[Litestar]]:
+                with TestClient(app=app) as client:
+                    yield client
 
 
     .. tab-item:: Async
@@ -97,16 +103,22 @@ Since we would probably need to use the client in multiple places, it's better t
         .. code-block:: python
             :caption: tests/conftest.py
 
+            from typing import TYPE_CHECKING, AsyncIterator
+
             import pytest
 
             from litestar.testing import AsyncTestClient
 
             from my_app.main import app
 
+            if TYPE_CHECKING:
+                from litestar import Litestar
+
 
             @pytest.fixture(scope="function")
-            async def test_client() -> AsyncTestClient:
-                return AsyncTestClient(app=app)
+            async def test_client() -> AsyncIterator[AsyncTestClient[Litestar]]:
+                async with AsyncTestClient(app=app) as client:
+                    yield client
 
 
 We would then be able to rewrite our test like so:

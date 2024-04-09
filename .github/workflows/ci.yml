@@ -81,6 +81,31 @@ jobs:
       - name: Run pyright
         run: pdm run pyright
 
+  slotscheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.8"
+          allow-prereleases: false
+
+      - uses: pdm-project/setup-pdm@v4
+        name: Set up PDM
+        with:
+          python-version: "3.8"
+          allow-python-prereleases: false
+          cache: true
+          cache-dependency-path: |
+            ./pdm.lock
+
+      - name: Install dependencies
+        run: pdm install -G:all
+
+      - name: Run slotscheck
+        run: pdm run slotscheck litestar
+
   test:
     name: "test (${{ matrix.python-version }})"
     strategy:
@@ -157,7 +182,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   test-platform-compat:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'test platform compat')
     strategy:
       fail-fast: false
       matrix:

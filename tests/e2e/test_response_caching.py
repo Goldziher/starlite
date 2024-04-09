@@ -214,8 +214,7 @@ def test_middleware_not_applied_to_non_cached_routes(
     cache: Union[bool, int, Type[CACHE_FOREVER]], expect_applied: bool
 ) -> None:
     @get(path="/", cache=cache)
-    def handler() -> None:
-        ...
+    def handler() -> None: ...
 
     client = create_test_client(route_handlers=[handler])
     unpacked_middleware = []

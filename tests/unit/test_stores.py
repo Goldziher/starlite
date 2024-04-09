@@ -366,3 +366,17 @@ async def test_file_store_handle_rename_fail(file_store: FileStore, mocker: Mock
     await file_store.set("foo", "bar")
     mock_unlink.assert_called_once()
     assert Path(mock_unlink.call_args_list[0].args[0]).with_suffix("") == file_store.path.joinpath("foo")
+
+
+@pytest.mark.xdist_group("redis")
+async def test_redis_store_with_client_shutdown(redis_service: None) -> None:
+    redis_store = RedisStore.with_client(url="redis://localhost:6397")
+    assert await redis_store._redis.ping()
+    # remove the private shutdown and the assert below fails
+    # the check on connection is a mimic of https://github.com/redis/redis-py/blob/d529c2ad8d2cf4dcfb41bfd93ea68cfefd81aa66/tests/test_asyncio/test_connection_pool.py#L35-L39
+    await redis_store._shutdown()
+    assert not any(
+        x.is_connected
+        for x in redis_store._redis.connection_pool._available_connections
+        + list(redis_store._redis.connection_pool._in_use_connections)
+    )

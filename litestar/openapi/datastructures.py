@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from litestar.enums import MediaType
 
 if TYPE_CHECKING:
+    from litestar.openapi.spec import Example
     from litestar.types import DataContainerType
 
 
@@ -24,3 +25,5 @@ class ResponseSpec:
     """A description of the response."""
     media_type: MediaType = field(default=MediaType.JSON)
     """Response media type."""
+    examples: list[Example] | None = field(default=None)
+    """A list of Example models."""

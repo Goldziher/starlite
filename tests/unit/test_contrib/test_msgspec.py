@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from msgspec import Meta, Struct, field
 from typing_extensions import Annotated
 
-from litestar.dto import MsgspecDTO, dto_field
+from litestar.dto import DTOField, MsgspecDTO, dto_field
 from litestar.dto.data_structures import DTOFieldDefinition
 from litestar.typing import FieldDefinition
 
@@ -38,3 +38,17 @@ def test_detect_nested_field() -> None:
 
     assert MsgspecDTO.detect_nested_field(FieldDefinition.from_annotation(TestStruct)) is True
     assert MsgspecDTO.detect_nested_field(FieldDefinition.from_annotation(NotStruct)) is False
+
+
+ReadOnlyInt = Annotated[int, DTOField("read-only")]
+
+
+def test_msgspec_dto_annotated_dto_field() -> None:
+    class Model(Struct):
+        a: Annotated[int, DTOField("read-only")]
+        b: ReadOnlyInt
+
+    dto_type = MsgspecDTO[Model]
+    fields = list(dto_type.generate_field_definitions(Model))
+    assert fields[0].dto_field == DTOField("read-only")
+    assert fields[1].dto_field == DTOField("read-only")

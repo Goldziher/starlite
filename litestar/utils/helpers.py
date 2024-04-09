@@ -55,7 +55,7 @@ def get_enum_string_value(value: Enum | str) -> str:
     Returns:
         A string.
     """
-    return value.value if isinstance(value, Enum) else value  # type:ignore
+    return value.value if isinstance(value, Enum) else value  # type: ignore[no-any-return]
 
 
 def unwrap_partial(value: MaybePartial[T]) -> T:

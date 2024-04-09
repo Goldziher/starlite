@@ -78,11 +78,8 @@ def create_app() -> Litestar:
 """
 APP_FILE_CONTENT_ROUTES_EXAMPLE = """
 from litestar import Litestar, get
-from litestar.openapi import OpenAPIConfig, OpenAPIController
+from litestar.openapi import OpenAPIConfig
 from typing import Dict
-
-class CustomOpenAPIController(OpenAPIController):
-    path = "/api-docs"
 
 
 @get("/")
@@ -105,7 +102,8 @@ app = Litestar(
     openapi_config=OpenAPIConfig(
         title="test_app",
         version="0",
-        openapi_controller=CustomOpenAPIController),
+        path="/api-docs",
+    ),
     route_handlers=[hello_world, foo, long_api]
 )
 

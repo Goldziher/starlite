@@ -3,6 +3,7 @@
 https://github.com/encode/starlette/blob/master/tests/test_responses.py And are meant to ensure our compatibility with
 their API.
 """
+
 from itertools import cycle
 from typing import TYPE_CHECKING, AsyncIterator, Iterator
 
@@ -56,7 +57,7 @@ async def test_streaming_response_stops_if_receiving_http_disconnect_with_async_
     response = ASGIStreamingResponse(iterator=stream_indefinitely())
 
     with anyio.move_on_after(1) as cancel_scope:
-        await response({}, receive_disconnect, send)  # type: ignore
+        await response({}, receive_disconnect, send)  # type: ignore[arg-type]
     assert not cancel_scope.cancel_called, "Content streaming should stop itself."
 
 
@@ -80,7 +81,7 @@ async def test_streaming_response_stops_if_receiving_http_disconnect_with_sync_i
     response = ASGIStreamingResponse(iterator=cycle(["1", "2", "3"]))
 
     with anyio.move_on_after(1) as cancel_scope:
-        await response({}, receive_disconnect, send)  # type: ignore
+        await response({}, receive_disconnect, send)  # type: ignore[arg-type]
     assert not cancel_scope.cancel_called, "Content streaming should stop itself."
 
 

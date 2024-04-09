@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 class StaticFiles:
     """ASGI App that handles file sending."""
 
-    __slots__ = ("is_html_mode", "directories", "adapter", "send_as_attachment")
+    __slots__ = ("is_html_mode", "directories", "adapter", "send_as_attachment", "headers")
 
     def __init__(
         self,
@@ -31,6 +31,7 @@ class StaticFiles:
         file_system: FileSystemProtocol,
         send_as_attachment: bool = False,
         resolve_symlinks: bool = True,
+        headers: dict[str, str] | None = None,
     ) -> None:
         """Initialize the Application.
 
@@ -41,11 +42,13 @@ class StaticFiles:
             send_as_attachment: Whether to send the file with a ``content-disposition`` header of
              ``attachment`` or ``inline``
             resolve_symlinks: Resolve symlinks to the directories
+            headers: Headers that will be sent with every response.
         """
         self.adapter = FileSystemAdapter(file_system)
         self.directories = tuple(Path(p).resolve() if resolve_symlinks else Path(p) for p in directories)
         self.is_html_mode = is_html_mode
         self.send_as_attachment = send_as_attachment
+        self.headers = headers
 
     async def get_fs_info(
         self, directories: Sequence[PathType], file_path: PathType
@@ -111,6 +114,7 @@ class StaticFiles:
                 filename=filename,
                 content_disposition_type=content_disposition_type,
                 is_head_response=is_head_response,
+                headers=self.headers,
             )
 
         if self.is_html_mode:
@@ -129,6 +133,7 @@ class StaticFiles:
                     status_code=HTTP_404_NOT_FOUND,
                     content_disposition_type=content_disposition_type,
                     is_head_response=is_head_response,
+                    headers=self.headers,
                 )
 
         raise NotFoundException(

@@ -15,8 +15,7 @@ TodoType = Dict[str, Any]
 TodoCollectionType = List[TodoType]
 
 
-class Base(DeclarativeBase):
-    ...
+class Base(DeclarativeBase): ...
 
 
 class TodoItem(Base):

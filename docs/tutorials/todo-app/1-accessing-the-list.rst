@@ -5,7 +5,7 @@ Intro
 -----
 
 The first thing you'll be setting up for our app is a route handler that returns a
-single TODO-list. A TODO-list in this case will be a list of dictionaries representing
+single TODO list. A TODO list in this case will be a list of dictionaries representing
 the items on that TODO list.
 
 .. literalinclude:: /examples/todo_app/get_list/dict.py
@@ -64,7 +64,7 @@ Currently ``get_list`` will always return all items on the list, but what if you
 are interested in only those items with a specific status, for example all items that
 are not yet marked as *done*?
 
-For this you can employ query parameters; To define a query parameter, all that's needed
+For this you can employ query parameters; to define a query parameter, all that's needed
 is to add an otherwise unused parameter to the function. Litestar will recognize this
 and infer that it's going to be used as a query parameter. When a request is being made,
 the query parameter will be extracted from the URL, and passed to the function parameter
@@ -152,7 +152,7 @@ Converting and validating query parameters
 ++++++++++++++++++++++++++++++++++++++++++
 
 As mentioned earlier, type annotations can be used for more than static type checking
-in Litestar; They can also define and configure behaviour. In this case, you can get
+in Litestar; they can also define and configure behaviour. In this case, you can get
 Litestar to convert the query parameter to a boolean value, matching the values of the
 ``TodoItem.done`` attribute, and in the same step validate it, returning error responses
 for you should the supplied value not be a valid boolean.
@@ -185,7 +185,7 @@ instead.
 
 .. tip::
     It is important to note that this conversion is not the result of calling
-    :class:`bool` on the raw value. ``bool("john")`` would be ``True``, since Python
+    :class:`bool` on the raw value. ``bool("john")`` would be :obj:`True`, since Python
     considers all non-empty strings to be truthy.
 
     Litestar however supports customary boolean representation commonly used in the HTTP

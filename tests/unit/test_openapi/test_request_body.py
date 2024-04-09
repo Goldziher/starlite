@@ -3,8 +3,9 @@ from typing import Any, Callable, Dict, List, Type
 from unittest.mock import ANY, MagicMock
 
 import pytest
+from typing_extensions import Annotated
 
-from litestar import Controller, Litestar, post
+from litestar import Controller, Litestar, get, post
 from litestar._openapi.datastructures import OpenAPIContext
 from litestar._openapi.request_body import create_request_body
 from litestar.datastructures.upload_file import UploadFile
@@ -49,11 +50,36 @@ def create_request(openapi_context: OpenAPIContext) -> RequestBodyFactory:
 
 def test_create_request_body(person_controller: Type[Controller], create_request: RequestBodyFactory) -> None:
     for route in Litestar(route_handlers=[person_controller]).routes:
-        for route_handler, _ in route.route_handler_map.values():  # type: ignore
+        for route_handler, _ in route.route_handler_map.values():  # type: ignore[union-attr]
             handler_fields = route_handler.parsed_fn_signature.parameters
             if "data" in handler_fields:
                 request_body = create_request(route_handler, handler_fields["data"])
                 assert request_body
+
+
+def test_request_body_schema_extra() -> None:
+    @dataclass
+    class RequestBody:
+        foo: str
+
+    @get()
+    async def handler(
+        body1: Annotated[
+            RequestBody,
+            Body(
+                title="Default title",
+                schema_extra={
+                    "title": "Overridden title",
+                },
+            ),
+        ],
+    ) -> Any:
+        return body1
+
+    app = Litestar([handler])
+    schema = app.openapi_schema.to_schema()
+    resp = next(iter(schema["components"]["schemas"].values()))
+    assert resp["title"] == "Overridden title"
 
 
 def test_upload_single_file_schema_generation() -> None:

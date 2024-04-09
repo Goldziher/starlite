@@ -3,9 +3,9 @@ Litestar library documentation
 
 Litestar is a powerful, flexible, highly performant, and opinionated ASGI framework.
 
-The Litestar framework supports :doc:`/usage/plugins`, ships
+The Litestar framework supports :doc:`/usage/plugins/index`, ships
 with :doc:`dependency injection </usage/dependency-injection>`, :doc:`security primitives </usage/security/index>`,
-:doc:`OpenAPI schema generation </usage/openapi>`, `MessagePack <https://msgpack.org/>`_,
+:doc:`OpenAPI schema generation </usage/openapi/index>`, `MessagePack <https://msgpack.org/>`_,
 :doc:`middlewares </usage/middleware/index>`, a great :doc:`CLI </usage/cli>` experience, and much more.
 
 Installation
@@ -144,7 +144,7 @@ A huge thank you to our current sponsors:
 
     <div style="display: flex; justify-content: center; align-items: center; gap: 8px;">
       <div>
-        <a href="https://scalar.com">
+        <a href="https://github.com/scalar/scalar">
           <img src="https://raw.githubusercontent.com/litestar-org/branding/main/assets/sponsors/scalar.svg" alt="Scalar.com" style="border-radius: 10px; width: auto; max-height: 150px;"/>
         </a>
         <p style="text-align: center;">Scalar.com</p>
@@ -164,11 +164,10 @@ A huge thank you to our current sponsors:
     </div>
 
 We invite organizations and individuals to join our sponsorship program.
-By becoming a sponsor on platforms like `GitHub <sponsor-github_>`_
+By becoming a sponsor on `Polar <sponsor-polar_>`_ (preferred), or other platforms like `GitHub <sponsor-github_>`_
 and `Open Collective <sponsor-oc_>`_, you can play a pivotal role in our project's growth.
 
-Additionally, we engage in pledge-based sponsorship opportunities through `Polar <sponsor-polar_>`_.
-
+Also, exclusively with `Polar <sponsor-polar_>`_, you can engage in pledge-based sponsorships.
 
 .. _sponsor-github: https://github.com/sponsors/litestar-org
 .. _sponsor-oc: https://opencollective.com/litestar

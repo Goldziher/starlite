@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 from inspect import cleandoc
 from typing import TYPE_CHECKING
 
@@ -8,6 +9,7 @@ from litestar._openapi.request_body import create_request_body
 from litestar._openapi.responses import create_responses_for_handler
 from litestar._openapi.utils import SEPARATORS_CLEANUP_PATTERN
 from litestar.enums import HttpMethod
+from litestar.exceptions import ImproperlyConfiguredException
 from litestar.openapi.spec import Operation, PathItem
 from litestar.utils.helpers import unwrap_partial
 
@@ -16,7 +18,7 @@ if TYPE_CHECKING:
     from litestar.handlers.http_handlers import HTTPRouteHandler
     from litestar.routes import HTTPRoute
 
-__all__ = ("create_path_item_for_route",)
+__all__ = ("create_path_item_for_route", "merge_path_item_operations")
 
 
 class PathItemFactory:
@@ -135,3 +137,32 @@ def create_path_item_for_route(openapi_context: OpenAPIContext, route: HTTPRoute
     """
     path_item_factory = PathItemFactory(openapi_context, route)
     return path_item_factory.create_path_item()
+
+
+def merge_path_item_operations(source: PathItem, other: PathItem, for_path: str) -> PathItem:
+    """Merge operations from path items, creating a new path item that includes
+    operations from both.
+    """
+    attrs_to_merge = {"get", "put", "post", "delete", "options", "head", "patch", "trace"}
+    fields = {f.name for f in dataclasses.fields(PathItem)} - attrs_to_merge
+    if any(getattr(source, attr) and getattr(other, attr) for attr in attrs_to_merge):
+        raise ValueError("Cannot merge operation for PathItem if operation is set on both items")
+
+    if differing_values := [
+        (value_a, value_b) for attr in fields if (value_a := getattr(source, attr)) != (value_b := getattr(other, attr))
+    ]:
+        raise ImproperlyConfiguredException(
+            f"Conflicting OpenAPI path configuration for {for_path!r}. "
+            f"{', '.join(f'{a} != {b}' for a, b in differing_values)}"
+        )
+
+    return dataclasses.replace(
+        source,
+        get=source.get or other.get,
+        post=source.post or other.post,
+        patch=source.patch or other.patch,
+        put=source.put or other.put,
+        delete=source.delete or other.delete,
+        options=source.options or other.options,
+        trace=source.trace or other.trace,
+    )

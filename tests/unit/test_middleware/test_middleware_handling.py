@@ -34,9 +34,9 @@ class MiddlewareProtocolRequestLoggingMiddleware(MiddlewareProtocol):
 
 
 class BaseMiddlewareRequestLoggingMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:  # type: ignore
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:  # type: ignore[explicit-override, override]
         logging.getLogger(__name__).info("%s - %s", request.method, request.url)
-        return await call_next(request)  # type: ignore
+        return await call_next(request)  # type: ignore[arg-type, return-value]
 
 
 class MiddlewareWithArgsAndKwargs(BaseHTTPMiddleware):
@@ -45,10 +45,9 @@ class MiddlewareWithArgsAndKwargs(BaseHTTPMiddleware):
         self.arg = arg
         self.kwarg = kwarg
 
-    async def dispatch(  # type: ignore
+    async def dispatch(  # type: ignore[empty-body, explicit-override, override]
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
-    ) -> Response:
-        ...
+    ) -> Response: ...
 
 
 @pytest.mark.parametrize(
@@ -63,8 +62,7 @@ class MiddlewareWithArgsAndKwargs(BaseHTTPMiddleware):
 )
 def test_custom_middleware_processing(middleware: Any) -> None:
     @get(path="/")
-    def handler() -> None:
-        ...
+    def handler() -> None: ...
 
     with create_test_client(route_handlers=[handler], middleware=[middleware]) as client:
         app = client.app

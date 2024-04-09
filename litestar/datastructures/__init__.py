@@ -14,6 +14,7 @@ from litestar.datastructures.multi_dicts import (
     MultiMixin,
 )
 from litestar.datastructures.response_header import ResponseHeader
+from litestar.datastructures.secret_values import SecretBytes, SecretString
 from litestar.datastructures.state import ImmutableState, State
 from litestar.datastructures.upload_file import UploadFile
 from litestar.datastructures.url import URL, Address
@@ -33,6 +34,8 @@ __all__ = (
     "MultiMixin",
     "MutableScopeHeaders",
     "ResponseHeader",
+    "SecretBytes",
+    "SecretString",
     "State",
     "UploadFile",
     "URL",

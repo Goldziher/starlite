@@ -121,6 +121,12 @@ As you can see in the above examples - ``guards`` is a list. This means you can 
 Unlike ``dependencies`` , guards do not override each other but are rather *cumulative*. This means that you can define
 guards on different levels of your app, and they will combine.
 
+.. caution::
+
+    If guards are placed at the controller or the app level, they **will** be executed on all ``OPTIONS`` requests as well.
+    For more details, including a workaround, refer https://github.com/litestar-org/litestar/issues/2314.
+
+
 The route handler "opt" key
 ---------------------------
 

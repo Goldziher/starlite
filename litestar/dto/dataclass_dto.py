@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Generic, TypeVar
 
 from litestar.dto.base_dto import AbstractDTO
 from litestar.dto.data_structures import DTOFieldDefinition
-from litestar.dto.field import DTO_FIELD_META_KEY, DTOField
+from litestar.dto.field import extract_dto_field
 from litestar.params import DependencyKwarg, KwargDefinition
 from litestar.types.empty import Empty
 
@@ -40,7 +40,7 @@ class DataclassDTO(AbstractDTO[T], Generic[T]):
                 DTOFieldDefinition.from_field_definition(
                     field_definition=field_definition,
                     default_factory=default_factory,
-                    dto_field=dc_field.metadata.get(DTO_FIELD_META_KEY, DTOField()),
+                    dto_field=extract_dto_field(field_definition, dc_field.metadata),
                     model_name=model_type.__name__,
                 ),
                 name=key,

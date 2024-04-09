@@ -92,7 +92,7 @@ def create_generic_asgi_response_handler(after_request: AfterRequestHookHandler 
     """
 
     async def handler(data: ASGIApp, **kwargs: Any) -> ASGIApp:
-        return await after_request(data) if after_request else data  # type: ignore
+        return await after_request(data) if after_request else data  # type: ignore[arg-type, misc, no-any-return]
 
     return handler
 
@@ -149,7 +149,7 @@ def create_response_handler(
         **kwargs: Any,  # kwargs is for return dto
     ) -> ASGIApp:
         response = await after_request(data) if after_request else data  # type:ignore[arg-type,misc]
-        return response.to_asgi_response(  # type: ignore
+        return response.to_asgi_response(  # type: ignore[no-any-return]
             app=None,
             background=background,
             cookies=cookie_list,

@@ -14,8 +14,7 @@ if TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
 
-class Base(DeclarativeBase):
-    ...
+class Base(DeclarativeBase): ...
 
 
 class TodoItem(Base):

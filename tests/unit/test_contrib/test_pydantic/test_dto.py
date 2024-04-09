@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, cast
 
 import pytest
 from pydantic import v1 as pydantic_v1
@@ -13,7 +13,12 @@ from litestar.types import Empty
 from litestar.typing import FieldDefinition
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+    from types import ModuleType
+
     from pydantic import BaseModel
+
+    from litestar import Litestar
 
 
 def test_schema_required_fields_with_pydantic_dto(
@@ -62,3 +67,36 @@ def test_detect_nested_field_pydantic_v1(monkeypatch: pytest.MonkeyPatch) -> Non
     dto_type = PydanticDTO[Model]
     assert dto_type.detect_nested_field(FieldDefinition.from_annotation(Model)) is True
     assert dto_type.detect_nested_field(FieldDefinition.from_annotation(int)) is False
+
+
+def test_pydantic_field_descriptions(create_module: Callable[[str], ModuleType]) -> None:
+    module = create_module(
+        """
+from litestar import Litestar, get
+from litestar.contrib.pydantic import PydanticDTO
+from litestar.dto import DTOConfig
+from pydantic import BaseModel, Field
+from typing_extensions import Annotated
+
+class User(BaseModel):
+    id: Annotated[
+        int,
+        Field(description="This is a test (id description)."),
+    ]
+
+class DataCollectionDTO(PydanticDTO[User]):
+    config = DTOConfig(rename_strategy="camel")
+
+@get("/user", return_dto=DataCollectionDTO, sync_to_thread=False)
+def get_user() -> User:
+    return User(id=user_id)
+
+app = Litestar(route_handlers=[get_user])
+        """
+    )
+    app = cast("Litestar", module.app)
+    schema = app.openapi_schema
+    assert schema.components.schemas is not None
+    component_schema = schema.components.schemas["GetUserUserResponseBody"]
+    assert component_schema.properties is not None
+    assert component_schema.properties["id"].description == "This is a test (id description)."

@@ -23,21 +23,22 @@ import pytest
 from msgspec import Struct
 from typing_extensions import Annotated, TypeAlias
 
-from litestar import Controller, MediaType, get
+from litestar import Controller, MediaType, get, post
 from litestar._openapi.schema_generation.plugins import openapi_schema_plugins
 from litestar._openapi.schema_generation.schema import (
     KWARG_DEFINITION_ATTRIBUTE_TO_OPENAPI_PROPERTY_MAP,
     SchemaCreator,
 )
 from litestar._openapi.schema_generation.utils import _get_normalized_schema_key, _type_or_first_not_none_inner_type
-from litestar.app import DEFAULT_OPENAPI_CONFIG
+from litestar.app import DEFAULT_OPENAPI_CONFIG, Litestar
 from litestar.di import Provide
 from litestar.enums import ParamType
 from litestar.openapi.spec import ExternalDocumentation, OpenAPIType, Reference
 from litestar.openapi.spec.example import Example
+from litestar.openapi.spec.parameter import Parameter as OpenAPIParameter
 from litestar.openapi.spec.schema import Schema
 from litestar.pagination import ClassicPagination, CursorPagination, OffsetPagination
-from litestar.params import Parameter, ParameterKwarg
+from litestar.params import KwargDefinition, Parameter, ParameterKwarg
 from litestar.testing import create_test_client
 from litestar.types.builtin_types import NoneType
 from litestar.typing import FieldDefinition
@@ -82,7 +83,7 @@ def test_process_schema_result() -> None:
     assert kwarg_definition.examples
     for signature_key, schema_key in KWARG_DEFINITION_ATTRIBUTE_TO_OPENAPI_PROPERTY_MAP.items():
         if schema_key == "examples":
-            assert schema.examples == {"str-example-1": kwarg_definition.examples[0]}
+            assert schema.examples == [kwarg_definition.examples[0].value]
         else:
             assert getattr(schema, schema_key) == getattr(kwarg_definition, signature_key)
 
@@ -225,7 +226,7 @@ def test_schema_hashing() -> None:
             Schema(type=OpenAPIType.NUMBER),
             Schema(type=OpenAPIType.OBJECT, properties={"key": Schema(type=OpenAPIType.STRING)}),
         ],
-        examples={"example-1": Example(value=None), "example-2": Example(value=[1, 2, 3])},
+        examples=[None, [1, 2, 3]],
     )
     assert hash(schema)
 
@@ -288,11 +289,11 @@ def test_create_schema_from_msgspec_annotated_type() -> None:
 
     schema = get_schema_for_field_definition(FieldDefinition.from_kwarg(name="Lookup", annotation=Lookup))
 
-    assert schema.properties["id"].type == OpenAPIType.STRING  # type: ignore
-    assert schema.properties["id"].examples == {"id-example-1": Example(value="example")}  # type: ignore
-    assert schema.properties["id"].description == "description"  # type: ignore
-    assert schema.properties["id"].title == "title"  # type: ignore
-    assert schema.properties["id"].max_length == 16  # type: ignore
+    assert schema.properties["id"].type == OpenAPIType.STRING  # type: ignore[index, union-attr]
+    assert schema.properties["id"].examples == ["example"]  # type: ignore[index, union-attr]
+    assert schema.properties["id"].description == "description"  # type: ignore[index]
+    assert schema.properties["id"].title == "title"  # type: ignore[index, union-attr]
+    assert schema.properties["id"].max_length == 16  # type: ignore[index, union-attr]
     assert schema.required == ["id"]
 
 
@@ -312,20 +313,20 @@ def test_annotated_types() -> None:
 
     schema = get_schema_for_field_definition(FieldDefinition.from_kwarg(name="MyDataclass", annotation=MyDataclass))
 
-    assert schema.properties["constrained_int"].exclusive_minimum == 1  # type: ignore
-    assert schema.properties["constrained_int"].exclusive_maximum == 10  # type: ignore
-    assert schema.properties["constrained_float"].minimum == 1  # type: ignore
-    assert schema.properties["constrained_float"].maximum == 10  # type: ignore
-    assert datetime.utcfromtimestamp(schema.properties["constrained_date"].exclusive_minimum) == datetime.fromordinal(  # type: ignore
+    assert schema.properties["constrained_int"].exclusive_minimum == 1  # type: ignore[index, union-attr]
+    assert schema.properties["constrained_int"].exclusive_maximum == 10  # type: ignore[index, union-attr]
+    assert schema.properties["constrained_float"].minimum == 1  # type: ignore[index, union-attr]
+    assert schema.properties["constrained_float"].maximum == 10  # type: ignore[index, union-attr]
+    assert datetime.utcfromtimestamp(schema.properties["constrained_date"].exclusive_minimum) == datetime.fromordinal(  # type: ignore[arg-type, index, union-attr]
         historical_date.toordinal()
     )
-    assert datetime.utcfromtimestamp(schema.properties["constrained_date"].exclusive_maximum) == datetime.fromordinal(  # type: ignore
+    assert datetime.utcfromtimestamp(schema.properties["constrained_date"].exclusive_maximum) == datetime.fromordinal(  # type: ignore[arg-type, index, union-attr]
         today.toordinal()
     )
-    assert schema.properties["constrained_lower_case"].description == "must be in lower case"  # type: ignore
-    assert schema.properties["constrained_upper_case"].description == "must be in upper case"  # type: ignore
-    assert schema.properties["constrained_is_ascii"].pattern == "[[:ascii:]]"  # type: ignore
-    assert schema.properties["constrained_is_digit"].pattern == "[[:digit:]]"  # type: ignore
+    assert schema.properties["constrained_lower_case"].description == "must be in lower case"  # type: ignore[index]
+    assert schema.properties["constrained_upper_case"].description == "must be in upper case"  # type: ignore[index]
+    assert schema.properties["constrained_is_ascii"].pattern == "[[:ascii:]]"  # type: ignore[index, union-attr]
+    assert schema.properties["constrained_is_digit"].pattern == "[[:digit:]]"  # type: ignore[index, union-attr]
 
 
 def test_literal_enums() -> None:
@@ -555,3 +556,52 @@ def test_type_union_with_none(base_type: type) -> None:
         Reference(ref="#/components/schemas/tests_unit_test_openapi_test_schema_test_type_union_with_none.ModelA"),
         Reference("#/components/schemas/tests_unit_test_openapi_test_schema_test_type_union_with_none.ModelB"),
     ]
+
+
+def test_default_only_on_field_definition() -> None:
+    field_definition = FieldDefinition.from_annotation(int, default=10)
+    assert field_definition.kwarg_definition is None
+
+    schema = get_schema_for_field_definition(field_definition)
+    assert schema.default == 10
+
+
+def test_default_not_provided_for_kwarg_but_for_field() -> None:
+    field_definition = FieldDefinition.from_annotation(int, default=10, kwarg_definition=KwargDefinition())
+    schema = get_schema_for_field_definition(field_definition)
+
+    assert schema.default == 10
+
+
+def test_routes_with_different_path_param_types_get_merged() -> None:
+    # https://github.com/litestar-org/litestar/issues/2700
+    @get("/{param:int}")
+    async def get_handler(param: int) -> None:
+        pass
+
+    @post("/{param:str}")
+    async def post_handler(param: str) -> None:
+        pass
+
+    app = Litestar([get_handler, post_handler])
+    assert app.openapi_schema.paths
+    paths = app.openapi_schema.paths["/{param}"]
+    assert paths.get is not None
+    assert paths.post is not None
+
+
+def test_unconsumed_path_parameters_are_documented() -> None:
+    # https://github.com/litestar-org/litestar/issues/3290
+    @get("/{param:str}")
+    async def handler() -> None:
+        pass
+
+    app = Litestar([handler])
+    params = app.openapi_schema.paths["/{param}"].get.parameters  # type: ignore[index, union-attr]
+    assert params
+    assert len(params) == 1
+    param = params[0]
+    assert isinstance(param, OpenAPIParameter)
+    assert param.name == "param"
+    assert param.required is True
+    assert param.param_in is ParamType.PATH

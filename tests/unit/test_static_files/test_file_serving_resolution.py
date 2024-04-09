@@ -159,7 +159,7 @@ def test_sub_path_under_static_path(tmpdir: Path, make_config: MakeConfig) -> No
 
 
 def test_static_substring_of_self(tmpdir: Path, make_config: MakeConfig) -> None:
-    path = tmpdir.mkdir("static_part").mkdir("static") / "test.txt"  # type: ignore
+    path = tmpdir.mkdir("static_part").mkdir("static") / "test.txt"  # type: ignore[arg-type, func-returns-value]
     path.write_text("content", "utf-8")
 
     configs, handlers = make_config(StaticFilesConfig(path="/static", directories=[tmpdir]))
@@ -209,7 +209,7 @@ def test_static_files_response_encoding(tmp_path: Path, extension: str, make_con
 def test_static_files_content_disposition(
     tmpdir: Path, send_as_attachment: bool, disposition: str, make_config: MakeConfig
 ) -> None:
-    path = tmpdir.mkdir("static_part").mkdir("static") / "test.txt"  # type: ignore
+    path = tmpdir.mkdir("static_part").mkdir("static") / "test.txt"  # type: ignore[arg-type, func-returns-value]
     path.write_text("content", "utf-8")
 
     configs, handlers = make_config(
@@ -223,7 +223,7 @@ def test_static_files_content_disposition(
 
 
 def test_service_from_relative_path_using_string(tmpdir: Path, make_config: MakeConfig) -> None:
-    sub_dir = Path(tmpdir.mkdir("low")).resolve()  # type: ignore
+    sub_dir = Path(tmpdir.mkdir("low")).resolve()  # type: ignore[arg-type, func-returns-value]
 
     path = tmpdir / "test.txt"
     path.write_text("content", "utf-8")
@@ -237,7 +237,7 @@ def test_service_from_relative_path_using_string(tmpdir: Path, make_config: Make
 
 
 def test_service_from_relative_path_using_path(tmpdir: Path, make_config: MakeConfig) -> None:
-    sub_dir = Path(tmpdir.mkdir("low")).resolve()  # type: ignore
+    sub_dir = Path(tmpdir.mkdir("low")).resolve()  # type: ignore[arg-type, func-returns-value]
 
     path = tmpdir / "test.txt"
     path.write_text("content", "utf-8")
@@ -251,7 +251,7 @@ def test_service_from_relative_path_using_path(tmpdir: Path, make_config: MakeCo
 
 
 def test_service_from_base_path_using_string(tmpdir: Path) -> None:
-    sub_dir = Path(tmpdir.mkdir("low")).resolve()  # type: ignore
+    sub_dir = Path(tmpdir.mkdir("low")).resolve()  # type: ignore[arg-type, func-returns-value]
 
     path = tmpdir / "test.txt"
     path.write_text("content", "utf-8")

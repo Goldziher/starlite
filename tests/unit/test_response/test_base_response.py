@@ -167,9 +167,10 @@ def test_statuses_without_body(status: int, body: Optional[str], should_raise: b
         ({}, MediaType.TEXT, False),
         ({"abc": "def"}, MediaType.JSON, False),
         (Empty, MediaType.JSON, True),
+        ({"key": "value"}, "application/something+json", False),
     ),
 )
-def test_render_method(body: Any, media_type: MediaType, should_raise: bool) -> None:
+def test_render_method(body: Any, media_type: str, should_raise: bool) -> None:
     @get("/", media_type=media_type)
     def handler() -> Any:
         return body

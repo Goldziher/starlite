@@ -3,6 +3,574 @@
 2.x Changelog
 =============
 
+.. changelog:: 2.8.1
+    :date: 2024-04-08
+
+    .. change:: ASGI lifespan msg after lifespan context exception
+        :type: bugfix
+        :pr: 3315
+
+        An exception raised within an asgi lifespan context manager would result in a "lifespan.startup.failed" message
+
+        This PR modifies `ASGIRouter.lifespan()` so that it sends a shutdown failure message if we've already confirmed
+        startup.
+
+    .. change:: Fix when pydantic==1.10 is installed
+        :type: bugfix
+        :pr: 3335
+        :issue: 3334
+
+        This PR fixes a bug introduced in #3296 where it failed to take into account that the `pydantic_v2` variable could be `Empty`.
+
+    .. change:: OpenAPI router and controller on same app.
+        :type: bugfix
+        :pr: 3338
+        :issue: 3337
+
+        Fixes an `ImproperlyConfiguredException` where an app that explicitly registers an `OpenAPIController` on the application, and implicitly uses the OpenAPI router via the `OpenAPIConfig` object. This was caused by the two different handlers being given the same name as defined in `litestar.constants`.
+
+        PR adds a distinct name for use by the handler that serves `openapi.json` on the controller.
+
+.. changelog:: 2.8.0
+    :date: 2024-04-05
+
+    .. change:: Unique schema names for nested models (#3134)
+        :type: bugfix
+        :pr: 3136
+        :issue: 3134
+
+        Fixes an issue where nested models beyond the ``max_nested_depth`` would not have
+        unique schema names in the OpenAPI documentation. The fix appends the nested
+        model's name to the ``unique_name`` to differentiate it from the parent model.
+
+    .. change:: Add ``path`` parameter to Litestar application class
+        :type: feature
+        :pr: 3314
+
+        Exposes :paramref:`~.app.Litestar.parameter` at :class:`~.app.Litestar` application class level
+
+    .. change:: Remove duplicate ``rich-click`` config options
+        :type: bugfix
+        :pr: 3274
+
+        Removes duplicate config options from click cli
+
+    .. change:: Fix Pydantic ``json_schema_extra`` examples.
+        :type: bugfix
+        :pr: 3281
+        :issue: 3277
+
+        Fixes a regression introduced in ``2.7.0`` where an example for a field provided in Pydantic's
+        ``Field.json_schema_extra`` would cause an error.
+
+    .. change:: Set default on schema from :class:`~.typing.FieldDefinition`
+        :type: bugfix
+        :pr: 3280
+        :issue: 3278
+
+        Consider the following:
+
+        .. code-block:: python
+
+            def get_foo(foo_id: int = 10) -> None:
+                ...
+
+        In such cases, no :class:`~.params.KwargDefinition` is created since there is no metadata provided via
+        ``Annotated``. The default is still parsed, and set on the generated ``FieldDefinition``,
+        however the ``SchemaCreator`` currently only considers defaults that are set on ``KwargDefinition``.
+
+        So in such cases, we should fallback to the default set on the ``FieldDefinition`` if there is a valid
+        default value.
+
+    .. change:: Custom types cause serialisation error in exception response with non-JSON media-type
+        :type: bugfix
+        :pr: 3284
+        :issue: 3192
+
+        Fixes a bug when using a non-JSON media type (e.g., ``text/plain``),
+        :class:`~.exceptions.http_exceptions.ValidationException`'s would not get serialized properly because they
+        would ignore custom ``type_encoders``.
+
+    .. change:: Ensure default values are always represented in schema for dataclasses and :class:`msgspec.Struct`\ s
+        :type: bugfix
+        :pr: 3285
+        :issue: 3201
+
+        Fixes a bug that would prevent default values for dataclasses and ``msgspec.Struct`` s to be included in the
+        OpenAPI schema.
+
+    .. change:: Pydantic v2 error handling/serialization when for non-Pydantic exceptions
+        :type: bugfix
+        :pr: 3286
+        :issue: 2365
+
+        Fixes a bug that would cause a :exc:`TypeError` when non-Pydantic errors are raised during Pydantic's
+        validation process while using DTOs.
+
+    .. change:: Fix OpenAPI schema generation for paths with path parameters of different types on the same path
+        :type: bugfix
+        :pr: 3293
+        :issue: 2700
+
+        Fixes a bug that would cause no OpenAPI schema to be generated for paths with path
+        parameters that only differ on the path parameter type, such as ``/{param:int}``
+        and ``/{param:str}``. This was caused by an internal representation issue in
+        Litestar's routing system.
+
+    .. change:: Document unconsumed path parameters
+        :type: bugfix
+        :pr: 3295
+        :issue: 3290
+
+        Fixes a bug where path parameters not consumed by route handlers would not be included in the OpenAPI schema.
+
+        This could/would not include the ``{param}`` in the schema, yet it is still required to be passed
+        when calling the path.
+
+    .. change:: Allow for console output to be silenced
+        :type: feature
+        :pr: 3180
+
+        Introduces optional environment variables that allow customizing the "Application" name displayed
+        in the console output and suppressing the initial ``from_env`` or the ``Rich`` info table at startup.
+
+        Provides flexibility in tailoring the console output to better integrate Litestar into larger applications
+        or CLIs.
+
+    .. change:: Add flash plugin
+        :type: feature
+        :pr: 3145
+        :issue: 1455
+
+        Adds a flash plugin akin to Django or Flask that uses the request state
+
+    .. change:: Use memoized :paramref:`~.handlers.HTTPRouteHandler.request_class` and :paramref:`~.handlers.HTTPRouteHandler.response_class` values
+        :type: feature
+        :pr: 3205
+
+        Uses memoized ``request_class`` and ``response_class`` values
+
+    .. change:: Enable codegen backend by default
+        :type: feature
+        :pr: 3215
+
+        Enables the codegen backend for DTOs introduced in https://github.com/litestar-org/litestar/pull/2388 by default.
+
+    .. change:: Added precedence of CLI parameters over envs
+        :type: feature
+        :pr: 3190
+        :issue: 3188
+
+        Adds precedence of CLI parameters over environment variables.
+        Before this change, environment variables would take precedence over CLI parameters.
+
+        Since CLI parameters are more explicit and are set by the user,
+        they should take precedence over environment variables.
+
+    .. change:: Only print when terminal is ``TTY`` enabled
+        :type: feature
+        :pr: 3219
+
+        Sets ``LITESTAR_QUIET_CONSOLE`` and ``LITESTAR_APP_NAME`` in the autodiscovery function.
+        Also prevents the tabular console output from printing when the terminal is not ``TTY``
+
+    .. change:: Support ``schema_extra`` in :class:`~.openapi.spec.parameter.Parameter` and `Body`
+        :type: feature
+        :pr: 3204
+
+        Introduces a way to modify the generated OpenAPI spec by adding a ``schema_extra`` parameter to the
+        Parameter and Body classes. The ``schema_extra`` parameter accepts a ``dict[str, Any]`` where the keys correspond
+        to the keyword parameter names in Schema, and the values are used to override items in the
+        generated Schema object.
+
+        Provides a convenient way to customize the OpenAPI documentation for inbound parameters.
+
+    .. change:: Add :class:`typing.TypeVar` expansion
+        :type: feature
+        :pr: 3242
+
+        Adds a method for TypeVar expansion on registration
+        This allows the use of generic route handler and generic controller without relying on forward references.
+
+    .. change:: Add ``LITESTAR_`` prefix before ``WEB_CONCURRENCY`` env option
+        :type: feature
+        :pr: 3227
+
+        Adds ``LITESTAR_`` prefix before the ``WEB_CONCURRENCY`` environment option
+
+    .. change:: Warn about ambiguous default values in parameter specifications
+        :type: feature
+        :pr: 3283
+
+        As discussed in https://github.com/litestar-org/litestar/pull/3280#issuecomment-2026878325,
+        we want to warn about, and eventually disallow specifying parameter defaults in two places.
+
+        To achieve this, 2 warnings are added:
+
+        - A deprecation warning if a default is specified when using
+          ``Annotated``: ``param: Annotated[int, Parameter(..., default=1)]`` instead of
+          ``param: Annotated[int, Parameter(...)] = 1``
+        - An additional warning in the above case if two default values are specified which do not match in value:
+          ``param: Annotated[int, Parameter(..., default=1)] = 2``
+
+        In a future version, the first one should result in an exception at startup, preventing both of these scenarios.
+
+    .. change:: Support declaring :class:`~.dto.field.DTOField` via ``Annotated``
+        :type: feature
+        :pr: 3289
+        :issue: 2351
+
+        Deprecates passing :class:`~.dto.field.DTOField` via ``[pydantic]`` extra.
+
+    .. change:: Add "TRACE" to HttpMethod enum
+        :type: feature
+        :pr: 3294
+
+        Adds the ``TRACE`` HTTP method to :class:`~.enums.HttpMethod` enum
+
+    .. change:: Pydantic DTO non-instantiable types
+        :type: feature
+        :pr: 3296
+
+        Simplifies the type that is applied to DTO transfer models for certain Pydantic field types.
+        It addresses ``JsonValue``, ``EmailStr``, ``IPvAnyAddress``/``IPvAnyNetwork``/``IPvAnyInterface`` types by
+        using appropriate :term:`type annotations <annotation>` on the transfer models to ensure compatibility with
+        :doc:`msgspec:index` serialization and deserialization.
+
+.. changelog:: 2.7.1
+    :date: 2024-03-22
+
+    .. change:: replace TestClient.__enter__ return type with Self
+        :type: bugfix
+        :pr: 3194
+
+        ``TestClient.__enter__`` and ``AsyncTestClient.__enter__`` return ``Self``.
+        If you inherit ``TestClient``, its ``__enter__`` method should return derived class's instance
+        unless override the method. ``Self`` is a more flexible return type.
+
+    .. change:: use the full path for fetching openapi.json
+        :type: bugfix
+        :pr: 3196
+        :issue: 3047
+
+        This specifies the ``spec-url`` and ``apiDescriptionUrl`` of Rapidoc, and Stoplight Elements as absolute
+        paths relative to the root of the site.
+
+        This ensures that both of the send the request for the JSON of the OpenAPI schema to the right endpoint.
+
+    .. change:: JSON schema ``examples`` were OpenAPI formatted
+        :type: bugfix
+        :pr: 3224
+        :issue: 2849
+
+        The generated ``examples`` in *JSON schema* objects were formatted as:
+
+        .. code-block:: json
+
+            "examples": {
+              "some-id": {
+                "description": "Lorem ipsum",
+                "value": "the real beef"
+              }
+           }
+
+        However, above is OpenAPI example format, and must not be used in JSON schema
+        objects. Schema objects follow different formatting:
+
+        .. code-block:: json
+
+            "examples": [
+              "the real beef"
+           ]
+
+        * Explained in `APIs You Won't Hate blog post <https://medium.com/apis-you-wont-hate/openapi-v3-1-and-json-schema-2019-09-6862cf3db959>`_.
+        * `Schema objects spec <https://spec.openapis.org/oas/v3.1.0#schema-object>`_
+        * `OpenAPI example format spec <https://spec.openapis.org/oas/v3.1.0#example-object>`_.
+
+        This is referenced at least from parameters, media types and components.
+
+        The technical change here is to define ``Schema.examples`` as ``list[Any]`` instead
+        of ``list[Example]``. Examples can and must still be defined as ``list[Example]``
+        for OpenAPI objects (e.g. ``Parameter``, ``Body``) but for JSON schema ``examples``
+        the code now internally generates/converts ``list[Any]`` format instead.
+
+        Extra confusion here comes from the OpenAPI 3.0 vs OpenAPI 3.1 difference.
+        OpenAPI 3.0 only allowed ``example`` (singular) field in schema objects.
+        OpenAPI 3.1 supports the full JSON schema 2020-12 spec and so ``examples`` array
+        in schema objects.
+
+        Both ``example`` and ``examples`` seem to be supported, though the former is marked
+        as deprecated in the latest specs.
+
+        This can be tested over at https://editor-next.swagger.io by loading up the
+        OpenAPI 3.1 Pet store example. Then add ``examples`` in ``components.schemas.Pet``
+        using the both ways and see the Swagger UI only render the example once it's
+        properly formatted (it ignores is otherwise).
+
+    .. change:: queue_listener handler for Python >= 3.12
+        :type: bugfix
+        :pr: 3185
+        :issue: 2954
+
+        - Fix the ``queue_listener`` handler for Python 3.12
+
+        Python 3.12 introduced a new way to configure ``QueueHandler`` and ``QueueListener`` via
+        ``logging.config.dictConfig()``. As described in the
+        `logging documentation <https://docs.python.org/3/library/logging.config.html#configuring-queuehandler-and-queuelistener>`_.
+
+        The listener still needs to be started & stopped, as previously.
+        To do so, we've introduced ``LoggingQueueListener``.
+
+        And as stated in the doc:
+        * Any custom queue handler and listener classes will need to be defined with the same initialization signatures
+        as `QueueHandler <https://docs.python.org/3/library/logging.handlers.html#logging.handlers.QueueHandler>`_ and
+        `QueueListener <https://docs.python.org/3/library/logging.handlers.html#logging.handlers.QueueListener>`_.
+
+    .. change:: extend openapi meta collected from domain models
+        :type: bugfix
+        :pr: 3237
+        :issue: 3232
+
+        :class:`~litestar.typing.FieldDefinition` s pack any OpenAPI metadata onto a ``KwargDefinition`` instance when
+        types are parsed from domain models.
+
+        When we produce a DTO type, we transfer this meta from the `KwargDefinition` to a `msgspec.Meta` instance,
+        however so far this has only included constraints, not attributes such as descriptions, examples and title.
+
+        This change ensures that we transfer the openapi meta for the complete intersection of fields that exist on b
+        oth `KwargDefinition` and `Meta`.
+
+    .. change:: kwarg ambiguity exc msg for path params
+        :type: bugfix
+        :pr: 3261
+
+        Fixes the way we construct the exception message when there is a kwarg ambiguity detected for path parameters.
+
+.. changelog:: 2.7.0
+    :date: 2024-03-10
+
+    .. change:: missing cors headers in response
+        :type: bugfix
+        :pr: 3179
+        :issue: 3178
+
+        Set CORS Middleware headers as per spec.
+        Addresses issues outlined on https://github.com/litestar-org/litestar/issues/3178
+
+    .. change:: sending empty data in sse in js client
+        :type: bugfix
+        :pr: 3176
+
+        Fix an issue with SSE where JavaScript clients fail to receive an event without data.
+        The `spec <https://html.spec.whatwg.org/multipage/server-sent-events.html#parsing-an-event-stream>`_ is
+        not clear in whether or not an event without data is ok.
+        Considering the EventSource "client" is not ok with it, and that it's so easy DX-wise to make the mistake not
+        explicitly sending it, this change fixes it by defaulting to the empty-string
+
+    .. change:: Support ``ResponseSpec(..., examples=[...])``
+        :type: feature
+        :pr: 3100
+        :issue: 3068
+
+        Allow defining custom examples for the responses via ``ResponseSpec``.
+        The examples set this way are always generated locally, for each response:
+        Examples that go within the schema definition cannot be set by this.
+
+        .. code-block:: json
+
+            {
+            "paths": {
+                "/": {
+                "get": {
+                    "responses": {
+                    "200": {
+                        "content": {
+                        "application/json": {
+                            "schema": {},
+                            "examples": "..."}}
+                        }}
+                    }}
+                }
+            }
+
+
+    .. change:: support "+json"-suffixed response media types
+        :type: feature
+        :pr: 3096
+        :issue: 3088
+
+        Automatically encode responses with media type of the form ``application/<something>+json`` as json.
+
+    .. change:: Allow reusable ``Router`` instances
+        :type: feature
+        :pr: 3103
+        :issue: 3012
+
+        It was not possible to re-attach a router instance once it was attached. This
+        makes that possible.
+
+        The router instance now gets deepcopied when it's registered to another router.
+
+        The application startup performance gets a hit here, but the same approach is
+        already used for controllers and handlers, so this only harmonizes the
+        implementation.
+
+    .. change:: only display path in ``ValidationException``\ s
+        :type: feature
+        :pr: 3064
+        :issue: 3061
+
+        Fix an issue where ``ValidationException`` exposes the full URL in the error response, leaking internal IP(s) or other similar infra related information.
+
+    .. change:: expose ``request_class`` to other layers
+        :type: feature
+        :pr: 3125
+
+        Expose ``request_class`` to other layers
+
+    .. change:: expose ``websocket_class``
+        :type: feature
+        :pr: 3152
+
+        Expose ``websocket_class`` to other layers
+
+    .. change:: Add ``type_decoders`` to Router and route handlers
+        :type: feature
+        :pr: 3153
+
+        Add ``type_decoders`` to ``__init__`` method for handler, routers and decorators to keep consistency with ``type_encoders`` parameter
+
+    .. change:: Pass ``type_decoders`` in ``WebsocketListenerRouteHandler``
+        :type: feature
+        :pr: 3162
+
+        Pass ``type_decoders`` to parent's ``__init__`` in ``WebsocketListenerRouteHandler`` init, otherwise ``type_decoders`` will be ``None``
+        replace params order in docs, ``__init__`` (`decoders` before `encoders`)
+
+    .. change:: 3116 enhancement session middleware
+        :type: feature
+        :pr: 3127
+        :issue: 3116
+
+        For server side sessions, the session id is now generated before the route handler. Thus, on first visit, a session id will be available inside the route handler's scope instead of afterwards
+        A new abstract method ``get_session_id`` was added to ``BaseSessionBackend`` since this method will be called for both ClientSideSessions and ServerSideSessions. Only for ServerSideSessions it will return an actual id.
+        Using ``request.set_session(...)`` will return the session id for ServerSideSessions and None for ClientSideSessions
+        The session auth MiddlewareWrapper now refers to the Session Middleware via the configured backend, instead of it being hardcoded
+
+    .. change:: make random seed for openapi example generation configurable
+        :type: feature
+        :pr: 3166
+
+        Allow random seed used for generating the examples in the OpenAPI schema (when ``create_examples`` is set to ``True``) to be configured by the user.
+        This is related to https://github.com/litestar-org/litestar/issues/3059 however whether this change is enough to close that issue or not is not confirmed.
+
+    .. change:: generate openapi components schemas in a deterministic order
+        :type: feature
+        :pr: 3172
+
+        Ensure that the insertion into the ``Components.schemas`` dictionary of the OpenAPI spec will be in alphabetical order (based on the normalized name of the ``Schema``).
+
+
+.. changelog:: 2.6.3
+    :date: 2024-03-04
+
+    .. change:: Pydantic V1 schema generation for PrivateAttr in GenericModel
+        :type: bugfix
+        :pr: 3161
+        :issue: 3150
+
+        Fixes a bug that caused a ``NameError`` when a Pydantic V1 ``GenericModel`` has a private attribute of which the type annotation cannot be resolved at the time of schema generation.
+
+
+.. changelog:: 2.6.2
+    :date: 2024/03/02
+
+    .. change:: DTO msgspec meta constraints not being included in transfer model
+        :type: bugfix
+        :pr: 3113
+        :issue: 3026
+
+        Fix an issue where msgspec constraints set in ``msgspec.Meta`` would not be
+        honoured by the DTO.
+
+        In the given example, the ``min_length=3`` constraint would be ignored by the
+        model generated by ``MsgspecDTO``.
+
+        .. code-block:: python
+
+            from typing import Annotated
+
+            import msgspec
+            from litestar import post, Litestar
+            from litestar.dto import MsgspecDTO
+
+            class Request(msgspec.Struct):
+                foo: Annotated[str, msgspec.Meta(min_length=3)]
+
+            @post("/example/", dto=MsgspecDTO[Request])
+            async def example(data: Request) -> Request:
+                return data
+
+        Constraints like these are now transferred.
+
+        Two things to note are:
+
+        - For DTOs with ``DTOConfig(partial=True)`` we cannot transfer the length
+          constraints as they are only supported on fields that as subtypes of ``str``,
+          ``bytes`` or a collection type, but ``partial=True`` sets all fields as
+          ``T | UNSET``
+        - For the ``PiccoloDTO``, fields which are not required will also drop the
+          length constraints. A warning about this will be raised here.
+
+    .. change:: Missing control header for static files
+        :type: bugfix
+        :pr: 3131
+        :issue: 3129
+
+        Fix an issue where a ``cache_control`` that is set on a router created by
+        ``create_static_files_router`` wasn't passed to the generated handler
+
+    .. change:: Fix OpenAPI schema generation for Pydantic v2 constrained ``Secret`` types
+        :type: bugfix
+        :pr: 3149
+        :issue: 3148
+
+        Fix schema generation for ``pydantic.SecretStr`` and ``pydantic.SecretBytes``
+        which, when constrained, would not be recognised as such with Pydantic V2 since
+        they're not subtypes of their respective bases anymore.
+
+    .. change:: Fix OpenAPI schema generation for Pydantic private attributes
+        :type: bugfix
+        :pr: 3151
+        :issue: 3150
+
+        Fix a bug that caused a :exc:`NameError` when trying to resolve forward
+        references in Pydantic private fields.
+
+        Although private fields were respected excluded from the schema, it was still
+        attempted to extract their type annotation. This was fixed by not relying on
+        ``typing.get_type_hints`` to get the type information, but instead using
+        Pydantic's own APIs, allowing us to only extract information about the types of
+        relevant fields.
+
+    .. change:: OpenAPI description not set for UUID based path parameters in OpenAPI
+        :type: bugfix
+        :pr: 3118
+        :issue: 2967
+
+        Resolved a bug where the description was not set for UUID-based path
+        parameters in OpenAPI due to the reason mentioned in the issue.
+
+    .. change:: Fix ``RedisStore`` client created with ``with_client`` unclosed
+        :type: bugfix
+        :pr: 3111
+        :issue: 3083
+
+        Fix a bug where, when a :class:`~litestar.stores.redis.RedisStore` was created
+        with the :meth:`~litestar.stores.redis.RedisStore.with_client` method, that
+        client wasn't closed explicitly
+
+
 .. changelog:: 2.6.1
     :date: 2024/02/14
 
@@ -639,12 +1207,12 @@
         event listeners are now not propagated anymore but handled by the backend and
         logged instead.
 
-    .. change:: Fix OpenAPI schema for pydantic computed fields
+    .. change:: Fix OpenAPI schema for Pydantic computed fields
         :type: bugfix
         :pr: 2797
         :issue: 2792
 
-        Add support for including computed fields in schemas generated from pydantic
+        Add support for including computed fields in schemas generated from Pydantic
         models.
 
 .. changelog:: 2.4.1
@@ -2177,7 +2745,7 @@
         :pr: 1865
         :issue: 1860
 
-        A regression has been fixed in the pydantic signature model logic, which was
+        A regression has been fixed in the Pydantic signature model logic, which was
         caused by the renaming of ``regex`` to ``pattern``, which would lead to the
         :attr:`~litestar.params.KwargDefinition.pattern` not being validated.
 
@@ -3112,12 +3680,12 @@
             If you rely on SQLAlchemy 1, you can stick to Starlite *1.51* for now. In the future, a SQLAlchemy 1 plugin
             may be released as a standalone package.
 
-    .. change:: Fix inconsistent parsing of unix timestamp between pydantic and cattrs
+    .. change:: Fix inconsistent parsing of unix timestamp between Pydantic and cattrs
         :type: bugfix
         :pr: 1492
         :issue: 1491
 
-        Timestamps parsed as :class:`date <datetime.date>` with pydantic return a UTC date, while cattrs implementation
+        Timestamps parsed as :class:`date <datetime.date>` with Pydantic return a UTC date, while cattrs implementation
         return a date with the local timezone.
 
         This was corrected by forcing dates to UTC when being parsed by attrs.
@@ -3943,4 +4511,4 @@
         :issue: 1149
 
         A middleware's ``exclude`` parameter would sometimes not be honoured if the path was used to serve static files
-        using ``StaticFilesConfig``.
+        using ``StaticFilesConfig``

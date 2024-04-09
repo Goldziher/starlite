@@ -107,3 +107,8 @@ def get_formatted_examples(field_definition: FieldDefinition, examples: Sequence
     name = name.lower()
 
     return {f"{name}-example-{i}": example for i, example in enumerate(examples, 1)}
+
+
+def get_json_schema_formatted_examples(examples: Sequence[Example]) -> list[Any]:
+    """Format the examples into the JSON schema format."""
+    return [example.value for example in examples]

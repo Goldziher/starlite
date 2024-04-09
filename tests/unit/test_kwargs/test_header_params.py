@@ -27,9 +27,9 @@ def test_header_params(
     test_path = "/test"
 
     @get(path=test_path)
-    def test_method(special_header: t_type = param) -> None:  # type: ignore
+    def test_method(special_header: t_type = param) -> None:  # type: ignore[valid-type]
         if special_header:
-            assert special_header in (param_dict.get("special-header"), int(param_dict.get("special-header")))  # type: ignore
+            assert special_header in (param_dict.get("special-header"), int(param_dict.get("special-header")))  # type: ignore[arg-type]
 
     with create_test_client(test_method) as client:
         response = client.get(test_path, headers=param_dict)

@@ -1,3 +1,5 @@
+from typing import AsyncIterator
+
 import pytest
 
 from litestar import Litestar, MediaType, get
@@ -21,12 +23,12 @@ async def test_health_check() -> None:
 
 
 @pytest.fixture(scope="function")
-def test_client() -> AsyncTestClient:
-    return AsyncTestClient(app=app)
+async def test_client() -> AsyncIterator[AsyncTestClient[Litestar]]:
+    async with AsyncTestClient(app=app) as client:
+        yield client
 
 
-async def test_health_check_with_fixture(test_client: AsyncTestClient) -> None:
-    async with test_client as client:
-        response = await client.get("/health-check")
-        assert response.status_code == HTTP_200_OK
-        assert response.text == "healthy"
+async def test_health_check_with_fixture(test_client: AsyncTestClient[Litestar]) -> None:
+    response = await test_client.get("/health-check")
+    assert response.status_code == HTTP_200_OK
+    assert response.text == "healthy"

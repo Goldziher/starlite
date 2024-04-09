@@ -57,8 +57,7 @@ def response_handler() -> Response[Any]:
     return Response(content=b"")
 
 
-class Sub(C):
-    ...
+class Sub(C): ...
 
 
 @pytest.mark.parametrize(
@@ -212,11 +211,9 @@ def test_is_class_var(value: Any, expected: bool) -> None:
 
 
 class AsyncTestCallable:
-    async def __call__(self, param1: int, param2: int) -> None:
-        ...
+    async def __call__(self, param1: int, param2: int) -> None: ...
 
-    async def method(self, param1: int, param2: int) -> None:
-        ...
+    async def method(self, param1: int, param2: int) -> None: ...
 
 
 async def async_generator() -> AsyncGenerator[int, None]:
@@ -224,19 +221,15 @@ async def async_generator() -> AsyncGenerator[int, None]:
 
 
 class SyncTestCallable:
-    def __call__(self, param1: int, param2: int) -> None:
-        ...
+    def __call__(self, param1: int, param2: int) -> None: ...
 
-    def method(self, param1: int, param2: int) -> None:
-        ...
+    def method(self, param1: int, param2: int) -> None: ...
 
 
-async def async_func(param1: int, param2: int) -> None:
-    ...
+async def async_func(param1: int, param2: int) -> None: ...
 
 
-def sync_func(param1: int, param2: int) -> None:
-    ...
+def sync_func(param1: int, param2: int) -> None: ...
 
 
 async_callable = AsyncTestCallable()
@@ -291,8 +284,7 @@ class GenericDataclass(Generic[T]):
     foo: T
 
 
-class NonDataclass:
-    ...
+class NonDataclass: ...
 
 
 @pytest.mark.parametrize(

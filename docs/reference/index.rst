@@ -16,7 +16,7 @@ API reference
     controller
     concurrency
     data_extractors
-    datastructures
+    datastructures/index
     di
     dto/index
     enums
@@ -28,7 +28,7 @@ API reference
     openapi/index
     pagination
     params
-    plugins
+    plugins/index
     repository/index
     response/index
     router

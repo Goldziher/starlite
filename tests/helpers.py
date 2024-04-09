@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import atexit
 import inspect
+import logging
 import random
 import sys
-from contextlib import AbstractContextManager
-from typing import Any, AsyncContextManager, Awaitable, ContextManager, TypeVar, cast, overload
+from contextlib import AbstractContextManager, contextmanager
+from typing import Any, AsyncContextManager, Awaitable, ContextManager, Generator, TypeVar, cast, overload
+
+import picologging
+from _pytest.logging import LogCaptureHandler, _LiveLoggingNullHandler
 
 from litestar._openapi.schema_generation import SchemaCreator
 from litestar._openapi.schema_generation.plugins import openapi_schema_plugins
@@ -28,14 +33,21 @@ else:
     randbytes = RANDOM.randbytes
 
 
-@overload
-async def maybe_async(obj: Awaitable[T]) -> T:
-    ...
+if sys.version_info >= (3, 12):
+    getHandlerByName = logging.getHandlerByName
+else:
+    from logging import _handlers  # type: ignore[attr-defined]
+
+    def getHandlerByName(name: str) -> Any:
+        return _handlers.get(name)
 
 
 @overload
-async def maybe_async(obj: T) -> T:
-    ...
+async def maybe_async(obj: Awaitable[T]) -> T: ...
+
+
+@overload
+async def maybe_async(obj: T) -> T: ...
 
 
 async def maybe_async(obj: Awaitable[T] | T) -> T:
@@ -68,3 +80,29 @@ def get_schema_for_field_definition(
     if isinstance(result, Schema):
         return result
     return creator.schema_registry.from_reference(result).schema
+
+
+@contextmanager
+def cleanup_logging_impl() -> Generator:
+    # Reset root logger (`logging` module)
+    std_root_logger: logging.Logger = logging.getLogger()
+    for std_handler in std_root_logger.handlers:
+        # Don't interfere with PyTest handler config
+        if not isinstance(std_handler, (_LiveLoggingNullHandler, LogCaptureHandler)):
+            std_root_logger.removeHandler(std_handler)
+
+    # Reset root logger (`picologging` module)
+    pico_root_logger: picologging.Logger = picologging.getLogger()
+    for pico_handler in pico_root_logger.handlers:
+        pico_root_logger.removeHandler(pico_handler)
+
+    yield
+
+    # Stop queue_listener listener (mandatory for the 'logging' module with Python 3.12,
+    # else the test suite would hang on at the end of the tests and some tests would fail)
+    queue_listener_handler = getHandlerByName("queue_listener")
+    if queue_listener_handler and hasattr(queue_listener_handler, "listener"):
+        atexit.unregister(queue_listener_handler.listener.stop)
+        queue_listener_handler.listener.stop()
+        queue_listener_handler.close()
+        del queue_listener_handler

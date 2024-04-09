@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
@@ -11,29 +10,6 @@ from litestar.cli._utils import LitestarEnv, _path_to_dotted_path
 from .conftest import CreateAppFileFixture
 
 pytestmark = pytest.mark.xdist_group("cli_autodiscovery")
-
-
-@pytest.mark.parametrize("env_name,attr_name", [("LITESTAR_DEBUG", "debug"), ("LITESTAR_RELOAD", "reload")])
-@pytest.mark.parametrize(
-    "env_value,expected_value",
-    [("true", True), ("True", True), ("1", True), ("0", False), (None, False)],
-)
-def test_litestar_env_from_env_booleans(
-    monkeypatch: MonkeyPatch,
-    app_file: Path,
-    attr_name: str,
-    env_name: str,
-    env_value: Optional[str],
-    expected_value: bool,
-) -> None:
-    monkeypatch.delenv(env_name, raising=False)
-    if env_value is not None:
-        monkeypatch.setenv(env_name, env_value)
-
-    env = LitestarEnv.from_env(f"{app_file.stem}:app")
-
-    assert getattr(env, attr_name) is expected_value
-    assert isinstance(env.app, Litestar)
 
 
 def test_litestar_env_from_env_port(monkeypatch: MonkeyPatch, app_file: Path) -> None:

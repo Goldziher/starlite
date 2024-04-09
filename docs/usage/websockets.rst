@@ -249,3 +249,25 @@ encapsulate more complex logic.
 
         .. literalinclude:: /examples/websockets/listener_class_based_async.py
             :language: python
+
+
+Custom WebSocket
+----------------
+
+.. versionadded:: 2.7.0
+
+Litestar supports custom ``websocket_class`` instances, which can be used to further configure the default :class:`WebSocket`.
+The example below illustrates how to implement custom websocket class for the whole application.
+
+.. dropdown:: Example of a custom websocket at the application level
+
+    .. literalinclude:: /examples/websockets/custom_websocket.py
+        :language: python
+
+.. admonition:: Layered architecture
+
+   WebSocket classes are part of Litestar's layered architecture, which means you can
+   set a websocket class on every layer of the application. If you have set a webscoket
+   class on multiple layers, the layer closest to the route handler will take precedence.
+
+   You can read more about this in the :ref:`usage/applications:layered architecture` section

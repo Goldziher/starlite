@@ -24,8 +24,6 @@ if TYPE_CHECKING:
 class OpenTelemetryInstrumentationMiddleware(AbstractMiddleware):
     """OpenTelemetry Middleware."""
 
-    __slots__ = ("open_telemetry_middleware",)
-
     def __init__(self, app: ASGIApp, config: OpenTelemetryConfig) -> None:
         """Middleware that adds OpenTelemetry instrumentation to the application.
 
@@ -57,4 +55,4 @@ class OpenTelemetryInstrumentationMiddleware(AbstractMiddleware):
         Returns:
             None
         """
-        await self.open_telemetry_middleware(scope, receive, send)
+        await self.open_telemetry_middleware(scope, receive, send)  # type: ignore[arg-type] # pyright: ignore[reportGeneralTypeIssues]

@@ -41,14 +41,12 @@ try:
 
     structlog_installed = True
 except ImportError:
-    BindableLogger = object  # type: ignore
+    BindableLogger = object  # type: ignore[assignment, misc]
     structlog_installed = False
 
 
 class LoggingMiddleware(AbstractMiddleware):
     """Logging middleware."""
-
-    __slots__ = ("config", "logger", "request_extractor", "response_extractor", "is_struct_logger")
 
     logger: Logger
 
@@ -345,8 +343,7 @@ class LoggingMiddlewareConfig:
 
 
                 @get("/")
-                def my_handler(request: Request) -> None:
-                    ...
+                def my_handler(request: Request) -> None: ...
 
 
                 app = Litestar(

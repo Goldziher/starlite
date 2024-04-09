@@ -19,6 +19,7 @@ from uuid import UUID
 
 import msgspec
 
+from litestar.datastructures.secret_values import SecretBytes, SecretString
 from litestar.exceptions import SerializationException
 from litestar.types import Empty, EmptyType, Serializer, TypeDecodersSequence
 
@@ -52,6 +53,8 @@ DEFAULT_TYPE_ENCODERS: TypeEncodersMap = {
     deque: list,
     Decimal: lambda val: int(val) if val.as_tuple().exponent >= 0 else float(val),
     Pattern: lambda val: val.pattern,
+    SecretBytes: lambda val: val.get_obscured().decode("utf-8"),
+    SecretString: lambda val: val.get_obscured(),
     # support subclasses of stdlib types, If no previous type matched, these will be
     # the last type in the mro, so we use this to (attempt to) convert a subclass into
     # its base class. # see https://github.com/jcrist/msgspec/issues/248
@@ -115,6 +118,12 @@ def default_deserializer(
     if issubclass(target_type, (Path, PurePath, ImmutableState, UUID)):
         return target_type(value)
 
+    if issubclass(target_type, SecretBytes) and isinstance(value, (bytes, str)):
+        return SecretBytes(value.encode("utf-8") if isinstance(value, str) else value)
+
+    if issubclass(target_type, SecretString) and isinstance(value, str):
+        return SecretString(value)
+
     raise TypeError(f"Unsupported type: {type(value)!r}")
 
 
@@ -144,26 +153,22 @@ def encode_json(value: Any, serializer: Callable[[Any], Any] | None = None) -> b
 
 
 @overload
-def decode_json(value: str | bytes) -> Any:
-    ...
+def decode_json(value: str | bytes) -> Any: ...
 
 
 @overload
-def decode_json(value: str | bytes, type_decoders: TypeDecodersSequence | None) -> Any:
-    ...
+def decode_json(value: str | bytes, type_decoders: TypeDecodersSequence | None) -> Any: ...
 
 
 @overload
-def decode_json(value: str | bytes, target_type: type[T]) -> T:
-    ...
+def decode_json(value: str | bytes, target_type: type[T]) -> T: ...
 
 
 @overload
-def decode_json(value: str | bytes, target_type: type[T], type_decoders: TypeDecodersSequence | None) -> T:
-    ...
+def decode_json(value: str | bytes, target_type: type[T], type_decoders: TypeDecodersSequence | None) -> T: ...
 
 
-def decode_json(  # type: ignore
+def decode_json(  # type: ignore[misc]
     value: str | bytes,
     target_type: type[T] | EmptyType = Empty,  # pyright: ignore
     type_decoders: TypeDecodersSequence | None = None,
@@ -213,23 +218,19 @@ def encode_msgpack(value: Any, serializer: Callable[[Any], Any] | None = default
 
 
 @overload
-def decode_msgpack(value: bytes) -> Any:
-    ...
+def decode_msgpack(value: bytes) -> Any: ...
 
 
 @overload
-def decode_msgpack(value: bytes, type_decoders: TypeDecodersSequence | None) -> Any:
-    ...
+def decode_msgpack(value: bytes, type_decoders: TypeDecodersSequence | None) -> Any: ...
 
 
 @overload
-def decode_msgpack(value: bytes, target_type: type[T]) -> T:
-    ...
+def decode_msgpack(value: bytes, target_type: type[T]) -> T: ...
 
 
 @overload
-def decode_msgpack(value: bytes, target_type: type[T], type_decoders: TypeDecodersSequence | None) -> T:
-    ...
+def decode_msgpack(value: bytes, target_type: type[T], type_decoders: TypeDecodersSequence | None) -> T: ...
 
 
 def decode_msgpack(  # type: ignore[misc]

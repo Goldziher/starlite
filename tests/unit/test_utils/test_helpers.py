@@ -8,12 +8,10 @@ from litestar.utils.helpers import get_name, unique_name_for_scope, unwrap_parti
 T = TypeVar("T")
 
 
-class GenericFoo(Generic[T]):
-    ...
+class GenericFoo(Generic[T]): ...
 
 
-class Foo:
-    ...
+class Foo: ...
 
 
 @pytest.mark.parametrize(

@@ -38,7 +38,7 @@ def test_response_headers() -> None:
         route_handlers=[first_router, second_router],
     )
 
-    route_handler, _ = app.routes[0].route_handler_map[HttpMethod.GET]  # type: ignore
+    route_handler, _ = app.routes[0].route_handler_map[HttpMethod.GET]  # type: ignore[union-attr]
     resolved_headers = {header.name: header for header in route_handler.resolve_response_headers()}
     assert resolved_headers["first"].value == local_first.value
     assert resolved_headers["second"].value == controller_second.value
@@ -184,6 +184,6 @@ def test_explicit_headers_override_response_headers(
 
     app = Litestar(route_handlers=[my_handler])
 
-    route_handler, _ = app.routes[0].route_handler_map[HttpMethod.GET]  # type: ignore
+    route_handler, _ = app.routes[0].route_handler_map[HttpMethod.GET]  # type: ignore[union-attr]
     resolved_headers = {header.name: header for header in route_handler.resolve_response_headers()}
     assert resolved_headers[header.HEADER_NAME].value == header.to_header()

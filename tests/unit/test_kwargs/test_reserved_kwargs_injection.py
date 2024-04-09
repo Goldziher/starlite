@@ -49,10 +49,10 @@ def test_application_immutable_state_injection() -> None:
 @pytest.mark.parametrize("state_typing", (State, CustomState))
 def test_application_state_injection(state_typing: Type[State]) -> None:
     @get("/", media_type=MediaType.TEXT)
-    def route_handler(state: state_typing) -> str:  # type: ignore
+    def route_handler(state: state_typing) -> str:  # type: ignore[valid-type]
         assert state
-        state.called = True  # type: ignore
-        return cast("str", state.msg)  # type: ignore
+        state.called = True  # type: ignore[attr-defined]
+        return cast("str", state.msg)  # type: ignore[attr-defined]
 
     with create_test_client(route_handler, state=State({"called": False})) as client:
         client.app.state.msg = "hello"

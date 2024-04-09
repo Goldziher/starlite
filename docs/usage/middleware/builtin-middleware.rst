@@ -42,29 +42,79 @@ This middleware prevents CSRF attacks by doing the following:
 
 1. On the first "safe" request (e.g GET) - set a cookie with a special token created by the server
 2. On each subsequent "unsafe" request (e.g POST) - make sure the request contains either a
-    form field or an additional header that has this token
-
+    form field or an additional header that has this token (more on this below)
 
 To enable CSRF protection in a Litestar application simply pass an instance of
 :class:`CSRFConfig <.config.csrf.CSRFConfig>` to the Litestar constructor:
 
 .. code-block:: python
 
-    from litestar import Litestar
+    from litestar import Litestar, get, post
     from litestar.config.csrf import CSRFConfig
+
+
+    @get()
+    async def get_resource() -> str:
+        # GET is one of the safe methods
+        return "some_resource"
+
+    @post("{id:int}")
+    async def create_resource(id: int) -> bool:
+        # POST is one of the unsafe methods
+        return True
 
     csrf_config = CSRFConfig(secret="my-secret")
 
-    app = Litestar(route_handlers=[...], csrf_config=csrf_config)
+    app = Litestar([get_resource, create_resource], csrf_config=csrf_config)
 
+
+The following snippet demonstrates how to change the cookie name to "some-cookie-name" and header name to "some-header-name".
+
+.. code-block:: python
+
+    csrf_config = CSRFConfig(secret="my-secret", cookie_name='some-cookie-name', header_name='some-header-name')
+
+
+A CSRF protected route can be accessed by any client that can make a request with either the header or form-data key.
+
+
+.. note::
+
+    The form-data key can not be currently configured. It should only be passed via the key "_csrf_token"
+
+In Python, any client such as `requests <https://github.com/psf/requests>`_ or `httpx <https://github.com/encode/httpx>`_ can be used.
+The usage of clients or sessions is recommended due to the cookie persistence it offers across requests.
+The following is an example using ``httpx.Client``.
+
+.. code-block:: python
+
+    import httpx
+
+
+    with httpx.Client() as client:
+        get_response = client.get("http://localhost:8000/")
+
+        # "csrftoken" is the default cookie name
+        csrf = get_response.cookies["csrftoken"]
+
+        # "x-csrftoken" is the default header name
+        post_response_using_header = client.post("http://localhost:8000/", headers={"x-csrftoken": csrf})
+        assert post_response_using_header.status_code == 201
+
+        # "_csrf_token" is the default *non* configurable form-data key
+        post_response_using_form_data = client.post("http://localhost:8000/1", data={"_csrf_token": csrf})
+        assert post_response_using_form_data.status_code == 201
+
+        # despite the header being passed, this request will fail as it does not have a cookie in its session
+        # note the usage of ``httpx.post`` instead of ``client.post``
+        post_response_with_no_persisted_cookie = httpx.post("http://localhost:8000/1", headers={"x-csrftoken": csrf})
+        assert post_response_with_no_persisted_cookie.status_code == 403
+        assert "CSRF token verification failed" in post_response_with_no_persisted_cookie.text
 
 Routes can be marked as being exempt from the protection offered by this middleware via
 :ref:`handler opts <handler_opts>`
 
 .. code-block:: python
-
-    from litestar import post
-
 
     @post("/post", exclude_from_csrf=True)
     def handler() -> None: ...
@@ -73,6 +123,12 @@ Routes can be marked as being exempt from the protection offered by this middlew
 If you need to exempt many routes at once you might want to consider using the
 :attr:`exclude <.config.csrf.CSRFConfig.exclude>` kwarg which accepts list of path
 patterns to skip in the middleware.
+
+.. seealso::
+
+    * `Safe and Unsafe (HTTP Methods) <https://developer.mozilla.org/en-US/docs/Glossary/Safe/HTTP>`_
+    * `HTTPX Clients <https://www.python-httpx.org/advanced/clients>`_
+    * `Requests Session <https://requests.readthedocs.io/en/latest/user/advanced>`_
 
 
 Allowed Hosts

@@ -102,8 +102,14 @@ pre-commit: 										## Runs pre-commit hooks; includes ruff formatting and lin
 	@$(PDM) run pre-commit run --all-files
 	@echo "=> Pre-commit complete"
 
+.PHONY: slots-check
+slots-check: 										## Check for slots usage in classes
+	@echo "=> Checking for slots usage in classes"
+	@$(PDM) run slotscheck litestar
+	@echo "=> Slots check complete"
+
 .PHONY: lint
-lint: pre-commit type-check 						## Run all linting
+lint: pre-commit type-check slots-check				## Run all linting
 
 .PHONY: coverage
 coverage:  											## Run the tests and generate coverage report
@@ -146,7 +152,7 @@ docs-clean: 										## Dump the existing built docs
 
 docs-serve: docs-clean 								## Serve the docs locally
 	@echo "=> Serving documentation"
-	$(PDM) run sphinx-autobuild docs docs/_build/ -j auto --watch polyfactory --watch docs --watch tests --watch CONTRIBUTING.rst --port 8002
+	$(PDM) run sphinx-autobuild docs docs/_build/ -j auto --watch litestar --watch docs --watch tests --watch CONTRIBUTING.rst --port 8002
 
 docs: docs-clean 									## Dump the existing built docs and rebuild them
 	@echo "=> Building documentation"

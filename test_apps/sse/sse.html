@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+<h2>Server-Sent Events</h2>
+<div id="output"></div>
+<script>
+    if (typeof EventSource !== "undefined") {
+        var eventSource = new EventSource("http://localhost:8000/test_sse_empty");
+        eventSource.onmessage = function (event) {
+            console.log(event.data);
+            document.getElementById("output").innerHTML += event.data + "<br>";
+        };
+        eventSource.addEventListener("empty", (ev) => {
+            console.log("empty arrived");
+            document.getElementById("output").innerHTML += "endx arrived" + "<br>";
+            eventSource.close();
+        });
+
+        eventSource.addEventListener("error", (err) => {
+            console.error(err)
+            document.getElementById("output").innerHTML += "error: " + err + "<br>";
+        })
+    } else {
+        document.getElementById("output").innerHTML =
+            // If browser does not support SSE
+            "Sorry, the browser does not support SSE";
+    }
+</script>
+</body>
+</html>

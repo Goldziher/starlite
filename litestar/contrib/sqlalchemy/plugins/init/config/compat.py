@@ -13,8 +13,7 @@ EngineT_co = TypeVar("EngineT_co", bound="Engine | AsyncEngine", covariant=True)
 
 
 class HasGetEngine(Protocol[EngineT_co]):
-    def get_engine(self) -> EngineT_co:
-        ...
+    def get_engine(self) -> EngineT_co: ...
 
 
 class _CreateEngineMixin(Generic[EngineT_co]):

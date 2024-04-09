@@ -18,6 +18,7 @@ from litestar.cli._utils import (
     LitestarEnv,
     console,
     create_ssl_files,
+    isatty,
     remove_default_schema_routes,
     remove_routes_with_patterns,
     show_app_info,
@@ -103,6 +104,15 @@ def _run_uvicorn_in_subprocess(
     )
 
 
+class CommaSplittedPath(click.Path):
+    """A Click Path that splits the input string by commas.
+
+    .. versionadded:: 2.8.0
+    """
+
+    envvar_list_splitter = ","
+
+
 @command(name="version")
 @option("-s", "--short", help="Exclude release level and serial information", is_flag=True, default=False)
 def version_command(short: bool) -> None:
@@ -120,15 +130,32 @@ def info_command(app: Litestar) -> None:
 
 
 @command(name="run")
-@option("-r", "--reload", help="Reload server on changes", default=False, is_flag=True)
-@option("-R", "--reload-dir", help="Directories to watch for file changes", multiple=True)
+@option("-r", "--reload", help="Reload server on changes", default=False, is_flag=True, envvar="LITESTAR_RELOAD")
 @option(
-    "-I", "--reload-include", help="Glob patterns for files to include when watching for file changes", multiple=True
+    "-R",
+    "--reload-dir",
+    help="Directories to watch for file changes",
+    type=CommaSplittedPath(),
+    multiple=True,
+    envvar="LITESTAR_RELOAD_DIRS",
 )
 @option(
-    "-E", "--reload-exclude", help="Glob patterns for files to exclude when watching for file changes", multiple=True
+    "-I",
+    "--reload-include",
+    help="Glob patterns for files to include when watching for file changes",
+    type=CommaSplittedPath(),
+    multiple=True,
+    envvar="LITESTAR_RELOAD_INCLUDES",
 )
-@option("-p", "--port", help="Serve under this port", type=int, default=8000, show_default=True)
+@option(
+    "-E",
+    "--reload-exclude",
+    help="Glob patterns for files to exclude when watching for file changes",
+    type=CommaSplittedPath(),
+    multiple=True,
+    envvar="LITESTAR_RELOAD_EXCLUDES",
+)
+@option("-p", "--port", help="Serve under this port", type=int, default=8000, show_default=True, envvar="LITESTAR_PORT")
 @option(
     "-W",
     "--wc",
@@ -137,8 +164,9 @@ def info_command(app: Litestar) -> None:
     type=click.IntRange(min=1, max=multiprocessing.cpu_count() + 1),
     show_default=True,
     default=1,
+    envvar=["LITESTAR_WEB_CONCURRENCY", "WEB_CONCURRENCY"],
 )
-@option("-H", "--host", help="Server under this host", default="127.0.0.1", show_default=True)
+@option("-H", "--host", help="Server under this host", default="127.0.0.1", show_default=True, envvar="LITESTAR_HOST")
 @option(
     "-F",
     "--fd",
@@ -147,16 +175,26 @@ def info_command(app: Litestar) -> None:
     type=int,
     default=None,
     show_default=True,
+    envvar="LITESTAR_FILE_DESCRIPTOR",
 )
-@option("-U", "--uds", "--unix-domain-socket", help="Bind to a UNIX domain socket.", default=None, show_default=True)
-@option("-d", "--debug", help="Run app in debug mode", is_flag=True)
-@option("-P", "--pdb", "--use-pdb", help="Drop into PDB on an exception", is_flag=True)
-@option("--ssl-certfile", help="Location of the SSL cert file", default=None)
-@option("--ssl-keyfile", help="Location of the SSL key file", default=None)
+@option(
+    "-U",
+    "--uds",
+    "--unix-domain-socket",
+    help="Bind to a UNIX domain socket.",
+    default=None,
+    show_default=True,
+    envvar="LITESTAR_UNIX_DOMAIN_SOCKET",
+)
+@option("-d", "--debug", help="Run app in debug mode", is_flag=True, envvar="LITESTAR_DEBUG")
+@option("-P", "--pdb", "--use-pdb", help="Drop into PDB on an exception", is_flag=True, envvar="LITESTAR_PDB")
+@option("--ssl-certfile", help="Location of the SSL cert file", default=None, envvar="LITESTAR_SSL_CERT_PATH")
+@option("--ssl-keyfile", help="Location of the SSL key file", default=None, envvar="LITESTAR_SSL_KEY_PATH")
 @option(
     "--create-self-signed-cert",
     help="If certificate and key are not found at specified locations, create a self-signed certificate and a key",
     is_flag=True,
+    envvar="LITESTAR_CREATE_SELF_SIGNED_CERT",
 )
 def run_command(
     reload: bool,
@@ -189,7 +227,7 @@ def run_command(
 
     if pdb:
         os.environ["LITESTAR_PDB"] = "1"
-
+    quiet_console = os.getenv("LITESTAR_QUIET_CONSOLE") or False
     if not UVICORN_INSTALLED:
         console.print(
             r"uvicorn is not installed. Please install the standard group, litestar\[standard], to use this command."
@@ -207,20 +245,8 @@ def run_command(
     env: LitestarEnv = ctx.obj
     app = env.app
 
-    reload_dirs = env.reload_dirs or reload_dir
-    reload_include = env.reload_include or reload_include
-    reload_exclude = env.reload_exclude or reload_exclude
-
-    host = env.host or host
-    port = env.port if env.port is not None else port
-    fd = env.fd if env.fd is not None else fd
-    uds = env.uds or uds
-    reload = env.reload or reload or bool(reload_dirs) or bool(reload_include) or bool(reload_exclude)
-    workers = env.web_concurrency or wc
-
-    ssl_certfile = ssl_certfile or env.certfile_path
-    ssl_keyfile = ssl_keyfile or env.keyfile_path
-    create_self_signed_cert = create_self_signed_cert or env.create_self_signed_cert
+    reload = reload or bool(reload_dir) or bool(reload_include) or bool(reload_exclude)
+    workers = wc
 
     certfile_path, keyfile_path = (
         create_ssl_files(ssl_certfile, ssl_keyfile, host)
@@ -228,9 +254,9 @@ def run_command(
         else validate_ssl_file_paths(ssl_certfile, ssl_keyfile)
     )
 
-    console.rule("[yellow]Starting server process", align="left")
-
-    show_app_info(app)
+    if not quiet_console and isatty():
+        console.rule("[yellow]Starting server process", align="left")
+        show_app_info(app)
     with _server_lifespan(app):
         if workers == 1 and not reload:
             import uvicorn
@@ -263,7 +289,7 @@ def run_command(
                 port=port,
                 workers=workers,
                 reload=reload,
-                reload_dirs=reload_dirs,
+                reload_dirs=reload_dir,
                 reload_include=reload_include,
                 reload_exclude=reload_exclude,
                 fd=fd,

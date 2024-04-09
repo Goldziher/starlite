@@ -54,7 +54,7 @@ As in the previous chapter, this too can be improved by using
 
 
 This is not only easier on the eyes and adds more structure to the code, but also gives
-better interactive documentation; It will now present us with the field names and
+better interactive documentation; it will now present us with the field names and
 default values for the dataclass we have defined:
 
 .. figure:: images/swagger-dict-vs-dataclass.png
@@ -62,7 +62,7 @@ default values for the dataclass we have defined:
     Documentation for the ``add_item`` route with ``data`` typed as a ``dict`` vs
     ``dataclass``
 
-Using a dataclass also gives you better validation: Omitting a key such as ``title``
+Using a dataclass also gives you better validation: omitting a key such as ``title``
 will result in a useful error response:
 
 
@@ -76,7 +76,7 @@ Create dynamic routes using path parameters
 
 The next task on the list is updating an item's status. For this, a way to refer to a
 specific item on the list is needed. This could be done using query parameters, but
-there's an easier, and more semantically coherent way of expressing this: Path
+there's an easier, and more semantically coherent way of expressing this: path
 parameters.
 
 .. code-block:: python
@@ -90,10 +90,10 @@ So far all the paths in your application are static, meaning they are expressed 
 constant string which does not change. In fact, the only path used so far is ``/``.
 
 Path parameters allow you to construct dynamic paths and later refer to the dynamically
-captured parts. This may sound complex at first, but it's actually quite simple; You can
+captured parts. This may sound complex at first, but it's actually quite simple; you can
 think of it as a regular expression that's being used on the requested path.
 
-Path parameters consist of two parts: An expression inside the path, describing the
+Path parameters consist of two parts: an expression inside the path, describing the
 parameter, and a corresponding function parameter of the same name in the route handler
 function, which will receive the path parameter's value.
 
@@ -114,7 +114,7 @@ as ``greeter(name="john")``, similar to how query parameters are injected.
 
 By using this pattern and combining it with those from the earlier section about
 receiving data you can now set up a route handler that takes in the title of a
-TODO-item, an updated item in form of a dataclass instance, and updates the item in the
+TODO item, an updated item in form of a dataclass instance, and updates the item in the
 list.
 
 

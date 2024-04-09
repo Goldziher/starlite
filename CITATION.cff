@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+title: Litestar
+message: 'If you use this software, please cite it as below.'
+type: software
+authors:
+  - Janek Nouvertné
+  - Peter Schutt
+  - Cody Fincher
+  - Visakh Unnikrishnan
+  - Jacob Coffee
+  - Na'aman Hirschfeld
+repository-code: 'https://github.com/litestar-org/litestar'
+url: 'https://docs.litestar.dev/latest/'
+abstract: >-
+  Litestar is a powerful, flexible, and highly performant Python web framework
+  for building modern APIs and applications. With an emphasis on developer
+  experience and performance, Litestar provides a rich set of features out of the
+  box, including automatic API documentation, data validation and serialization,
+  ORM integration, dependency injection, caching, websockets, and more.
+
+
+  Litestar's layered architecture and open ecosystem enable seamless integration
+  with popular libraries like Pydantic, SQLAlchemy, and msgspec. It offers both
+  asynchronous and synchronous execution models without performance penalties.
+
+
+  With Litestar, you can effortlessly build and deploy production-ready APIs and
+  web applications, leveraging features like interactive API documentation,
+  middlewares for common tasks, session and JWT-based authentication, and strict
+  runtime validation for enhanced safety. Experience the perfect blend of ease
+  of use, flexibility and performance with Litestar.
+keywords:
+  - python
+  - web
+  - framework
+  - typing
+  - dependency injection
+  - api
+license: MIT
+version: v2.8.0
+date-released: '2024-04-05'

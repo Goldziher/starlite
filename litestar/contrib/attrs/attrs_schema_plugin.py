@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from typing_extensions import TypeGuard
+
 from litestar.exceptions import MissingDependencyException
 from litestar.plugins import OpenAPISchemaPluginProtocol
+from litestar.types import Empty
 from litestar.typing import FieldDefinition
-from litestar.utils import is_attrs_class, is_optional_union
+from litestar.utils import is_optional_union
 
 try:
     import attr
@@ -47,3 +50,15 @@ class AttrsSchemaPlugin(OpenAPISchemaPluginProtocol):
                 field_name: FieldDefinition.from_kwarg(type_hints[field_name], field_name) for field_name in attr_fields
             },
         )
+
+
+def is_attrs_class(annotation: Any) -> TypeGuard[type[attrs.AttrsInstance]]:  # pyright: ignore
+    """Given a type annotation determine if the annotation is a class that includes an attrs attribute.
+
+    Args:
+        annotation: A type.
+
+    Returns:
+        A typeguard determining whether the type is an attrs class.
+    """
+    return attrs.has(annotation) if attrs is not Empty else False  # type: ignore[comparison-overlap]

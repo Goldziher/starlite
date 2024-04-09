@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import dataclasses
 from dataclasses import MISSING, fields
 from typing import TYPE_CHECKING
 
 from litestar.plugins import OpenAPISchemaPlugin
+from litestar.types import Empty
 from litestar.typing import FieldDefinition
 from litestar.utils.predicates import is_optional_union
 
@@ -31,6 +33,11 @@ class DataclassSchemaPlugin(OpenAPISchemaPlugin):
                 )
             ),
             property_fields={
-                field.name: FieldDefinition.from_kwarg(type_hints[field.name], field.name) for field in dataclass_fields
+                field.name: FieldDefinition.from_kwarg(
+                    annotation=type_hints[field.name],
+                    name=field.name,
+                    default=field.default if field.default is not dataclasses.MISSING else Empty,
+                )
+                for field in dataclass_fields
             },
         )

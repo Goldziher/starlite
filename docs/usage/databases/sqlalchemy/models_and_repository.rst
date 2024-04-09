@@ -36,7 +36,7 @@ implementations:
 * :class:`UUIDAuditBase <advanced_alchemy.base.UUIDAuditBase>`
 
 Both include a ``UUID`` based primary key
-and ``UUIDAuditBase`` includes an ``updated`` and ``created`` timestamp column.
+and ``UUIDAuditBase`` includes an ``updated_at`` and ``created_at`` timestamp column.
 
 The ``UUID`` will be a native ``UUID``/``GUID`` type on databases that support it such as Postgres.  For other engines without
 a native UUID data type, the UUID is stored as a 16-byte ``BYTES`` or ``RAW`` field.
@@ -45,7 +45,7 @@ a native UUID data type, the UUID is stored as a 16-byte ``BYTES`` or ``RAW`` fi
 * :class:`BigIntAuditBase <advanced_alchemy.base.BigIntAuditBase>`
 
 Both include a ``BigInteger`` based primary key
-and ``BigIntAuditBase`` includes an ``updated`` and ``created`` timestamp column.
+and ``BigIntAuditBase`` includes an ``updated_at`` and ``created_at`` timestamp column.
 
 Models using these bases also include the following enhancements:
 

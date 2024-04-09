@@ -36,3 +36,11 @@ def test_schema_generation() -> None:
                 }
             },
         }
+
+
+def test_customize_path() -> None:
+    from docs.examples.openapi.customize_path import app
+
+    with TestClient(app=app) as client:
+        resp = client.get("/docs/openapi.json")
+        assert resp.status_code == 200

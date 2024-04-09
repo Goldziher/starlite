@@ -10,26 +10,26 @@ from litestar.handlers.http_handlers import HTTPRouteHandler
 
 @pytest.mark.parametrize("decorator", [get, post, patch, put, delete])
 def test_route_reverse(decorator: Type[HTTPRouteHandler]) -> None:
-    @decorator("/path-one/{param:str}", name="handler-name")  # type: ignore
+    @decorator("/path-one/{param:str}", name="handler-name")  # type: ignore[call-arg]
     def handler() -> None:
         return None
 
-    @decorator("/path-two", name="handler-no-params")  # type: ignore
+    @decorator("/path-two", name="handler-no-params")  # type: ignore[call-arg]
     def handler_no_params() -> None:
         return None
 
-    @decorator("/multiple/{str_param:str}/params/{int_param:int}/", name="multiple-params-handler-name")  # type: ignore
+    @decorator("/multiple/{str_param:str}/params/{int_param:int}/", name="multiple-params-handler-name")  # type: ignore[call-arg]
     def handler2() -> None:
         return None
 
     @decorator(
         ["/handler3", "/handler3/{str_param:str}/", "/handler3/{str_param:str}/{int_param:int}/"],
         name="multiple-default-params",
-    )  # type: ignore
+    )  # type: ignore[call-arg]
     def handler3(str_param: str = "default", int_param: int = 0) -> None:
         return None
 
-    @decorator(["/handler4/int/{int_param:int}", "/handler4/str/{str_param:str}"], name="handler4")  # type: ignore
+    @decorator(["/handler4/int/{int_param:int}", "/handler4/str/{str_param:str}"], name="handler4")  # type: ignore[call-arg]
     def handler4(int_param: int = 1, str_param: str = "str") -> None:
         return None
 
@@ -62,7 +62,7 @@ def test_route_reverse(decorator: Type[HTTPRouteHandler]) -> None:
     "complex_path_param",
     [("time", time(hour=14), "14:00"), ("float", float(1 / 3), "0.33")],
 )
-def test_route_reverse_validation_complex_params(complex_path_param) -> None:  # type: ignore
+def test_route_reverse_validation_complex_params(complex_path_param) -> None:  # type: ignore[no-untyped-def]
     param_type, param_value, param_manual_str = complex_path_param
 
     @get(f"/abc/{{param:{param_type}}}", name="handler")

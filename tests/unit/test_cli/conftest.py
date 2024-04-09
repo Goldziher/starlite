@@ -72,8 +72,7 @@ class CreateAppFileFixture(Protocol):
         content: str | None = None,
         init_content: str = "",
         subdir: str | None = None,
-    ) -> Path:
-        ...
+    ) -> Path: ...
 
 
 def _purge_module(module_names: list[str], path: str | Path) -> None:

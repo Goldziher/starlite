@@ -1,0 +1,306 @@
+version: v1
+
+labels:
+  # -- types -------------------------------------------------------------------
+  - label: 'type/feat'
+    sync: true
+    matcher:
+      title: '^feat(\([^)]+\))?!?:'
+
+  - label: 'type/bug'
+    sync: true
+    matcher:
+      title: '^fix(\([^)]+\))?!?:'
+
+  - label: 'type/docs'
+    sync: true
+    matcher:
+      title: '^docs(\([^)]+\))?:'
+
+  - label: 'Breaking 🔨'
+    sync: true
+    matcher:
+      title: '^(feat|fix)(\([^)]+\))?!:'
+
+  # -- distinct areas ----------------------------------------------------------
+  - label: '3.x'
+    sync: true
+    matcher:
+      baseBranch: '^v3$'
+
+  - label: 'area/docs'
+    sync: true
+    matcher:
+      files:
+        any: ['docs/*', 'docs/**/*', '**/*.rst', '**/*.md']
+
+  - label: 'area/unit-tests'
+    sync: true
+    matcher:
+      files:
+        any: ['test/unit/*', 'test/unit/**/*']
+
+  - label: 'area/end-to-end-tests'
+    sync: true
+    matcher:
+      files:
+        any: ['test/e2e/*', 'test/e2e/**/*']
+
+  - label: 'area/test-apps'
+    sync: true
+    matcher:
+      files:
+        any: ['test/test_apps/*', 'test/test_apps/**/*']
+
+  - label: 'area/docs'
+    sync: true
+    matcher:
+      files:
+        any: ['docs/*', 'docs/**/*', '**/*.rst', '**/*.md']
+
+  - label: 'area/unit-tests'
+    sync: true
+    matcher:
+      files:
+        any: ['test/unit/*', 'test/unit/**/*']
+
+  - label: 'area/end-to-end-tests'
+    sync: true
+    matcher:
+      files:
+        any: ['test/e2e/*', 'test/e2e/**/*']
+
+  - label: 'area/test-apps'
+    sync: true
+    matcher:
+      files:
+        any: ['test/test_apps/*', 'test/test_apps/**/*']
+
+  - label: 'area/ci'
+    sync: true
+    matcher:
+      files:
+        any: ['.github/**/*', 'codecov.yml', 'pre-commit-config.yaml', 'sonar-project.properties']
+
+  - label: 'area/dependencies'
+    sync: true
+    matcher:
+      files:
+        any: ['pyproject.toml', '*.lock']
+
+  - label: 'area/enums'
+    sync: true
+    matcher:
+      files: ['litestar/enums.py']
+
+  - label: 'area/background-tasks'
+    sync: true
+    matcher:
+      files: ['litestar/background_tasks.py']
+
+  - label: 'area/constants'
+    sync: true
+    matcher:
+      files: ['litestar/constants.py']
+
+  - label: 'area/concurrency'
+    sync: true
+    matcher:
+      files: ['litestar/concurrency.py']
+
+  - label: 'area/parsers'
+    sync: true
+    matcher:
+      files: ['litestar/_parsers.py']
+
+  - label: 'area/layers'
+    sync: true
+    matcher:
+      files: ['litestar/_layers/*']
+
+  - label: 'area/multipart'
+    sync: true
+    matcher:
+      files: ['litestar/_multipart.py']
+
+  - label: 'area/di'
+    sync: true
+    matcher:
+      files: ['litestar/di.py']
+
+  - label: 'area/file-system'
+    sync: true
+    matcher:
+      files: ['litestar/file_system.py']
+
+  - label: 'area/controller'
+    sync: true
+    matcher:
+      files: ['litestar/controller.py']
+
+  - label: 'area/serialization'
+    sync: true
+    matcher:
+      files: ['litestar/serialization/*']
+
+  - label: 'area/params'
+    sync: true
+    matcher:
+      files: ['litestar/params.py']
+
+  - label: 'area/template'
+    sync: true
+    matcher:
+      files: ['litestar/template/*']
+
+  - label: 'area/events'
+    sync: true
+    matcher:
+      files: ['litestar/events/*']
+
+  - label: 'area/router'
+    sync: true
+    matcher:
+      files: ['litestar/router.py']
+
+  - label: 'area/exceptions'
+    sync: true
+    matcher:
+      files: ['litestar/exceptions/*']
+
+  - label: 'area/static-files'
+    sync: true
+    matcher:
+      files: ['litestar/static_files/*']
+
+  - label: 'area/signature'
+    sync: true
+    matcher:
+      files: ['litestar/_signature/*']
+
+  - label: 'area/plugins'
+    sync: true
+    matcher:
+      files: ['litestar/plugins/*']
+
+  - label: 'area/stores'
+    sync: true
+    matcher:
+      files: ['litestar/stores/*']
+
+  - label: 'area/logging'
+    sync: true
+    matcher:
+      files: ['litestar/logging/*']
+
+  - label: 'area/connection'
+    sync: true
+    matcher:
+      files: ['litestar/connection/*']
+
+  - label: 'area/asgi'
+    sync: true
+    matcher:
+      files: ['litestar/_asgi/*']
+
+  - label: 'area/types'
+    sync: true
+    matcher:
+      files: ['litestar/types/*']
+
+  - label: 'area/kwargs'
+    sync: true
+    matcher:
+      files: ['litestar/_kwargs/*']
+
+  - label: 'area/datastructures'
+    sync: true
+    matcher:
+      files: ['litestar/datastructures/*']
+
+  - label: 'area/channels'
+    sync: true
+    matcher:
+      files: ['litestar/channels/*']
+
+  - label: 'area/response'
+    sync: true
+    matcher:
+      files: ['litestar/response/*']
+
+  - label: 'area/repository'
+    sync: true
+    matcher:
+      files: ['litestar/repository/*']
+
+  - label: 'area/security'
+    sync: true
+    matcher:
+      files: ['litestar/security/*']
+
+  - label: 'area/dto'
+    sync: true
+    matcher:
+      files: ['litestar/dto/*']
+
+  - label: 'area/testing'
+    sync: true
+    matcher:
+      files: ['litestar/testing/*']
+
+  - label: 'area/openapi'
+    sync: true
+    matcher:
+      files: ['litestar/_openapi/*']
+
+  - label: 'area/middleware'
+    sync: true
+    matcher:
+      files: ['litestar/middleware/*']
+
+  - label: 'area/handlers'
+    sync: true
+    matcher:
+      files: ['litestar/handlers/*']
+
+  - label: 'area/contrib'
+    sync: true
+    matcher:
+      files: ['litestar/contrib/*']
+
+  - label: 'area/private-api'
+    sync: true
+    matcher:
+      files:
+        any: ['litestar/_*.py', 'litestar/*/_*.py', 'litestar/_*/**/*.py']
+
+  # -- Size Based Labels -------------------------------------------------------
+  - label: 'size: small'
+    sync: true
+    matcher:
+      files:
+        count:
+          gte: 1
+          lte: 10
+
+  - label: 'size: medium'
+    sync: true
+    matcher:
+      files:
+        count:
+          gte: 10
+          lte: 25
+
+  - label: 'size: large'
+    sync: true
+    matcher:
+      files:
+        count:
+          gte: 26
+
+# -- Merge Checks --------------------------------------------------------------
+checks:
+  - context: 'No Merge check'
+    description: "Disable merging when 'do not merge' label is set"
+    labels:
+      none: ['do not merge']

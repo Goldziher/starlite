@@ -119,19 +119,19 @@ def test_piccolo_dto_openapi_spec_generation() -> None:
 
     post_operation = concert_path.post
     assert (
-        post_operation.request_body.content["application/json"].schema.ref  # type: ignore
+        post_operation.request_body.content["application/json"].schema.ref  # type: ignore[union-attr]
         == "#/components/schemas/CreateConcertConcertRequestBody"
     )
 
     studio_path_get_operation = studio_path.get
     assert (
-        studio_path_get_operation.responses["200"].content["application/json"].schema.ref  # type: ignore
+        studio_path_get_operation.responses["200"].content["application/json"].schema.ref  # type: ignore[index, union-attr]
         == "#/components/schemas/RetrieveStudioRecordingStudioResponseBody"
     )
 
     venues_path_get_operation = venues_path.get
     assert (
-        venues_path_get_operation.responses["200"].content["application/json"].schema.items.ref  # type: ignore
+        venues_path_get_operation.responses["200"].content["application/json"].schema.items.ref  # type: ignore[index, union-attr]
         == "#/components/schemas/RetrieveVenuesVenueResponseBody"
     )
 

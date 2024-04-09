@@ -17,8 +17,6 @@ if TYPE_CHECKING:
 class CORSMiddleware(AbstractMiddleware):
     """CORS Middleware."""
 
-    __slots__ = ("config",)
-
     def __init__(self, app: ASGIApp, config: CORSConfig) -> None:
         """Middleware that adds CORS validation to the application.
 
@@ -69,6 +67,15 @@ class CORSMiddleware(AbstractMiddleware):
                 ):
                     headers["Access-Control-Allow-Origin"] = origin
                     headers["Vary"] = "Origin"
+
+                # We don't want to overwrite this for preflight requests.
+                allow_headers = headers.get("Access-Control-Allow-Headers")
+                if not allow_headers and self.config.allow_headers:
+                    headers["Access-Control-Allow-Headers"] = ", ".join(sorted(set(self.config.allow_headers)))
+
+                allow_methods = headers.get("Access-Control-Allow-Methods")
+                if not allow_methods and self.config.allow_methods:
+                    headers["Access-Control-Allow-Methods"] = ", ".join(sorted(set(self.config.allow_methods)))
 
             await send(message)
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import msgspec
 from msgspec import Struct
 from msgspec.structs import fields
 
@@ -38,7 +39,11 @@ class StructSchemaPlugin(OpenAPISchemaPlugin):
                 ]
             ),
             property_fields={
-                field.encode_name: FieldDefinition.from_kwarg(type_hints[field.name], field.encode_name)
+                field.encode_name: FieldDefinition.from_kwarg(
+                    type_hints[field.name],
+                    field.encode_name,
+                    default=field.default if field.default not in {msgspec.NODEFAULT, msgspec.UNSET} else Empty,
+                )
                 for field in struct_fields
             },
         )

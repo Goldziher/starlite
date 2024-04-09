@@ -10,11 +10,15 @@ import shutil
 import subprocess
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Generator
+from typing import Generator
 
 import click
 import httpx
 import msgspec
+
+_polar = "[Polar.sh](https://polar.sh/litestar-org)"
+_open_collective = "[OpenCollective](https://opencollective.com/litestar)"
+_github_sponsors = "[GitHub Sponsors](https://github.com/sponsors/litestar-org/)"
 
 
 class PullRequest(msgspec.Struct):
@@ -23,6 +27,17 @@ class PullRequest(msgspec.Struct):
     body: str
     created_at: str
     user: RepoUser
+    merge_commit_sha: str | None = None
+
+
+class Comp(msgspec.Struct):
+    sha: str
+
+    class _Commit(msgspec.Struct):
+        message: str
+        url: str
+
+    commit: _Commit
 
 
 class RepoUser(msgspec.Struct):
@@ -39,7 +54,6 @@ class PRInfo:
     cc_type: str
     number: int
     closes: list[int]
-    sha: str
     created_at: datetime.datetime
     description: str
     user: RepoUser
@@ -58,11 +72,22 @@ class ReleaseInfo:
         return f"https://github.com/litestar-org/litestar/compare/{self.base}...{self.release_tag}"
 
 
+def _pr_number_from_commit(comp: Comp) -> int:
+    # this is an ugly hack, but it appears to actually be the most reliably way to
+    # extract the most "reliable" way to extract the info we want from GH ¯\_(ツ)_/¯
+    message_head = comp.commit.message.split("\n\n")[0]
+    match = re.search(r"\(#(\d+)\)$", message_head)
+    if not match:
+        raise ValueError(f"Could not find PR number for commit {message_head!r}")
+    return int(match[1])
+
+
 class _Thing:
-    def __init__(self, gh_token: str, base: str, tag: str, version: str) -> None:
+    def __init__(self, *, gh_token: str, base: str, release_branch: str, tag: str, version: str) -> None:
         self._gh_token = gh_token
         self._base = base
         self._new_release_tag = tag
+        self._release_branch = release_branch
         self._new_release_version = version
         self._base_client = httpx.AsyncClient(
             headers={
@@ -102,13 +127,10 @@ class _Thing:
             for edge in data["data"]["repository"]["pullRequest"]["closingIssuesReferences"]["edges"]
         ]
 
-    async def _get_pr_for_commit_sha(self, sha: str) -> PRInfo:
-        res = await self._api_client.get(f"/commits/{sha}/pulls")
+    async def _get_pr_info_for_pr(self, number: int) -> PRInfo:
+        res = await self._api_client.get(f"/pulls/{number}")
         res.raise_for_status()
-        data: list[dict[str, Any]] = res.json()
-        if len(data) > 1:
-            raise ValueError(f"Commit {sha} has more than one associated PR")
-        pr = msgspec.convert(data[0], type=PullRequest)
+        pr = msgspec.convert(res.json(), type=PullRequest)
 
         cc_prefix, clean_title = pr.title.split(":", maxsplit=1)
         cc_type = cc_prefix.split("(", maxsplit=1)[0].lower()
@@ -121,20 +143,20 @@ class _Thing:
             url=f"https://github.com/litestar-org/litestar/pull/{pr.number}",
             closes=closes_issues,
             title=pr.title,
-            sha=sha,
             created_at=datetime.datetime.strptime(pr.created_at, "%Y-%m-%dT%H:%M:%S%z"),
             description=pr.body,
             user=pr.user,
         )
 
     async def get_prs(self) -> dict[str, list[PRInfo]]:
-        # limited to 250 commits because we're not using pagination here
-        res = await self._api_client.get(f"/compare/{self._base}...main")
+        res = await self._api_client.get(f"/compare/{self._base}...{self._release_branch}")
         res.raise_for_status()
-        commits_shas = {c["sha"] for c in res.json()["commits"]}
+        compares = msgspec.convert(res.json()["commits"], list[Comp])
+        pr_numbers = [_pr_number_from_commit(c) for c in compares]
+        pulls = await asyncio.gather(*map(self._get_pr_info_for_pr, pr_numbers))
 
         prs = defaultdict(list)
-        for pr in await asyncio.gather(*map(self._get_pr_for_commit_sha, commits_shas)):
+        for pr in pulls:
             if pr.user.type != "Bot":
                 prs[pr.cc_type].append(pr)
         return prs
@@ -232,7 +254,7 @@ class ChangelogEntryWriter:
 
     @contextlib.contextmanager
     def directive(self, name: str, arg: str | None = None, **options: str) -> Generator[None, None, None]:
-        self.add_line(f".. {name}:: {arg if arg else ''}")
+        self.add_line(f".. {name}:: {arg or ''}")
         self._level += 1
         for key, value in options.items():
             if value:
@@ -250,12 +272,23 @@ def build_gh_release_notes(release_info: ReleaseInfo) -> str:
     # 3. It works with our release branch process. GitHub doesn't pick up (all) commits
     #    made there depending on how things were merged
     doc = GHReleaseWriter()
+
+    doc.add_line("## Sponsors 🌟")
+    doc.add_line(
+        "⚠️ Maintainers: Please adjust business/individual sponsors section here as defined by our tier rewards"
+    )
+    doc.add_line(f"- A huge 'Thank you!' to all sponsors across {_polar}, {_open_collective} and {_github_sponsors}!")
+
     doc.add_line("## What's changed")
+    if release_info.first_time_prs:
+        doc.add_line("\n## New contributors 🎉")
+        for pr in release_info.first_time_prs:
+            doc.add_line(f"* @{pr.user.login} made their first contribution in {pr.url}")
     if fixes := release_info.pull_requests.get("fix"):
-        doc.add_line("\n### Bugfixes")
+        doc.add_line("\n### Bugfixes 🐛")
         doc.add_pr_descriptions(fixes)
     if features := release_info.pull_requests.get("feat"):
-        doc.add_line("\nNew features")
+        doc.add_line("\nNew features 🚀")
         doc.add_pr_descriptions(features)
 
     ignore_sections = {"fix", "feat", "ci", "chore"}
@@ -264,11 +297,6 @@ def build_gh_release_notes(release_info: ReleaseInfo) -> str:
         doc.add_line("\n<!-- Review these: Not all of them should go into the release notes -->")
         doc.add_line("### Other changes")
         doc.add_pr_descriptions(other)
-
-    if release_info.first_time_prs:
-        doc.add_line("\n## New contributors")
-        for pr in release_info.first_time_prs:
-            doc.add_line(f"* @{pr.user.login} made their first contribution in {pr.url}")
 
     doc.add_line("\n**Full Changelog**")
     doc.add_line(release_info.compare_url)
@@ -347,6 +375,7 @@ def update_pyproject_version(new_version: str) -> None:
 @click.command()
 @click.argument("version")
 @click.option("--base", help="Previous release tag. Defaults to the latest tag")
+@click.option("--branch", help="Release branch", default="main")
 @click.option(
     "--gh-token",
     help="GitHub token. If not provided, read from the GH_TOKEN env variable. "
@@ -367,6 +396,7 @@ def update_pyproject_version(new_version: str) -> None:
 )
 def cli(
     base: str | None,
+    branch: str,
     version: str,
     gh_token: str | None,
     interactive: bool,
@@ -390,7 +420,7 @@ def cli(
 
     click.secho(f"Creating release notes for tag {new_tag}, using {base} as a base", fg="cyan")
 
-    thing = _Thing(gh_token=gh_token, base=base, tag=new_tag, version=version)
+    thing = _Thing(gh_token=gh_token, base=base, release_branch=branch, tag=new_tag, version=version)
     loop = asyncio.new_event_loop()
 
     release_info = loop.run_until_complete(thing.get_release_info())

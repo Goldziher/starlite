@@ -110,5 +110,4 @@ T_co = TypeVar("T_co", covariant=True)
 class InstantiableCollection(Collection[T_co], Protocol[T_co]):  # pyright: ignore
     """A protocol for instantiable collection types."""
 
-    def __init__(self, iterable: Iterable[T_co], /) -> None:
-        ...
+    def __init__(self, iterable: Iterable[T_co], /) -> None: ...

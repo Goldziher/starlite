@@ -153,3 +153,16 @@ def test_enable_experimental_backend_override_in_dto_config(ModelDataDTO: type[A
 
     backend = handler.resolve_data_dto()._dto_backends[handler.handler_id]["data_backend"]  # type: ignore[union-attr]
     assert isinstance(backend, DTOBackend)
+
+
+def test_use_codegen_backend_by_default(ModelDataDTO: type[AbstractDTO]) -> None:
+    ModelDataDTO.config = DTOConfig()
+
+    @post(dto=ModelDataDTO, signature_types=[Model])
+    def handler(data: Model) -> Model:
+        return data
+
+    Litestar(route_handlers=[handler])
+
+    backend = handler.resolve_data_dto()._dto_backends[handler.handler_id]["data_backend"]  # type: ignore[union-attr]
+    assert isinstance(backend, DTOBackend)

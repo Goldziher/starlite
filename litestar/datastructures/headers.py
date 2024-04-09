@@ -2,9 +2,10 @@ import re
 from abc import ABC, abstractmethod
 from contextlib import suppress
 from copy import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import (
     TYPE_CHECKING,
+    AbstractSet,
     Any,
     ClassVar,
     Dict,
@@ -20,15 +21,13 @@ from typing import (
     cast,
 )
 
+import msgspec
 from multidict import CIMultiDict, CIMultiDictProxy, MultiMapping
-from typing_extensions import get_type_hints
 
 from litestar._multipart import parse_content_header
 from litestar.datastructures.multi_dicts import MultiMixin
-from litestar.dto.base_dto import AbstractDTO
 from litestar.exceptions import ImproperlyConfiguredException, ValidationException
 from litestar.types.empty import Empty
-from litestar.typing import FieldDefinition
 from litestar.utils.dataclass import simple_asdict
 from litestar.utils.scope.state import ScopeState
 
@@ -303,7 +302,7 @@ class CacheControlHeader(Header):
     stale_while_revalidate: Optional[int] = None
     """Accessor for the ``stale-while-revalidate`` directive."""
 
-    _field_definitions: ClassVar[Optional[Dict[str, FieldDefinition]]] = None
+    _field_names: ClassVar[AbstractSet[str]]
 
     def _get_header_value(self) -> str:
         """Get the header value as string."""
@@ -325,25 +324,21 @@ class CacheControlHeader(Header):
             An instance of ``CacheControlHeader``
         """
 
-        cc_items = [v.strip() for v in header_value.split(",")]
         kwargs: Dict[str, Any] = {}
-        field_definitions = cls._get_field_definitions()
-        for cc_item in cc_items:
-            key_value = cc_item.split("=")
-            key_value[0] = key_value[0].replace("-", "_")
-            if len(key_value) == 1:
-                kwargs[key_value[0]] = True
-            elif len(key_value) == 2:
-                key, value = key_value
-                if key not in field_definitions:
-                    raise ImproperlyConfiguredException("Invalid cache-control header")
-                kwargs[key] = cls._convert_to_type(value, field_definition=field_definitions[key])
+        field_names = cls._get_field_names()
+        for cc_item in (stripped for v in header_value.split(",") if (stripped := v.strip())):
+            key, *value = cc_item.split("=", maxsplit=1)
+            key = key.replace("-", "_")
+            if key not in field_names:
+                raise ImproperlyConfiguredException("Invalid cache-control header")
+            if not value:
+                kwargs[key] = True
             else:
-                raise ImproperlyConfiguredException("Invalid cache-control header value")
+                (kwargs[key],) = value
 
         try:
-            return CacheControlHeader(**kwargs)
-        except TypeError as exc:
+            return msgspec.convert(kwargs, CacheControlHeader, strict=False)
+        except msgspec.ValidationError as exc:
             raise ImproperlyConfiguredException from exc
 
     @classmethod
@@ -355,7 +350,7 @@ class CacheControlHeader(Header):
         return cls(no_store=True)
 
     @classmethod
-    def _get_field_definitions(cls) -> Dict[str, FieldDefinition]:
+    def _get_field_names(cls) -> AbstractSet[str]:
         """Get the type annotations for the ``CacheControlHeader`` class properties.
 
         This is needed due to the conversion from pydantic models to dataclasses. Dataclasses do not support
@@ -365,32 +360,11 @@ class CacheControlHeader(Header):
             A dictionary of type annotations
 
         """
-
-        if cls._field_definitions is None:
-            cls._field_definitions = {}
-            for key, value in get_type_hints(cls, include_extras=True).items():
-                definition = FieldDefinition.from_kwarg(annotation=value, name=key)
-                # resolve_model_type so that field_definition.raw has the real raw type e.g. <class 'bool'>
-                cls._field_definitions[key] = AbstractDTO.resolve_model_type(definition)
-        return cls._field_definitions
-
-    @classmethod
-    def _convert_to_type(cls, value: str, field_definition: FieldDefinition) -> Any:
-        """Convert the value to the expected type.
-
-        Args:
-            value: the value of the cache-control directive
-            field_definition: the field definition for the value to convert
-
-        Returns:
-            The value converted to the expected type
-        """
-        # bool values shouldn't be initiated since they should have been caught earlier in the from_header method and
-        # set with a value of True
-        expected_type = field_definition.raw
-        if expected_type is bool:
-            raise ImproperlyConfiguredException("Invalid cache-control header value")
-        return expected_type(value)
+        try:
+            names = cls._field_names
+        except AttributeError:
+            names = cls._field_names = {f.name for f in fields(cls)}
+        return names
 
 
 @dataclass

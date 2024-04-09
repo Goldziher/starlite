@@ -1,3 +1,4 @@
+=======
 Plugins
 =======
 
@@ -84,7 +85,7 @@ Example
 The following example shows the actual implementation of the ``SerializationPluginProtocol`` for
 `SQLAlchemy <https://www.sqlalchemy.org/>`_ models that is is provided in ``advanced_alchemy``.
 
-.. literalinclude:: ../../litestar/contrib/sqlalchemy/plugins/serialization.py
+.. literalinclude:: ../../../litestar/contrib/sqlalchemy/plugins/serialization.py
    :language: python
    :caption: ``SerializationPluginProtocol`` implementation example
 
@@ -123,3 +124,8 @@ signature (their :func:`__init__` method).
 .. literalinclude:: /examples/plugins/di_plugin.py
    :language: python
    :caption: Dynamically generating signature information for a custom type
+
+.. toctree::
+    :titlesonly:
+
+    flash_messages

@@ -51,7 +51,7 @@ def test_layered_parameters_injected_correctly() -> None:
         },
     ) as client:
         # Set cookies on the client to avoid warnings about per-request cookies.
-        client.cookies = {"app4": "jeronimo"}  # type: ignore
+        client.cookies = {"app4": "jeronimo"}  # type: ignore[assignment]
 
         query = {"controller1": "99", "controller3": "tuna", "router1": "albatross", "app2": ["x", "y"]}
         headers = {"router3": "10"}
@@ -110,12 +110,12 @@ def test_layered_parameters_validation(parameter: str, param_type: str) -> None:
             query.pop(parameter)
 
         # Set cookies on the client to avoid warnings about per-request cookies.
-        client.cookies = cookies  # type: ignore
+        client.cookies = cookies  # type: ignore[assignment]
 
         response = client.get("/router/controller/1", params=query, headers=headers)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert response.json()["detail"].startswith(f"Missing required {param_type} parameter '{parameter}' for url")
+        assert response.json()["detail"].startswith(f"Missing required {param_type} parameter '{parameter}' for path")
 
 
 def test_layered_parameters_defaults_and_overrides() -> None:

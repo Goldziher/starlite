@@ -146,12 +146,10 @@ class WebSocket(Generic[UserT, AuthT, StateT], ASGIConnection["WebsocketRouteHan
         await self.send(event)
 
     @overload
-    async def receive_data(self, mode: Literal["text"]) -> str:
-        ...
+    async def receive_data(self, mode: Literal["text"]) -> str: ...
 
     @overload
-    async def receive_data(self, mode: Literal["binary"]) -> bytes:
-        ...
+    async def receive_data(self, mode: Literal["binary"]) -> bytes: ...
 
     async def receive_data(self, mode: WebSocketMode) -> str | bytes:
         """Receive an 'websocket.receive' event and returns the data stored on it.
@@ -170,12 +168,10 @@ class WebSocket(Generic[UserT, AuthT, StateT], ASGIConnection["WebsocketRouteHan
         return event.get("text") or "" if mode == "text" else event.get("bytes") or b""
 
     @overload
-    def iter_data(self, mode: Literal["text"]) -> AsyncGenerator[str, None]:
-        ...
+    def iter_data(self, mode: Literal["text"]) -> AsyncGenerator[str, None]: ...
 
     @overload
-    def iter_data(self, mode: Literal["binary"]) -> AsyncGenerator[bytes, None]:
-        ...
+    def iter_data(self, mode: Literal["binary"]) -> AsyncGenerator[bytes, None]: ...
 
     async def iter_data(self, mode: WebSocketMode = "text") -> AsyncGenerator[str | bytes, None]:
         """Continuously receive data and yield it
@@ -270,12 +266,10 @@ class WebSocket(Generic[UserT, AuthT, StateT], ASGIConnection["WebsocketRouteHan
         await self.send(event)
 
     @overload
-    async def send_text(self, data: bytes, encoding: str = "utf-8") -> None:
-        ...
+    async def send_text(self, data: bytes, encoding: str = "utf-8") -> None: ...
 
     @overload
-    async def send_text(self, data: str) -> None:
-        ...
+    async def send_text(self, data: str) -> None: ...
 
     async def send_text(self, data: str | bytes, encoding: str = "utf-8") -> None:
         """Send data using the ``text`` key of the send event.
@@ -290,12 +284,10 @@ class WebSocket(Generic[UserT, AuthT, StateT], ASGIConnection["WebsocketRouteHan
         await self.send_data(data=data, encoding=encoding)
 
     @overload
-    async def send_bytes(self, data: bytes) -> None:
-        ...
+    async def send_bytes(self, data: bytes) -> None: ...
 
     @overload
-    async def send_bytes(self, data: str, encoding: str = "utf-8") -> None:
-        ...
+    async def send_bytes(self, data: str, encoding: str = "utf-8") -> None: ...
 
     async def send_bytes(self, data: str | bytes, encoding: str = "utf-8") -> None:
         """Send data using the ``bytes`` key of the send event.

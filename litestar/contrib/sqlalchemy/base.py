@@ -1,4 +1,5 @@
 """Application ORM configuration."""
+
 from __future__ import annotations
 
 try:

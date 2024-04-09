@@ -20,11 +20,11 @@ from tests.models import DataclassPerson
 def test_route_handler_validation_http_method() -> None:
     # doesn't raise for http methods
     for value in (*list(HttpMethod), *[x.upper() for x in list(HttpMethod)]):
-        assert route(http_method=value)  # type: ignore
+        assert route(http_method=value)  # type: ignore[arg-type, truthy-bool]
 
     # raises for invalid values
     with pytest.raises(ValidationException):
-        HTTPRouteHandler(http_method="deleze")  # type: ignore
+        HTTPRouteHandler(http_method="deleze")  # type: ignore[arg-type]
 
     # also when passing an empty list
     with pytest.raises(ImproperlyConfiguredException):
@@ -32,14 +32,14 @@ def test_route_handler_validation_http_method() -> None:
 
     # also when passing malformed tokens
     with pytest.raises(ValidationException):
-        route(http_method=[HttpMethod.GET, "poft"], status_code=HTTP_200_OK)  # type: ignore
+        route(http_method=[HttpMethod.GET, "poft"], status_code=HTTP_200_OK)  # type: ignore[list-item]
 
 
 async def test_function_validation() -> None:
     with pytest.raises(ImproperlyConfiguredException):
 
         @get(path="/")
-        def method_with_no_annotation():  # type: ignore
+        def method_with_no_annotation():  # type: ignore[no-untyped-def]
             pass
 
         Litestar(route_handlers=[method_with_no_annotation])
@@ -105,7 +105,7 @@ async def test_function_validation() -> None:
     with pytest.raises(ImproperlyConfiguredException):
 
         @get("/person")
-        def test_function_2(self, data: DataclassPerson) -> None:  # type: ignore
+        def test_function_2(self, data: DataclassPerson) -> None:  # type: ignore[no-untyped-def]
             return None
 
         Litestar(route_handlers=[test_function_2])

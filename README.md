@@ -90,6 +90,7 @@ app = Litestar(route_handlers=[hello_world])
   [msgspec](https://github.com/jcrist/msgspec) and [attrs](https://www.attrs.org/en/stable/)
 - Layered parameter declaration
 - [Automatic API documentation with](#redoc-swagger-ui-and-stoplight-elements-api-documentation):
+  - [Scalar](https://github.com/scalar/scalar/)
   - [RapiDoc](https://github.com/rapi-doc/RapiDoc)
   - [Redoc](https://github.com/Redocly/redoc)
   - [Stoplight Elements](https://github.com/stoplightio/elements)
@@ -128,10 +129,10 @@ A **huge** thanks to our sponsors:
 
 <a href="https://docs.litestar.dev/dev/#sponsors" class="external-link" target="_blank">Check out our sponsors in the docs</a>
 
-If you would like to support the work that we do please consider [becoming a sponsor][sponsor-github]
-on [GitHub][sponsor-github] or [Open Collective][sponsor-oc].
+If you would like to support the work that we do please consider [becoming a sponsor][sponsor-polar]
+via [Polar.sh][sponsor-polar] (preferred), [GitHub][sponsor-github] or [Open Collective][sponsor-oc].
 
-We also participate in pledge-based sponsorship with [Polar][sponsor-polar].
+Also, exclusively with [Polar][sponsor-polar], you can engage in pledge-based sponsorships.
 
 [sponsor-github]: https://github.com/sponsors/litestar-org
 [sponsor-oc]: https://opencollective.com/litestar
@@ -446,7 +447,7 @@ see [the contribution guide](CONTRIBUTING.rst).
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/tompin82"><img src="https://avatars.githubusercontent.com/u/47041409?v=4?s=100" width="100px;" alt="Tomas Jonsson"/><br /><sub><b>Tomas Jonsson</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/commits?author=tompin82" title="Tests">⚠️</a> <a href="https://github.com/litestar-org/litestar/commits?author=tompin82" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://www.linkedin.com/in/khiem-doan/"><img src="https://avatars.githubusercontent.com/u/15646249?v=4?s=100" width="100px;" alt="Khiem Doan"/><br /><sub><b>Khiem Doan</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/commits?author=khiemdoan" title="Documentation">📖</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/kedod"><img src="https://avatars.githubusercontent.com/u/35638715?v=4?s=100" width="100px;" alt="kedod"/><br /><sub><b>kedod</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/commits?author=kedod" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/kedod"><img src="https://avatars.githubusercontent.com/u/35638715?v=4?s=100" width="100px;" alt="kedod"/><br /><sub><b>kedod</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/commits?author=kedod" title="Documentation">📖</a> <a href="https://github.com/litestar-org/litestar/commits?author=kedod" title="Code">💻</a> <a href="https://github.com/litestar-org/litestar/commits?author=kedod" title="Tests">⚠️</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/sonpro1296"><img src="https://avatars.githubusercontent.com/u/17319142?v=4?s=100" width="100px;" alt="sonpro1296"/><br /><sub><b>sonpro1296</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/commits?author=sonpro1296" title="Code">💻</a> <a href="https://github.com/litestar-org/litestar/commits?author=sonpro1296" title="Tests">⚠️</a> <a href="#infra-sonpro1296" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/litestar-org/litestar/commits?author=sonpro1296" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://patrickarmengol.com"><img src="https://avatars.githubusercontent.com/u/42473149?v=4?s=100" width="100px;" alt="Patrick Armengol"/><br /><sub><b>Patrick Armengol</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/commits?author=patrickarmengol" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://sanderwegter.nl"><img src="https://avatars.githubusercontent.com/u/7465799?v=4?s=100" width="100px;" alt="Sander"/><br /><sub><b>Sander</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/commits?author=SanderWegter" title="Documentation">📖</a></td>
@@ -545,6 +546,16 @@ see [the contribution guide](CONTRIBUTING.rst).
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/aranvir"><img src="https://avatars.githubusercontent.com/u/75439739?v=4?s=100" width="100px;" alt="aranvir"/><br /><sub><b>aranvir</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/commits?author=aranvir" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/bunny-therapist"><img src="https://avatars.githubusercontent.com/u/87039365?v=4?s=100" width="100px;" alt="bunny-therapist"/><br /><sub><b>bunny-therapist</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/commits?author=bunny-therapist" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://www.benluo.cc"><img src="https://avatars.githubusercontent.com/u/70398?v=4?s=100" width="100px;" alt="Ben Luo"/><br /><sub><b>Ben Luo</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/commits?author=benluo" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/hugovk"><img src="https://avatars.githubusercontent.com/u/1324225?v=4?s=100" width="100px;" alt="Hugo van Kemenade"/><br /><sub><b>Hugo van Kemenade</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/commits?author=hugovk" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://error418.github.io"><img src="https://avatars.githubusercontent.com/u/7716544?v=4?s=100" width="100px;" alt="Michael Gerbig"/><br /><sub><b>Michael Gerbig</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/commits?author=error418" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/crisog"><img src="https://avatars.githubusercontent.com/u/40803711?v=4?s=100" width="100px;" alt="CrisOG"/><br /><sub><b>CrisOG</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/issues?q=author%3Acrisog" title="Bug reports">🐛</a> <a href="https://github.com/litestar-org/litestar/commits?author=crisog" title="Code">💻</a> <a href="https://github.com/litestar-org/litestar/commits?author=crisog" title="Tests">⚠️</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/haryle"><img src="https://avatars.githubusercontent.com/u/64817481?v=4?s=100" width="100px;" alt="harryle"/><br /><sub><b>harryle</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/commits?author=haryle" title="Code">💻</a> <a href="https://github.com/litestar-org/litestar/commits?author=haryle" title="Tests">⚠️</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="http://www.b-list.org/"><img src="https://avatars.githubusercontent.com/u/12384?v=4?s=100" width="100px;" alt="James Bennett"/><br /><sub><b>James Bennett</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/issues?q=author%3Aubernostrum" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/sherbang"><img src="https://avatars.githubusercontent.com/u/275015?v=4?s=100" width="100px;" alt="sherbang"/><br /><sub><b>sherbang</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/commits?author=sherbang" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/carlsmedstad"><img src="https://avatars.githubusercontent.com/u/6952324?v=4?s=100" width="100px;" alt="Carl Smedstad"/><br /><sub><b>Carl Smedstad</b></sub></a><br /><a href="https://github.com/litestar-org/litestar/commits?author=carlsmedstad" title="Tests">⚠️</a></td>
     </tr>
   </tbody>
 </table>

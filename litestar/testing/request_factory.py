@@ -39,8 +39,7 @@ def _create_default_route_handler(
 ) -> HTTPRouteHandler:
     handler_decorator = _decorator_http_method_map[http_method]
 
-    def _default_route_handler() -> None:
-        ...
+    def _default_route_handler() -> None: ...
 
     handler = handler_decorator("/", sync_to_thread=False, **(handler_kwargs or {}))(_default_route_handler)
     handler.owner = app

@@ -74,22 +74,11 @@ class LitestarEnv:
     """Information about the current Litestar environment variables."""
 
     app_path: str
-    debug: bool
     app: Litestar
     cwd: Path
     host: str | None = None
     port: int | None = None
-    fd: int | None = None
-    uds: str | None = None
-    reload: bool | None = None
-    reload_dirs: tuple[str, ...] | None = None
-    reload_include: tuple[str, ...] | None = None
-    reload_exclude: tuple[str, ...] | None = None
-    web_concurrency: int | None = None
     is_app_factory: bool = False
-    certfile_path: str | None = None
-    keyfile_path: str | None = None
-    create_self_signed_cert: bool = False
 
     @classmethod
     def from_env(cls, app_path: str | None, app_dir: Path | None = None) -> LitestarEnv:
@@ -107,40 +96,26 @@ class LitestarEnv:
 
             dotenv.load_dotenv()
         app_path = app_path or getenv("LITESTAR_APP")
+        app_name = getenv("LITESTAR_APP_NAME") or "Litestar"
+        quiet_console = getenv("LITESTAR_QUIET_CONSOLE") or False
         if app_path and getenv("LITESTAR_APP") is None:
             os.environ["LITESTAR_APP"] = app_path
         if app_path:
-            console.print(f"Using Litestar app from env: [bright_blue]{app_path!r}")
+            if not quiet_console and isatty():
+                console.print(f"Using {app_name} app from env: [bright_blue]{app_path!r}")
             loaded_app = _load_app_from_path(app_path)
         else:
             loaded_app = _autodiscover_app(cwd)
 
         port = getenv("LITESTAR_PORT")
-        web_concurrency = getenv("WEB_CONCURRENCY")
-        uds = getenv("LITESTAR_UNIX_DOMAIN_SOCKET")
-        fd = getenv("LITESTAR_FILE_DESCRIPTOR")
-        reload_dirs = tuple(s.strip() for s in getenv("LITESTAR_RELOAD_DIRS", "").split(",") if s) or None
-        reload_include = tuple(s.strip() for s in getenv("LITESTAR_RELOAD_INCLUDES", "").split(",") if s) or None
-        reload_exclude = tuple(s.strip() for s in getenv("LITESTAR_RELOAD_EXCLUDES", "").split(",") if s) or None
 
         return cls(
             app_path=loaded_app.app_path,
             app=loaded_app.app,
-            debug=_bool_from_env("LITESTAR_DEBUG"),
             host=getenv("LITESTAR_HOST"),
             port=int(port) if port else None,
-            uds=uds,
-            fd=int(fd) if fd else None,
-            reload=_bool_from_env("LITESTAR_RELOAD"),
-            reload_dirs=reload_dirs,
-            reload_include=reload_include,
-            reload_exclude=reload_exclude,
-            web_concurrency=int(web_concurrency) if web_concurrency else None,
             is_app_factory=loaded_app.is_factory,
             cwd=cwd,
-            certfile_path=getenv("LITESTAR_SSL_CERT_PATH"),
-            keyfile_path=getenv("LITESTAR_SSL_KEY_PATH"),
-            create_self_signed_cert=_bool_from_env("LITESTAR_CREATE_SELF_SIGNED_CERT"),
         )
 
 
@@ -328,6 +303,8 @@ def _autodiscovery_paths(base_dir: Path, arbitrary: bool = True) -> Generator[Pa
 
 
 def _autodiscover_app(cwd: Path) -> LoadedApp:
+    app_name = getenv("LITESTAR_APP_NAME") or "Litestar"
+    quiet_console = getenv("LITESTAR_QUIET_CONSOLE") or False
     for file_path in _autodiscovery_paths(cwd):
         import_path = _path_to_dotted_path(file_path.relative_to(cwd))
         module = importlib.import_module(import_path)
@@ -339,13 +316,15 @@ def _autodiscover_app(cwd: Path) -> LoadedApp:
             if isinstance(value, Litestar):
                 app_string = f"{import_path}:{attr}"
                 os.environ["LITESTAR_APP"] = app_string
-                console.print(f"Using Litestar app from [bright_blue]{app_string}")
+                if not quiet_console and isatty():
+                    console.print(f"Using {app_name} app from [bright_blue]{app_string}")
                 return LoadedApp(app=value, app_path=app_string, is_factory=False)
 
         if hasattr(module, "create_app"):
             app_string = f"{import_path}:create_app"
             os.environ["LITESTAR_APP"] = app_string
-            console.print(f"Using Litestar factory [bright_blue]{app_string}")
+            if not quiet_console and isatty():
+                console.print(f"Using {app_name} factory from [bright_blue]{app_string}")
             return LoadedApp(app=module.create_app(), app_path=app_string, is_factory=True)
 
         for attr, value in module.__dict__.items():
@@ -359,10 +338,11 @@ def _autodiscover_app(cwd: Path) -> LoadedApp:
             if return_annotation in ("Litestar", Litestar):
                 app_string = f"{import_path}:{attr}"
                 os.environ["LITESTAR_APP"] = app_string
-                console.print(f"Using Litestar factory [bright_blue]{app_string}")
+                if not quiet_console and sys.stdout.isatty():
+                    console.print(f"Using {app_name} factory from [bright_blue]{app_string}")
                 return LoadedApp(app=value(), app_path=f"{app_string}", is_factory=True)
 
-    raise LitestarCLIException("Could not find a Litestar app or factory")
+    raise LitestarCLIException(f"Could not find {app_name} instance or factory")
 
 
 def _format_is_enabled(value: Any) -> str:
@@ -389,7 +369,12 @@ def show_app_info(app: Litestar) -> None:  # pragma: no cover
 
     openapi_enabled = _format_is_enabled(app.openapi_config)
     if app.openapi_config:
-        openapi_enabled += f" path=[yellow]{app.openapi_config.openapi_controller.path}"
+        path = (
+            app.openapi_config.openapi_controller.path
+            if app.openapi_config.openapi_controller
+            else app.openapi_config.path or "/schema"
+        )
+        openapi_enabled += f" path=[yellow]{path}"
     table.add_row("OpenAPI", openapi_enabled)
 
     table.add_row("Compression", app.compression_config.backend if app.compression_config else "[red]Disabled")
@@ -441,7 +426,7 @@ def validate_ssl_file_paths(certfile_arg: str | None, keyfile_arg: str | None) -
             raise LitestarCLIException(f"File provided for {argname} was not found: {path}")
         resolved_paths.append(str(path))
 
-    return tuple(resolved_paths)  # type: ignore
+    return tuple(resolved_paths)  # type: ignore[return-value]
 
 
 def create_ssl_files(
@@ -558,5 +543,17 @@ def remove_routes_with_patterns(
 def remove_default_schema_routes(
     routes: list[HTTPRoute | ASGIRoute | WebSocketRoute], openapi_config: OpenAPIConfig
 ) -> list[HTTPRoute | ASGIRoute | WebSocketRoute]:
-    schema_path = openapi_config.openapi_controller.path
+    schema_path = (
+        (openapi_config.path or "/schema")
+        if openapi_config.openapi_controller is None
+        else openapi_config.openapi_controller.path
+    )
     return remove_routes_with_patterns(routes, (schema_path,))
+
+
+def isatty() -> bool:
+    """Detect if a terminal is TTY enabled.
+
+    This is a convenience wrapper around the built in system methods.  This allows for easier testing of TTY/non-TTY modes.
+    """
+    return sys.stdout.isatty()

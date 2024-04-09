@@ -120,6 +120,7 @@ async def test_reset() -> None:
         assert response.status_code == HTTP_200_OK
 
 
+@travel(datetime.utcnow, tick=False)
 def test_exclude_patterns() -> None:
     @get("/excluded")
     def handler() -> None:
@@ -145,6 +146,7 @@ def test_exclude_patterns() -> None:
         assert response.status_code == HTTP_429_TOO_MANY_REQUESTS
 
 
+@travel(datetime.utcnow, tick=False)
 def test_exclude_opt_key() -> None:
     @get("/excluded", skip_rate_limiting=True)
     def handler() -> None:
@@ -170,6 +172,7 @@ def test_exclude_opt_key() -> None:
         assert response.status_code == HTTP_429_TOO_MANY_REQUESTS
 
 
+@travel(datetime.utcnow, tick=False)
 def test_check_throttle_handler() -> None:
     @get("/path1")
     def handler1() -> None:
@@ -198,6 +201,7 @@ def test_check_throttle_handler() -> None:
         assert response.status_code == HTTP_200_OK
 
 
+@travel(datetime.utcnow, tick=False)
 async def test_rate_limiting_works_with_mounted_apps(tmpdir: "Path") -> None:
     # https://github.com/litestar-org/litestar/issues/781
     @get("/not-excluded")

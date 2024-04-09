@@ -38,6 +38,7 @@ extensions = [
     "sphinx_copybutton",
     "sphinxcontrib.mermaid",
     "sphinx_click",
+    "sphinx_paramlinks",
 ]
 
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
@@ -48,6 +49,7 @@ intersphinx_mapping = {
     "anyio": ("https://anyio.readthedocs.io/en/stable/", None),
     "multidict": ("https://multidict.aio-libs.org/en/stable/", None),
     "sqlalchemy": ("https://docs.sqlalchemy.org/en/20/", None),
+    "alembic": ("https://alembic.sqlalchemy.org/en/latest/", None),
     "click": ("https://click.palletsprojects.com/en/8.1.x/", None),
     "redis": ("https://redis-py.readthedocs.io/en/stable/", None),
     "picologging": ("https://microsoft.github.io/picologging", None),
@@ -156,11 +158,13 @@ nitpick_ignore = [
     (PY_CLASS, "litestar.typing.ParsedType"),
     (PY_METH, "litestar.dto.factory.DTOData.create_instance"),
     (PY_METH, "litestar.dto.interface.DTOInterface.data_to_encodable_type"),
+    (PY_CLASS, "MetaData"),
     (PY_CLASS, "advanced_alchemy.repository.typing.ModelT"),
     (PY_OBJ, "advanced_alchemy.config.common.SessionMakerT"),
     (PY_OBJ, "advanced_alchemy.config.common.ConnectionT"),
     (PY_CLASS, "advanced_alchemy.extensions.litestar.plugins._slots_base.SlotsBase"),
     (PY_CLASS, "advanced_alchemy.config.EngineConfig"),
+    (PY_CLASS, "advanced_alchemy.config.common.GenericAlembicConfig"),
     (PY_CLASS, "advanced_alchemy.extensions.litestar.plugins.SQLAlchemyPlugin"),
     (PY_CLASS, "advanced_alchemy.extensions.litestar.plugins.SQLAlchemySerializationPlugin"),
     (PY_CLASS, "advanced_alchemy.extensions.litestar.plugins.SQLAlchemyInitPlugin"),

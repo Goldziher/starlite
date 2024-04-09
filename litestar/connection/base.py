@@ -9,6 +9,7 @@ from litestar.datastructures.state import State
 from litestar.datastructures.url import URL, Address, make_absolute_url
 from litestar.exceptions import ImproperlyConfiguredException
 from litestar.types.empty import Empty
+from litestar.utils.empty import value_or_default
 from litestar.utils.scope.state import ScopeState
 
 if TYPE_CHECKING:
@@ -287,7 +288,7 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
             value: Dictionary or pydantic model instance for the session data.
 
         Returns:
-            None.
+            None
         """
         self.scope["session"] = value
 
@@ -301,6 +302,10 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
             None.
         """
         self.scope["session"] = Empty
+        self._connection_state.session_id = Empty
+
+    def get_session_id(self) -> str | None:
+        return value_or_default(value=self._connection_state.session_id, default=None)
 
     def url_for(self, name: str, **path_parameters: Any) -> str:
         """Return the url for a given route handler name.

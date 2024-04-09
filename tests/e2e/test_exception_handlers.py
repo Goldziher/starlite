@@ -70,8 +70,7 @@ def test_exception_handling(exc_to_raise: HTTPException, expected_layer: str) ->
 
 
 def test_exception_handler_with_custom_request_class() -> None:
-    class CustomRequest(Request):
-        ...
+    class CustomRequest(Request): ...
 
     def handler(req: Request, exc: Exception) -> Response:
         assert isinstance(req, CustomRequest)

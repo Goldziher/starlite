@@ -40,7 +40,7 @@ jwt_cookie_auth = JWTCookieAuth[User](
     # and our openAPI docs.
     exclude=["/login", "/schema"],
     # Tip: We can optionally supply cookie options to the configuration.  Here is an example of enabling the secure cookie option
-    # auth_cookie_options=CookieOptions(secure=True),
+    # secure=True,
 )
 
 

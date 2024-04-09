@@ -150,21 +150,21 @@ def configure_node(
                 asgi_app=build_route_middleware_stack(app=app, route=route, route_handler=handler),
                 handler=handler,
             )
-            node.path_parameters[method] = route.path_parameters
+            node.path_parameters[method] = tuple(route.path_parameters.values())
 
     elif isinstance(route, WebSocketRoute):
         node.asgi_handlers["websocket"] = ASGIHandlerTuple(
             asgi_app=build_route_middleware_stack(app=app, route=route, route_handler=route.route_handler),
             handler=route.route_handler,
         )
-        node.path_parameters["websocket"] = route.path_parameters
+        node.path_parameters["websocket"] = tuple(route.path_parameters.values())
 
     else:
         node.asgi_handlers["asgi"] = ASGIHandlerTuple(
             asgi_app=build_route_middleware_stack(app=app, route=route, route_handler=route.route_handler),
             handler=route.route_handler,
         )
-        node.path_parameters["asgi"] = route.path_parameters
+        node.path_parameters["asgi"] = tuple(route.path_parameters.values())
         node.is_asgi = True
 
 
@@ -212,7 +212,7 @@ def build_route_middleware_stack(
             handler, kwargs = cast("tuple[Any, dict[str, Any]]", middleware)
             asgi_handler = handler(app=asgi_handler, **kwargs)
         else:
-            asgi_handler = middleware(app=asgi_handler)  # type: ignore
+            asgi_handler = middleware(app=asgi_handler)  # type: ignore[call-arg]
 
     # we wrap the entire stack again in ExceptionHandlerMiddleware
     return wrap_in_exception_handler(

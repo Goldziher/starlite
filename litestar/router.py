@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from copy import copy
+from copy import copy, deepcopy
 from typing import TYPE_CHECKING, Any, Mapping, Sequence, cast
 
 from litestar._layers.utils import narrow_response_cookies, narrow_response_headers
@@ -20,6 +20,7 @@ __all__ = ("Router",)
 
 
 if TYPE_CHECKING:
+    from litestar.connection import Request, WebSocket
     from litestar.datastructures import CacheControlHeader, ETag
     from litestar.dto import AbstractDTO
     from litestar.openapi.spec import SecurityRequirement
@@ -66,6 +67,7 @@ class Router:
         "parameters",
         "path",
         "registered_route_handler_ids",
+        "request_class",
         "response_class",
         "response_cookies",
         "response_headers",
@@ -74,8 +76,9 @@ class Router:
         "security",
         "signature_namespace",
         "tags",
-        "type_encoders",
         "type_decoders",
+        "type_encoders",
+        "websocket_class",
     )
 
     def __init__(
@@ -95,6 +98,7 @@ class Router:
         middleware: Sequence[Middleware] | None = None,
         opt: Mapping[str, Any] | None = None,
         parameters: ParametersMap | None = None,
+        request_class: type[Request] | None = None,
         response_class: type[Response] | None = None,
         response_cookies: ResponseCookies | None = None,
         response_headers: ResponseHeaders | None = None,
@@ -104,8 +108,9 @@ class Router:
         signature_namespace: Mapping[str, Any] | None = None,
         signature_types: Sequence[Any] | None = None,
         tags: Sequence[str] | None = None,
-        type_encoders: TypeEncodersMap | None = None,
         type_decoders: TypeDecodersSequence | None = None,
+        type_encoders: TypeEncodersMap | None = None,
+        websocket_class: type[WebSocket] | None = None,
     ) -> None:
         """Initialize a ``Router``.
 
@@ -136,6 +141,8 @@ class Router:
                 paths.
             path: A path fragment that is prefixed to all route handlers, controllers and other routers associated
                 with the router instance.
+            request_class: A custom subclass of :class:`Request <.connection.Request>` to be used as the default for
+                all route handlers, controllers and other routers associated with the router instance.
             response_class: A custom subclass of :class:`Response <.response.Response>` to be used as the default for
                 all route handlers, controllers and other routers associated with the router instance.
             response_cookies: A sequence of :class:`Cookie <.datastructures.Cookie>` instances.
@@ -154,8 +161,10 @@ class Router:
                 These types will be added to the signature namespace using their ``__name__`` attribute.
             tags: A sequence of string tags that will be appended to the schema of all route handlers under the
                 application.
-            type_encoders: A mapping of types to callables that transform them into types supported for serialization.
             type_decoders: A sequence of tuples, each composed of a predicate testing for type identity and a msgspec hook for deserialization.
+            type_encoders: A mapping of types to callables that transform them into types supported for serialization.
+            websocket_class: A custom subclass of :class:`WebSocket <.connection.WebSocket>` to be used as the default for
+                all route handlers, controllers and other routers associated with the router instance.
         """
 
         self.after_request = ensure_async_callable(after_request) if after_request else None  # pyright: ignore
@@ -173,6 +182,7 @@ class Router:
         self.owner: Router | None = None
         self.parameters = dict(parameters or {})
         self.path = normalize_path(path)
+        self.request_class = request_class
         self.response_class = response_class
         self.response_cookies = narrow_response_cookies(response_cookies)
         self.response_headers = narrow_response_headers(response_headers)
@@ -186,6 +196,7 @@ class Router:
         self.registered_route_handler_ids: set[int] = set()
         self.type_encoders = dict(type_encoders) if type_encoders is not None else None
         self.type_decoders = list(type_decoders) if type_decoders is not None else None
+        self.websocket_class = websocket_class
 
         for route_handler in route_handlers or []:
             self.register(value=route_handler)
@@ -260,9 +271,9 @@ class Router:
                     for method in route_handler.http_methods:
                         route_map[route.path][method] = route_handler
             else:
-                route_map[route.path][
-                    "websocket" if isinstance(route, WebSocketRoute) else "asgi"
-                ] = route.route_handler
+                route_map[route.path]["websocket" if isinstance(route, WebSocketRoute) else "asgi"] = (
+                    route.route_handler
+                )
 
         return route_map
 
@@ -293,9 +304,9 @@ class Router:
                     for http_method in route_handler.http_methods:
                         handlers_map[path][http_method] = route_handler
                 else:
-                    handlers_map[path][
-                        "websocket" if isinstance(route_handler, WebsocketRouteHandler) else "asgi"
-                    ] = cast("WebsocketRouteHandler | ASGIRouteHandler", route_handler)
+                    handlers_map[path]["websocket" if isinstance(route_handler, WebsocketRouteHandler) else "asgi"] = (
+                        cast("WebsocketRouteHandler | ASGIRouteHandler", route_handler)
+                    )
 
         return handlers_map
 
@@ -309,14 +320,12 @@ class Router:
             return value(owner=self).to_handler()  # pyright: ignore
 
         if isinstance(value, Router):
-            if value.owner:
-                raise ImproperlyConfiguredException(f"Router with path {value.path} has already been registered")
-
             if value is self:
                 raise ImproperlyConfiguredException("Cannot register a router on itself")
 
-            value.owner = self
-            return value
+            router_copy = deepcopy(value)
+            router_copy.owner = self
+            return router_copy
 
         if isinstance(value, (ASGIRouteHandler, HTTPRouteHandler, WebsocketRouteHandler)):
             value.owner = self

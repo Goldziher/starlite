@@ -21,6 +21,7 @@ class HttpMethod(str, Enum):
     PATCH = "PATCH"
     POST = "POST"
     PUT = "PUT"
+    TRACE = "TRACE"
 
 
 class MediaType(str, Enum):

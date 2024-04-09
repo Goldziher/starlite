@@ -96,9 +96,6 @@ class MappingType(CompositeType):
 @dataclass(frozen=True)
 class TransferDTOFieldDefinition(DTOFieldDefinition):
     __slots__ = (
-        "default_factory",
-        "dto_field",
-        "model_name",
         "is_excluded",
         "is_partial",
         "serialization_name",

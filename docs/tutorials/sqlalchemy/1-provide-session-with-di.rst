@@ -11,7 +11,7 @@ handlers.
 .. literalinclude:: /examples/contrib/sqlalchemy/plugins/tutorial/full_app_with_session_di.py
     :language: python
     :linenos:
-    :emphasize-lines: 49-58,84-85,89-91,96-97,105
+    :emphasize-lines: 47-57,82-83,87-89,94-95,103
 
 In the previous example, the database session is created within each HTTP route handler function. In this script we use
 dependency injection to decouple creation of the session from the route handlers.
@@ -22,14 +22,14 @@ session, begins a transaction, and handles any integrity errors that might raise
 .. literalinclude:: /examples/contrib/sqlalchemy/plugins/tutorial/full_app_with_session_di.py
     :language: python
     :linenos:
-    :lines: 49-59
+    :lines: 48-57
 
 That function is declared as a dependency to the Litestar application, using the name ``transaction``.
 
 .. literalinclude:: /examples/contrib/sqlalchemy/plugins/tutorial/full_app_with_session_di.py
     :language: python
     :linenos:
-    :lines: 101-106
+    :lines: 101-105
     :emphasize-lines: 3
 
 In the route handlers, the database session is injected by declaring the ``transaction`` name as a function argument.
@@ -39,7 +39,7 @@ This is automatically provided by Litestar's dependency injection system at runt
 .. literalinclude:: /examples/contrib/sqlalchemy/plugins/tutorial/full_app_with_session_di.py
     :language: python
     :linenos:
-    :lines: 82-85
+    :lines: 81-84
     :emphasize-lines: 2
 
 One final improvement in this script is exception handling. In the previous version, a
@@ -50,7 +50,7 @@ to occur inside the ``provide_transaction()`` function.
 .. literalinclude:: /examples/contrib/sqlalchemy/plugins/tutorial/full_app_with_session_di.py
     :language: python
     :linenos:
-    :lines: 48-58
+    :lines: 47-57
     :emphasize-lines: 3,6-10
 
 This change broadens the scope of exception handling to any operation that uses the database session, not just the
@@ -69,14 +69,14 @@ session object:
         .. literalinclude:: /examples/contrib/sqlalchemy/plugins/tutorial/full_app_with_session_di.py
             :language: python
             :linenos:
-            :lines: 82-106
+            :lines: 81-105
 
    .. tab-item:: Before
 
         .. literalinclude:: /examples/contrib/sqlalchemy/plugins/tutorial/full_app_no_plugins.py
             :language: python
             :linenos:
-            :lines: 70-101
+            :lines: 69-100
 
 Much better!
 

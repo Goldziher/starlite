@@ -19,6 +19,7 @@ __all__ = ("Controller",)
 
 
 if TYPE_CHECKING:
+    from litestar.connection import Request, WebSocket
     from litestar.datastructures import CacheControlHeader, ETag
     from litestar.dto import AbstractDTO
     from litestar.openapi.spec import SecurityRequirement
@@ -61,6 +62,7 @@ class Controller:
         "owner",
         "parameters",
         "path",
+        "request_class",
         "response_class",
         "response_cookies",
         "response_headers",
@@ -70,6 +72,7 @@ class Controller:
         "tags",
         "type_encoders",
         "type_decoders",
+        "websocket_class",
     )
 
     after_request: AfterRequestHookHandler | None
@@ -127,6 +130,10 @@ class Controller:
 
     All route handlers under the controller will have the fragment appended to them. If not set it defaults to ``/``.
     """
+    request_class: type[Request] | None
+    """A custom subclass of :class:`Request <.connection.Request>` to be used as the default request for all route
+    handlers under the controller.
+    """
     response_class: type[Response] | None
     """A custom subclass of :class:`Response <.response.Response>` to be used as the default response for all route
     handlers under the controller.
@@ -150,10 +157,14 @@ class Controller:
 
     These types will be added to the signature namespace using their ``__name__`` attribute.
     """
-    type_encoders: TypeEncodersMap | None
-    """A mapping of types to callables that transform them into types supported for serialization."""
     type_decoders: TypeDecodersSequence | None
     """A sequence of tuples, each composed of a predicate testing for type identity and a msgspec hook for deserialization."""
+    type_encoders: TypeEncodersMap | None
+    """A mapping of types to callables that transform them into types supported for serialization."""
+    websocket_class: type[WebSocket] | None
+    """A custom subclass of :class:`WebSocket <.connection.WebSocket>` to be used as the default websocket for all route
+    handlers under the controller.
+    """
 
     def __init__(self, owner: Router) -> None:
         """Initialize a controller.

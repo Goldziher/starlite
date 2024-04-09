@@ -49,7 +49,7 @@ class BaseLocalFileSystem(FileSystemProtocol):
             mode: Mode, similar to the built ``open``.
             buffering: Buffer size.
         """
-        return await open_file(file=file, mode=mode, buffering=buffering)  # type: ignore
+        return await open_file(file=file, mode=mode, buffering=buffering)  # type: ignore[call-overload, no-any-return]
 
 
 class FileSystemAdapter:

@@ -1,4 +1,5 @@
 """Collection filter datastructures."""
+
 from __future__ import annotations
 
 from collections import abc  # noqa: TCH003

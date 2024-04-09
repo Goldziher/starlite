@@ -44,13 +44,13 @@ from litestar._openapi.schema_generation.utils import (
     _should_create_enum_schema,
     _should_create_literal_schema,
     _type_or_first_not_none_inner_type,
-    get_formatted_examples,
+    get_json_schema_formatted_examples,
 )
-from litestar.datastructures import UploadFile
+from litestar.datastructures import SecretBytes, SecretString, UploadFile
 from litestar.exceptions import ImproperlyConfiguredException
 from litestar.openapi.spec.enums import OpenAPIFormat, OpenAPIType
 from litestar.openapi.spec.schema import Schema, SchemaDataContainer
-from litestar.params import BodyKwarg, ParameterKwarg
+from litestar.params import BodyKwarg, KwargDefinition, ParameterKwarg
 from litestar.plugins import OpenAPISchemaPlugin
 from litestar.types import Empty
 from litestar.types.builtin_types import NoneType
@@ -114,6 +114,8 @@ TYPE_MAP: dict[type[Any] | None | Any, Schema] = {
     OrderedDict: Schema(type=OpenAPIType.OBJECT),
     Path: Schema(type=OpenAPIType.STRING, format=OpenAPIFormat.URI),
     Pattern: Schema(type=OpenAPIType.STRING, format=OpenAPIFormat.REGEX),
+    SecretBytes: Schema(type=OpenAPIType.STRING),
+    SecretString: Schema(type=OpenAPIType.STRING),
     Sequence: Schema(type=OpenAPIType.ARRAY),
     Set: Schema(type=OpenAPIType.ARRAY),
     Tuple: Schema(type=OpenAPIType.ARRAY),
@@ -189,7 +191,7 @@ def create_enum_schema(annotation: EnumMeta, include_null: bool = False) -> Sche
     Returns:
         A schema instance.
     """
-    enum_values: list[str | int | None] = [v.value for v in annotation]  # type: ignore
+    enum_values: list[str | int | None] = [v.value for v in annotation]  # type: ignore[var-annotated]
     if include_null and None not in enum_values:
         enum_values.append(None)
     return Schema(type=_types_in_list(enum_values), enum=enum_values)
@@ -558,7 +560,7 @@ class SchemaCreator:
                     not isinstance(value, Hashable) or not self.is_undefined(value)
                 ):
                     if schema_key == "examples":
-                        value = get_formatted_examples(field, cast("list[Example]", value))
+                        value = get_json_schema_formatted_examples(cast("list[Example]", value))
 
                     # we only want to transfer values from the `KwargDefinition` to `Schema` if the schema object
                     # doesn't already have a value for that property. For example, if a field is a constrained date,
@@ -569,10 +571,21 @@ class SchemaCreator:
                     if getattr(schema, schema_key, None) is None:
                         setattr(schema, schema_key, value)
 
+            if isinstance(field.kwarg_definition, KwargDefinition) and (extra := field.kwarg_definition.schema_extra):
+                for schema_key, value in extra.items():
+                    if not hasattr(schema, schema_key):
+                        raise ValueError(
+                            f"`schema_extra` declares key `{schema_key}` which does not exist in `Schema` object"
+                        )
+                    setattr(schema, schema_key, value)
+
+        if schema.default is None and field.default is not Empty:
+            schema.default = field.default
+
         if not schema.examples and self.generate_examples:
             from litestar._openapi.schema_generation.examples import create_examples_for_field
 
-            schema.examples = get_formatted_examples(field, create_examples_for_field(field))
+            schema.examples = get_json_schema_formatted_examples(create_examples_for_field(field))
 
         if schema.title and schema.type == OpenAPIType.OBJECT:
             key = _get_normalized_schema_key(field.annotation)
@@ -587,7 +600,7 @@ class SchemaCreator:
         property_fields: Mapping[str, FieldDefinition],
         openapi_type: OpenAPIType = OpenAPIType.OBJECT,
         title: str | None = None,
-        examples: Mapping[str, Example] | None = None,
+        examples: list[Any] | None = None,
     ) -> Schema:
         """Create a schema for the components/schemas section of the OpenAPI spec.
 

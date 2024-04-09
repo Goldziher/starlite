@@ -9,9 +9,10 @@ from operator import attrgetter
 from typing import TYPE_CHECKING, Any, Iterator
 
 from litestar._openapi.schema_generation import SchemaCreator
+from litestar._openapi.schema_generation.utils import get_formatted_examples
 from litestar.enums import MediaType
 from litestar.exceptions import HTTPException, ValidationException
-from litestar.openapi.spec import Example, OpenAPIResponse
+from litestar.openapi.spec import Example, OpenAPIResponse, Reference
 from litestar.openapi.spec.enums import OpenAPIFormat, OpenAPIType
 from litestar.openapi.spec.header import OpenAPIHeader
 from litestar.openapi.spec.media_type import OpenAPIMediaType
@@ -240,13 +241,18 @@ class ResponseFactory:
                 prefer_alias=False,
                 generate_examples=additional_response.generate_examples,
             )
+            field_def = FieldDefinition.from_annotation(additional_response.data_container)
+
+            examples: dict[str, Example | Reference] | None = (
+                dict(get_formatted_examples(field_def, additional_response.examples))
+                if additional_response.examples
+                else None
+            )
 
             content: dict[str, OpenAPIMediaType] | None
             if additional_response.data_container is not None:
-                schema = schema_creator.for_field_definition(
-                    FieldDefinition.from_annotation(additional_response.data_container)
-                )
-                content = {additional_response.media_type: OpenAPIMediaType(schema=schema)}
+                schema = schema_creator.for_field_definition(field_def)
+                content = {additional_response.media_type: OpenAPIMediaType(schema=schema, examples=examples)}
             else:
                 content = None
 
@@ -296,9 +302,7 @@ def create_error_responses(exceptions: list[type[HTTPException]]) -> Iterator[tu
                         ),
                     },
                     description=pascal_case_to_text(get_name(exc)),
-                    examples={
-                        exc.__name__: Example(value={"status_code": status_code, "detail": example_detail, "extra": {}})
-                    },
+                    examples=[{"status_code": status_code, "detail": example_detail, "extra": {}}],
                 )
             )
         if len(exceptions_schemas) > 1:  # noqa: SIM108
