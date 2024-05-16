@@ -8,18 +8,8 @@ is **any callable** that takes a kwarg called ``app``, which is the next ASGI ha
 
 The example previously given was using a factory function, i.e.:
 
-.. code-block:: python
-
-   from litestar.types import ASGIApp, Scope, Receive, Send
-
-
-   def middleware_factory(app: ASGIApp) -> ASGIApp:
-       async def my_middleware(scope: Scope, receive: Receive, send: Send) -> None:
-           # do something here
-           ...
-           await app(scope, receive, send)
-
-       return my_middleware
+.. literalinclude:: /examples/middleware/creation/create_basic_middleware.py
+    :language: python
 
 While using functions is a perfectly viable approach, you can also use classes to do the same. See the next sections on
 two base classes you can use for this purpose - the :class:`MiddlewareProtocol <.middleware.base.MiddlewareProtocol>` ,
@@ -33,16 +23,9 @@ The :class:`MiddlewareProtocol <litestar.middleware.base.MiddlewareProtocol>` cl
 `PEP 544 Protocol <https://peps.python.org/pep-0544/>`_ that specifies the minimal implementation of a middleware as
 follows:
 
-.. code-block:: python
+.. literalinclude:: /examples/middleware/creation/create_middleware_using_middleware_protocol_1.py
+    :language: python
 
-   from typing import Protocol, Any
-   from litestar.types import ASGIApp, Scope, Receive, Send
-
-
-   class MiddlewareProtocol(Protocol):
-       def __init__(self, app: ASGIApp, **kwargs: Any) -> None: ...
-
-       async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None: ...
 
 The ``__init__`` method receives and sets "app". *It's important to understand* that app is not an instance of Litestar in
 this case, but rather the next middleware in the stack, which is also an ASGI app.
@@ -55,27 +38,9 @@ server (e.g. *uvicorn*\ ) used to run Litestar.
 To use this protocol as a basis, simply subclass it - as you would any other class, and implement the two methods it
 specifies:
 
-.. code-block:: python
+.. literalinclude:: /examples/middleware/creation/create_middleware_using_middleware_protocol_2.py
+    :language: python
 
-   import logging
-
-   from litestar.types import ASGIApp, Receive, Scope, Send
-   from litestar import Request
-   from litestar.middleware.base import MiddlewareProtocol
-
-   logger = logging.getLogger(__name__)
-
-
-   class MyRequestLoggingMiddleware(MiddlewareProtocol):
-       def __init__(self, app: ASGIApp) -> None:
-           super().__init__(app)
-           self.app = app
-
-       async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-           if scope["type"] == "http":
-               request = Request(scope)
-               logger.info("%s - %s" % request.method, request.url)
-           await self.app(scope, receive, send)
 
 .. important::
 
@@ -92,26 +57,9 @@ Once a middleware finishes doing whatever its doing, it should pass ``scope``, `
 and await it. This is what's happening in the above example with: ``await self.app(scope, receive, send)``. Let's
 explore another example - redirecting the request to a different url from a middleware:
 
-.. code-block:: python
+.. literalinclude:: /examples/middleware/creation/responding_using_middleware_protocol.py
+    :language: python
 
-   from litestar.types import ASGIApp, Receive, Scope, Send
-
-   from litestar.response.redirect import ASGIRedirectResponse
-   from litestar import Request
-   from litestar.middleware.base import MiddlewareProtocol
-
-
-   class RedirectMiddleware(MiddlewareProtocol):
-       def __init__(self, app: ASGIApp) -> None:
-           super().__init__(app)
-           self.app = app
-
-       async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-           if Request(scope).session is None:
-               response = ASGIRedirectResponse(path="/login")
-               await response(scope, receive, send)
-           else:
-               await self.app(scope, receive, send)
 
 As you can see in the above, given some condition (``request.session`` being None) we create a
 :class:`ASGIRedirectResponse <litestar.response.redirect.ASGIRedirectResponse>` and then await it. Otherwise, we await ``self.app``
@@ -133,35 +81,9 @@ functions.
 To demonstrate this, lets say we want to append a header with a timestamp to all outgoing responses. We could achieve
 this by doing the following:
 
-.. code-block:: python
+.. literalinclude:: /examples/middleware/creation/responding_using_middleware_protocol_asgi.py
+    :language: python
 
-   import time
-
-   from litestar.datastructures import MutableScopeHeaders
-   from litestar.types import Message, Receive, Scope, Send
-   from litestar.middleware.base import MiddlewareProtocol
-   from litestar.types import ASGIApp
-
-
-   class ProcessTimeHeader(MiddlewareProtocol):
-       def __init__(self, app: ASGIApp) -> None:
-           super().__init__(app)
-           self.app = app
-
-       async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-           if scope["type"] == "http":
-               start_time = time.time()
-
-               async def send_wrapper(message: Message) -> None:
-                   if message["type"] == "http.response.start":
-                       process_time = time.time() - start_time
-                       headers = MutableScopeHeaders.from_message(message=message)
-                       headers["X-Process-Time"] = str(process_time)
-                   await send(message)
-
-               await self.app(scope, receive, send_wrapper)
-           else:
-               await self.app(scope, receive, send)
 
 Inheriting AbstractMiddleware
 -----------------------------
@@ -169,36 +91,9 @@ Inheriting AbstractMiddleware
 Litestar offers an :class:`AbstractMiddleware <.middleware.base.AbstractMiddleware>` class that can be extended to
 create middleware:
 
-.. code-block:: python
+.. literalinclude:: /examples/middleware/creation/inheriting_abstract_middleware.py
+    :language: python
 
-   from typing import TYPE_CHECKING
-   from time import time
-
-   from litestar.enums import ScopeType
-   from litestar.middleware import AbstractMiddleware
-   from litestar.datastructures import MutableScopeHeaders
-
-
-   if TYPE_CHECKING:
-       from litestar.types import Message, Receive, Scope, Send
-
-
-   class MyMiddleware(AbstractMiddleware):
-       scopes = {ScopeType.HTTP}
-       exclude = ["first_path", "second_path"]
-       exclude_opt_key = "exclude_from_middleware"
-
-       async def __call__(self, scope: "Scope", receive: "Receive", send: "Send") -> None:
-           start_time = time()
-
-           async def send_wrapper(message: "Message") -> None:
-               if message["type"] == "http.response.start":
-                   process_time = time() - start_time
-                   headers = MutableScopeHeaders.from_message(message=message)
-                   headers["X-Process-Time"] = str(process_time)
-                   await send(message)
-
-           await self.app(scope, receive, send_wrapper)
 
 The three class variables defined in the above example ``scopes``, ``exclude``, and ``exclude_opt_key`` can be used to
 fine-tune for which routes and request types the middleware is called:
@@ -214,7 +109,6 @@ Thus, in the following example, the middleware will only run against the route h
     :language: python
 
 
-
 Using DefineMiddleware to pass arguments
 ----------------------------------------
 
@@ -223,26 +117,9 @@ using the :class:`DefineMiddleware <litestar.middleware.base.DefineMiddleware>` 
 the factory function used in the examples above to take some args and kwargs and then use ``DefineMiddleware`` to pass
 these values to our middleware:
 
-.. code-block:: python
+.. literalinclude:: /examples/middleware/creation/using_define_middleware.py
+    :language: python
 
-   from litestar.types import ASGIApp, Scope, Receive, Send
-   from litestar import Litestar
-   from litestar.middleware import DefineMiddleware
-
-
-   def middleware_factory(my_arg: int, *, app: ASGIApp, my_kwarg: str) -> ASGIApp:
-       async def my_middleware(scope: Scope, receive: Receive, send: Send) -> None:
-           # here we can use my_arg and my_kwarg for some purpose
-           ...
-           await app(scope, receive, send)
-
-       return my_middleware
-
-
-   app = Litestar(
-       route_handlers=[...],
-       middleware=[DefineMiddleware(middleware_factory, 1, my_kwarg="abc")],
-   )
 
 The ``DefineMiddleware`` is a simple container - it takes a middleware callable as a first parameter, and then any
 positional arguments, followed by key word arguments. The middleware callable will be called with these values as well

@@ -10,38 +10,20 @@ on which the root level :class:`controllers <.controller.Controller>`, :class:`r
 and :class:`route handler <.handlers.BaseRouteHandler>` functions are registered using the
 :paramref:`~litestar.config.app.AppConfig.route_handlers` :term:`kwarg <argument>`:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/registering_route_1.py
     :caption: Registering route handlers
+    :language: python
 
-    from litestar import Litestar, get
-
-
-    @get("/sub-path")
-    def sub_path_handler() -> None: ...
-
-
-    @get()
-    def root_handler() -> None: ...
-
-
-    app = Litestar(route_handlers=[root_handler, sub_path_handler])
 
 Components registered on the app are appended to the root path. Thus, the ``root_handler`` function will be called for
 the path ``"/"``, whereas the ``sub_path_handler`` will be called for ``"/sub-path"``.
 
 You can also declare a function to handle multiple paths, e.g.:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/registering_route_2.py
     :caption: Registering a route handler for multiple paths
+    :language: python
 
-    from litestar import get, Litestar
-
-
-    @get(["/", "/sub-path"])
-    def handler() -> None: ...
-
-
-    app = Litestar(route_handlers=[handler])
 
 To handle more complex path schemas you should use :class:`controllers <.controller.Controller>` and
 :class:`routers <.router.Router>`
@@ -52,46 +34,20 @@ Registering routes dynamically
 Occasionally there is a need for dynamic route registration. Litestar supports this via the
 :paramref:`~.app.Litestar.register` method exposed by the Litestar app instance:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/registering_route_3.py
     :caption: Registering a route handler dynamically with the :paramref:`~.app.Litestar.register` method
+    :language: python
 
-    from litestar import Litestar, get
-
-
-    @get()
-    def root_handler() -> None: ...
-
-
-    app = Litestar(route_handlers=[root_handler])
-
-
-    @get("/sub-path")
-    def sub_path_handler() -> None: ...
-
-
-    app.register(sub_path_handler)
 
 Since the app instance is attached to all instances of :class:`~.connection.base.ASGIConnection`,
 :class:`~.connection.request.Request`, and :class:`~.connection.websocket.WebSocket` objects, you can in
 effect call the :meth:`~.router.Router.register` method inside route handler functions, middlewares, and even
 injected dependencies. For example:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/registering_route_4.py
     :caption: Call the :meth:`~.router.Router.register` method from inside a route handler function
+    :language: python
 
-    from typing import Any
-    from litestar import Litestar, Request, get
-
-
-    @get("/some-path")
-    def route_handler(request: Request[Any, Any]) -> None:
-       @get("/sub-path")
-       def sub_path_handler() -> None: ...
-
-       request.app.register(sub_path_handler)
-
-
-    app = Litestar(route_handlers=[route_handler])
 
 In the above we dynamically created the ``sub_path_handler`` and registered it inside the ``route_handler`` function.
 
@@ -108,19 +64,10 @@ class which is the base class for the :class:`Litestar app <.app.Litestar>` itse
 A :class:`~.router.Router` can register :class:`Controllers <.controller.Controller>`,
 :class:`route handler <.handlers.BaseRouteHandler>` functions, and other routers, similarly to the Litestar constructor:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/registering_route_5.py
     :caption: Registering a :class:`~.router.Router`
+    :language: python
 
-    from litestar import Litestar, Router, get
-
-
-    @get("/{order_id:int}")
-    def order_handler(order_id: int) -> None: ...
-
-
-    order_router = Router(path="/orders", route_handlers=[order_handler])
-    base_router = Router(path="/base", route_handlers=[order_router])
-    app = Litestar(route_handlers=[base_router])
 
 Once ``order_router`` is registered on ``base_router``, the handler function registered on ``order_router`` will
 become available on ``/base/orders/{order_id}``.
@@ -134,41 +81,10 @@ Their purpose is to allow users to utilize Python OOP for better code organizati
 
 .. dropdown:: Click to see an example of registering a controller
 
-    .. code-block:: python
+    .. literalinclude:: /examples/routing/registering_controller.py
         :caption: Registering a :class:`~.controller.Controller`
+        :language: python
 
-        from litestar.contrib.pydantic import PydanticDTO
-        from litestar.controller import Controller
-        from litestar.dto import DTOConfig, DTOData
-        from litestar.handlers import get, post, patch, delete
-        from pydantic import BaseModel, UUID4
-
-
-        class UserOrder(BaseModel):
-           user_id: int
-           order: str
-
-
-        class PartialUserOrderDTO(PydanticDTO[UserOrder]):
-           config = DTOConfig(partial=True)
-
-
-        class UserOrderController(Controller):
-           path = "/user-order"
-
-           @post()
-           async def create_user_order(self, data: UserOrder) -> UserOrder: ...
-
-           @get(path="/{order_id:uuid}")
-           async def retrieve_user_order(self, order_id: UUID4) -> UserOrder: ...
-
-           @patch(path="/{order_id:uuid}", dto=PartialUserOrderDTO)
-           async def update_user_order(
-               self, order_id: UUID4, data: DTOData[PartialUserOrderDTO]
-           ) -> UserOrder: ...
-
-           @delete(path="/{order_id:uuid}")
-           async def delete_user_order(self, order_id: UUID4) -> None: ...
 
 The above is a simple example of a "CRUD" controller for a model called ``UserOrder``. You can place as
 many :doc:`route handler methods </usage/routing/handlers>` on a controller,
@@ -189,22 +105,10 @@ You can register both standalone route handler functions and controllers multipl
 Controllers
 ^^^^^^^^^^^
 
-.. code-block:: python
-    :caption: Registering a controller multiple times
+.. literalinclude:: /examples/routing/registering_controller_1.py
+        :caption: Registering a controller multiple times
+        :language: python
 
-    from litestar import Router, Controller, get
-
-
-    class MyController(Controller):
-       path = "/controller"
-
-       @get()
-       def handler(self) -> None: ...
-
-
-    internal_router = Router(path="/internal", route_handlers=[MyController])
-    partner_router = Router(path="/partner", route_handlers=[MyController])
-    consumer_router = Router(path="/consumer", route_handlers=[MyController])
 
 In the above, the same ``MyController`` class has been registered on three different routers. This is possible because
 what is passed to the :class:`router <.router.Router>` is not a class instance but rather the class itself.
@@ -219,21 +123,10 @@ Route handlers
 
 You can also register standalone route handlers multiple times:
 
-.. code-block:: python
-    :caption: Registering a route handler multiple times
+.. literalinclude:: /examples/routing/registering_route_handlers_multiple_times.py
+        :caption: Registering a route handler multiple times
+        :language: python
 
-    from litestar import Litestar, Router, get
-
-
-    @get(path="/handler")
-    def my_route_handler() -> None: ...
-
-
-    internal_router = Router(path="/internal", route_handlers=[my_route_handler])
-    partner_router = Router(path="/partner", route_handlers=[my_route_handler])
-    consumer_router = Router(path="/consumer", route_handlers=[my_route_handler])
-
-    Litestar(route_handlers=[internal_router, partner_router, consumer_router])
 
 When the handler function is registered, it's actually copied. Thus, each router has its own unique instance of
 the route handler. Path behaviour is identical to that of controllers above, namely, the route handler
@@ -252,6 +145,7 @@ requests addressed to a given path.
 
     .. literalinclude:: /examples/routing/mount_custom_app.py
         :caption: Mounting an ASGI App
+        :language: python
 
 The handler function will receive all requests with an url that begins with ``/some/sub-path``, e.g, ``/some/sub-path``,
 ``/some/sub-path/abc``, ``/some/sub-path/123/another/sub-path``, etc.

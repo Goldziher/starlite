@@ -8,9 +8,8 @@ You can configure Litestar to drop into the :doc:`Python Debugger <python:librar
 when an exception occurs. This can be configured in different ways:
 
 Configuring ``Litestar`` with the ``pdb_on_exception`` option
-    .. code-block:: python
-
-        app = Litestar(pdb_on_exception=True)
+    .. literalinclude:: /examples/debugging/running_litestar_with_pdb_on_exception.py
+        :language: python
 
 
 Running your app with the CLI and using the ``--pdb`` flag

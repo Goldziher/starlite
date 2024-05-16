@@ -8,14 +8,8 @@ CORS
 mechanism that is often implemented using middleware. To enable CORS in a litestar application simply pass an instance
 of :class:`CORSConfig <.config.cors.CORSConfig>` to :class:`Litestar <.app.Litestar>`:
 
-.. code-block:: python
-
-   from litestar import Litestar
-   from litestar.config.cors import CORSConfig
-
-   cors_config = CORSConfig(allow_origins=["https://www.example.com"])
-
-   app = Litestar(route_handlers=[...], cors_config=cors_config)
+.. literalinclude:: /examples/middleware/builtin/cors.py
+    :language: python
 
 
 CSRF
@@ -47,32 +41,14 @@ This middleware prevents CSRF attacks by doing the following:
 To enable CSRF protection in a Litestar application simply pass an instance of
 :class:`CSRFConfig <.config.csrf.CSRFConfig>` to the Litestar constructor:
 
-.. code-block:: python
-
-    from litestar import Litestar, get, post
-    from litestar.config.csrf import CSRFConfig
-
-
-    @get()
-    async def get_resource() -> str:
-        # GET is one of the safe methods
-        return "some_resource"
-
-    @post("{id:int}")
-    async def create_resource(id: int) -> bool:
-        # POST is one of the unsafe methods
-        return True
-
-    csrf_config = CSRFConfig(secret="my-secret")
-
-    app = Litestar([get_resource, create_resource], csrf_config=csrf_config)
+.. literalinclude:: /examples/middleware/builtin/csrf.py
+    :language: python
 
 
 The following snippet demonstrates how to change the cookie name to "some-cookie-name" and header name to "some-header-name".
 
-.. code-block:: python
-
-    csrf_config = CSRFConfig(secret="my-secret", cookie_name='some-cookie-name', header_name='some-header-name')
+.. literalinclude:: /examples/middleware/builtin/csrf_cookies.py
+    :language: python
 
 
 A CSRF protected route can be accessed by any client that can make a request with either the header or form-data key.
@@ -86,38 +62,15 @@ In Python, any client such as `requests <https://github.com/psf/requests>`_ or `
 The usage of clients or sessions is recommended due to the cookie persistence it offers across requests.
 The following is an example using ``httpx.Client``.
 
-.. code-block:: python
+.. literalinclude:: /examples/middleware/builtin/csrf_httpx.py
+    :language: python
 
-    import httpx
-
-
-    with httpx.Client() as client:
-        get_response = client.get("http://localhost:8000/")
-
-        # "csrftoken" is the default cookie name
-        csrf = get_response.cookies["csrftoken"]
-
-        # "x-csrftoken" is the default header name
-        post_response_using_header = client.post("http://localhost:8000/", headers={"x-csrftoken": csrf})
-        assert post_response_using_header.status_code == 201
-
-        # "_csrf_token" is the default *non* configurable form-data key
-        post_response_using_form_data = client.post("http://localhost:8000/1", data={"_csrf_token": csrf})
-        assert post_response_using_form_data.status_code == 201
-
-        # despite the header being passed, this request will fail as it does not have a cookie in its session
-        # note the usage of ``httpx.post`` instead of ``client.post``
-        post_response_with_no_persisted_cookie = httpx.post("http://localhost:8000/1", headers={"x-csrftoken": csrf})
-        assert post_response_with_no_persisted_cookie.status_code == 403
-        assert "CSRF token verification failed" in post_response_with_no_persisted_cookie.text
 
 Routes can be marked as being exempt from the protection offered by this middleware via
 :ref:`handler opts <handler_opts>`
 
-.. code-block:: python
-
-    @post("/post", exclude_from_csrf=True)
-    def handler() -> None: ...
+.. literalinclude:: /examples/middleware/builtin/csrf_exclude_route.py
+    :language: python
 
 
 If you need to exempt many routes at once you might want to consider using the
@@ -141,17 +94,9 @@ Litestar includes an :class:`AllowedHostsMiddleware <.middleware.allowed_hosts.A
 easily enabled by either passing an instance of :class:`AllowedHostsConfig <.config.allowed_hosts.AllowedHostsConfig>` or a
 list of domains to :class:`Litestar <litestar.app.Litestar>`:
 
-.. code-block:: python
+.. literalinclude:: /examples/middleware/builtin/allowed_hosts.py
+    :language: python
 
-   from litestar import Litestar
-   from litestar.config.allowed_hosts import AllowedHostsConfig
-
-   app = Litestar(
-       route_handlers=[...],
-       allowed_hosts=AllowedHostsConfig(
-           allowed_hosts=["*.example.com", "www.wikipedia.org"]
-       ),
-   )
 
 .. note::
 
@@ -186,15 +131,9 @@ You can configure the following additional gzip-specific values:
 * ``gzip_compress_level``: a range between 0-9, see the `official python docs <https://docs.python.org/3/library/gzip.html>`_.
     Defaults to ``9`` , which is the maximum value.
 
-.. code-block:: python
+.. literalinclude:: /examples/middleware/builtin/gzip.py
+    :language: python
 
-   from litestar import Litestar
-   from litestar.config.compression import CompressionConfig
-
-   app = Litestar(
-       route_handlers=[...],
-       compression_config=CompressionConfig(backend="gzip", gzip_compress_level=9),
-   )
 
 Brotli
 ^^^^^^
@@ -219,15 +158,9 @@ You can configure the following additional brotli-specific values:
     be set based on the quality. Defaults to 0.
 * ``brotli_gzip_fallback``: a boolean to indicate if gzip should be used if brotli is not supported.
 
-.. code-block:: python
+.. literalinclude:: /examples/middleware/builtin/brotli.py
+    :language: python
 
-   from litestar import Litestar
-   from litestar.config.compression import CompressionConfig
-
-   app = Litestar(
-       route_handlers=[...],
-       compression_config=CompressionConfig(backend="brotli", brotli_gzip_fallback=True),
-   )
 
 Rate-Limit Middleware
 ---------------------
@@ -264,16 +197,9 @@ Obfuscating Logging Output
 Sometimes certain data, e.g. request or response headers, needs to be obfuscated. This is supported by the middleware
 configuration:
 
-.. code-block:: python
+.. literalinclude:: /examples/middleware/builtin/loggin_middleware_obfuscating_output.py
+    :language: python
 
-   from litestar.middleware.logging import LoggingMiddlewareConfig
-
-   logging_middleware_config = LoggingMiddlewareConfig(
-       request_cookies_to_obfuscate={"my-custom-session-key"},
-       response_cookies_to_obfuscate={"my-custom-session-key"},
-       request_headers_to_obfuscate={"my-custom-header"},
-       response_headers_to_obfuscate={"my-custom-header"},
-   )
 
 The middleware will obfuscate the headers ``Authorization`` and ``X-API-KEY`` , and the cookie ``session`` by default.
 

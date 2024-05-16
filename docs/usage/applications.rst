@@ -16,6 +16,7 @@ or :class:`Route handlers <.handlers.BaseRouteHandler>`:
 
 .. literalinclude:: /examples/hello_world.py
     :caption: A simple Hello World Litestar app
+    :language: python
 
 The app instance is the root level of the app - it has the base path of ``/`` and all root level
 :class:`Controllers <.controller.Controller>`, :class:`Routers <.router.Router>`,
@@ -50,6 +51,7 @@ establish the connection, and another to close it, and then pass them to the :cl
 
 .. literalinclude:: /examples/startup_and_shutdown.py
     :caption: Startup and Shutdown
+    :language: python
 
 .. _lifespan-context-managers:
 
@@ -62,6 +64,7 @@ keep a certain context object, such as a connection, around.
 
 .. literalinclude:: /examples/application_hooks/lifespan_manager.py
     :caption: Handling a database connection
+    :language: python
 
 Order of execution
 ------------------
@@ -73,10 +76,10 @@ shutdown hooks are invoked.
 Consider the case where there are two lifespan context managers ``ctx_a`` and ``ctx_b`` as well as two shutdown hooks
 ``hook_a`` and ``hook_b`` as shown in the following code:
 
-.. code-block:: python
+.. literalinclude:: /examples/execution_order.py
     :caption: Example of multiple :term:`context managers <asynchronous context manager>` and shutdown hooks
+    :language: python
 
-    app = Litestar(lifespan=[ctx_a, ctx_b], on_shutdown=[hook_a, hook_b])
 
 During shutdown, they are executed in the following order:
 
@@ -117,6 +120,7 @@ of the application, as seen below:
 
 .. literalinclude:: /examples/application_state/using_application_state.py
     :caption: Using Application State
+    :language: python
 
 .. _Initializing Application State:
 
@@ -128,6 +132,7 @@ To seed application state, you can pass a :class:`~.datastructures.state.State` 
 
 .. literalinclude:: /examples/application_state/passing_initial_state.py
     :caption: Using Application State
+    :language: python
 
 .. note:: :class:`~.datastructures.state.State` can be initialized with a :class:`dictionary <dict>`, an instance of
     :class:`~.datastructures.state.ImmutableState` or :class:`~.datastructures.state.State`,
@@ -145,15 +150,10 @@ Injecting Application State into Route Handlers and Dependencies
 As seen in the above example, Litestar offers an easy way to inject state into route handlers and dependencies - simply
 by specifying ``state`` as a kwarg to the handler or dependency function. For example:
 
-.. code-block:: python
+.. literalinclude:: /examples/application_state/injecting_application_state.py
     :caption: Accessing application :class:`~.datastructures.state.State` in a handler function
+    :language: python
 
-    from litestar import get
-    from litestar.datastructures import State
-
-
-    @get("/")
-    def handler(state: State) -> None: ...
 
 When using this pattern you can specify the class to use for the state object. This type is not merely for type
 checkers, rather Litestar will instantiate a new ``state`` instance based on the type you set there.
@@ -167,6 +167,8 @@ You can use this class to type state and ensure that no mutation of state is all
 
 .. literalinclude:: /examples/application_state/using_immutable_state.py
     :caption: Using Custom State to ensure immutability
+    :language: python
+
 
 Application Hooks
 -----------------
@@ -188,6 +190,7 @@ the ``exception`` that occurred and the ASGI ``scope`` of the request or websock
 
 .. literalinclude:: /examples/application_hooks/after_exception_hook.py
     :caption: After Exception Hook
+    :language: python
 
 .. attention:: This hook is not meant to handle exceptions - it just receives them to allow for side effects.
     To handle exceptions you should define :ref:`exception handlers <usage/exceptions:exception handling>`.
@@ -201,6 +204,7 @@ sent. The hook receives the message instance and the ASGI ``scope``.
 
 .. literalinclude:: /examples/application_hooks/before_send_hook.py
     :caption: Before Send Hook
+    :language: python
 
 Initialization
 ^^^^^^^^^^^^^^
@@ -219,6 +223,7 @@ develop third-party application configuration systems.
 
 .. literalinclude:: /examples/application_hooks/on_app_init.py
     :caption: Example usage of the ``on_app_init`` hook to modify the application configuration.
+    :language: python
 
 .. _layered-architecture:
 

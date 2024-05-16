@@ -76,20 +76,9 @@ Registering a Custom Template Engine
 
 The above example will create a jinja Environment instance, but you can also pass in your own instance.
 
-.. code-block:: python
+.. literalinclude:: /examples/templating/registering_new_template.py
+    :language: python
 
-
-    from litestar import Litestar
-    from litestar.contrib.jinja import JinjaTemplateEngine
-    from litestar.template import TemplateConfig
-    from jinja2 import Environment, DictLoader
-
-    my_custom_env = Environment(loader=DictLoader({"index.html": "Hello {{name}}!"}))
-    app = Litestar(
-        template_config=TemplateConfig(
-            instance=JinjaTemplateEngine.from_environment(my_custom_env)
-        )
-    )
 
 .. note::
 
@@ -103,23 +92,9 @@ If you wish to use another templating engine, you can easily do so by implementi
 :class:`TemplateEngineProtocol <litestar.template.TemplateEngineProtocol>`. This class accepts a generic
 argument which should be the template class, and it specifies two methods:
 
-.. code-block:: python
+.. literalinclude:: /examples/templating/engine_custom.py
+    :language: python
 
-   from typing import Protocol, Union, List
-   from pydantic import DirectoryPath
-
-   # the template class of the respective library
-   from some_lib import SomeTemplate
-
-
-   class TemplateEngineProtocol(Protocol[SomeTemplate]):
-       def __init__(self, directory: Union[DirectoryPath, List[DirectoryPath]]) -> None:
-           """Builds a template engine."""
-           ...
-
-       def get_template(self, template_name: str) -> SomeTemplate:
-           """Loads the template with template_name and returns it."""
-           ...
 
 Once you have your custom engine you can register it as you would the built-in engines.
 
@@ -192,22 +167,17 @@ for small templates or :doc:`HTMX </usage/htmx>` responses for example.
 
     .. tab-item:: File name
 
-            .. code-block:: python
+            .. literalinclude:: /examples/templating/template_file.py
                 :caption: Template via file
+                :language: python
 
-                @get()
-                async def example() -> Template:
-                    return Template(template_name="test.html", context={"hello": "world"})
 
     .. tab-item:: String
 
-            .. code-block:: python
+            .. literalinclude:: /examples/templating/template_string.py
                 :caption: Template via string
+                :language: python
 
-                @get()
-                async def example() -> Template:
-                    template_string = "{{ hello }}"
-                    return Template(template_str=template_string, context={"hello": "world"})
 
 Template context
 ----------------
@@ -229,44 +199,22 @@ Accessing ``app.state.key`` for example would look like this:
     .. tab-item:: Jinja
         :sync: jinja
 
-        .. code-block:: html
-
-           <html>
-               <body>
-                   <div>
-                       <span>My state value: {{request.app.state.some_key}}</span>
-                   </div>
-               </body>
-           </html>
+        .. literalinclude:: /examples/templating/templates/request_instance.html.jinja2
+            :language: html
 
 
     .. tab-item:: Mako
         :sync: mako
 
-        .. code-block:: html
-
-           html
-           <html>
-               <body>
-                   <div>
-                       <span>My state value: ${request.app.state.some_key}</span>
-                   </div>
-               </body>
-           </html>
+        .. literalinclude:: /examples/templating/templates/request_instance.html.mako
+            :language: html
 
 
     .. tab-item:: MiniJinja
         :sync: minijinja
 
-        .. code-block:: html
-
-           <html>
-               <body>
-                   <div>
-                       <span>My state value: {{request.app.state.some_key}}</span>
-                   </div>
-               </body>
-           </html>
+        .. literalinclude:: /examples/templating/templates/request_instance.html.minijinja
+            :language: html
 
 
 Adding CSRF inputs
@@ -282,59 +230,22 @@ With that in place, you can now insert the CSRF input field inside an HTML form:
     .. tab-item:: Jinja
         :sync: jinja
 
-        .. code-block:: html
+        .. literalinclude:: /examples/templating/templates/csrf_inputs.html.jinja2
+            :language: html
 
-           <html>
-               <body>
-                   <div>
-                       <form action="https://myserverurl.com/some-endpoint" method="post">
-                           {{ csrf_input | safe }}
-                           <label for="fname">First name:</label><br>
-                           <input type="text" id="fname" name="fname">
-                           <label for="lname">Last name:</label><br>
-                           <input type="text" id="lname" name="lname">
-                       </form>
-                   </div>
-               </body>
-           </html>
 
     .. tab-item:: Mako
         :sync: mako
 
-        .. code-block:: html
+        .. literalinclude:: /examples/templating/templates/csrf_inputs.html.mako
+            :language: html
 
-           <html>
-               <body>
-                   <div>
-                       <form action="https://myserverurl.com/some-endpoint" method="post">
-                           ${csrf_input | n}
-                           <label for="fname">First name:</label><br>
-                           <input type="text" id="fname" name="fname">
-                           <label for="lname">Last name:</label><br>
-                           <input type="text" id="lname" name="lname">
-                       </form>
-                   </div>
-               </body>
-           </html>
 
     .. tab-item:: MiniJinja
         :sync: minijinja
 
-        .. code-block:: html
-
-           <html>
-               <body>
-                   <div>
-                       <form action="https://myserverurl.com/some-endpoint" method="post">
-                           {{ csrf_input | safe}}
-                           <label for="fname">First name:</label><br>
-                           <input type="text" id="fname" name="fname">
-                           <label for="lname">Last name:</label><br>
-                           <input type="text" id="lname" name="lname">
-                       </form>
-                   </div>
-               </body>
-           </html>
+        .. literalinclude:: /examples/templating/templates/csrf_inputs.html.minijinja
+            :language: html
 
 
 The input holds a CSRF token as its value and is hidden so users cannot see or interact with it. The token is sent
@@ -350,15 +261,8 @@ Passing template context
 Passing context to the template is very simple - its one of the kwargs expected by the :class:`Template <litestar.response.Template>`
 container, so simply pass a string keyed dictionary of values:
 
-.. code-block:: python
-
-   from litestar import get
-   from litestar.response import Template
-
-
-   @get(path="/info")
-   def info() -> Template:
-       return Template(template_name="info.html", context={"numbers": "1234567890"})
+.. literalinclude:: /examples/templating/passing_template_context.py
+    :language: python
 
 
 Template callables

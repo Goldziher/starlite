@@ -13,48 +13,22 @@ controller methods. The handler can then be registered on an application or rout
     .. tab-item:: FastAPI
         :sync: fastapi
 
-        .. code-block:: python
+        .. literalinclude:: /examples/migrations/fastapi/routing_fastapi.py
+            :language: python
 
-            from fastapi import FastAPI
-
-
-            app = FastAPI()
-
-
-            @app.get("/")
-            async def index() -> dict[str, str]: ...
 
     .. tab-item:: Starlette
         :sync: starlette
 
+        .. literalinclude:: /examples/migrations/fastapi/routing_starlette.py
+            :language: python
 
-        .. code-block:: python
-
-            from starlette.applications import Starlette
-            from starlette.routing import Route
-
-
-            async def index(request): ...
-
-
-            routes = [Route("/", endpoint=index)]
-
-            app = Starlette(routes=routes)
 
     .. tab-item:: Litestar
         :sync: litestar
 
-        .. code-block:: python
-
-           from litestar import Litestar, get
-
-
-           @get("/")
-           async def index() -> dict[str, str]: ...
-
-
-           app = Litestar([index])
-
+        .. literalinclude:: /examples/migrations/fastapi/routing_litestar.py
+            :language: python
 
 ..  seealso::
 
@@ -99,72 +73,15 @@ and to easily access dependencies from higher levels.
     .. tab-item:: FastAPI
         :sync: fastapi
 
-        .. code-block:: python
-
-           from fastapi import FastAPI, Depends, APIRouter
-
-
-           async def route_dependency() -> bool: ...
-
-
-           async def nested_dependency() -> str: ...
-
-
-           async def router_dependency() -> int: ...
-
-
-           async def app_dependency(data: str = Depends(nested_dependency)) -> int: ...
-
-
-           router = APIRouter(dependencies=[Depends(router_dependency)])
-           app = FastAPI(dependencies=[Depends(nested_dependency)])
-           app.include_router(router)
-
-
-           @app.get("/")
-           async def handler(
-               val_route: bool = Depends(route_dependency),
-               val_router: int = Depends(router_dependency),
-               val_nested: str = Depends(nested_dependency),
-               val_app: int = Depends(app_dependency),
-           ) -> None: ...
-
+        .. literalinclude:: /examples/migrations/fastapi/di_fastapi.py
+            :language: python
 
 
     .. tab-item:: Litestar
         :sync: litestar
 
-        .. code-block:: python
-
-           from litestar import Litestar, Provide, get, Router
-
-
-           async def route_dependency() -> bool: ...
-
-
-           async def nested_dependency() -> str: ...
-
-
-           async def router_dependency() -> int: ...
-
-
-           async def app_dependency(nested: str) -> int: ...
-
-
-           @get("/", dependencies={"val_route": Provide(route_dependency)})
-           async def handler(
-               val_route: bool, val_router: int, val_nested: str, val_app: int
-           ) -> None: ...
-
-
-           router = Router(dependencies={"val_router": Provide(router_dependency)})
-           app = Litestar(
-               route_handlers=[handler],
-               dependencies={
-                   "val_app": Provide(app_dependency),
-                   "val_nested": Provide(nested_dependency),
-               },
-           )
+        .. literalinclude:: /examples/migrations/fastapi/di_litestar.py
+            :language: python
 
 
 ..  seealso::
@@ -184,36 +101,15 @@ preferred way of handling this is extending :doc:`/usage/security/abstract-authe
     .. tab-item:: FastAPI
         :sync: fastapi
 
-        .. code-block:: python
-
-            from fastapi import FastAPI, Depends, Request
-
-
-            async def authenticate(request: Request) -> None: ...
-
-
-            app = FastAPI()
-
-
-            @app.get("/", dependencies=[Depends(authenticate)])
-            async def index() -> dict[str, str]: ...
+        .. literalinclude:: /examples/migrations/fastapi/authentication_fastapi.py
+            :language: python
 
 
     .. tab-item:: Litestar
         :sync: litestar
 
-        .. code-block:: python
-
-            from litestar import Litestar, get, ASGIConnection, BaseRouteHandler
-
-
-            async def authenticate(
-                connection: ASGIConnection, route_handler: BaseRouteHandler
-            ) -> None: ...
-
-
-            @get("/", guards=[authenticate])
-            async def index() -> dict[str, str]: ...
+        .. literalinclude:: /examples/migrations/fastapi/authentication_litestar.py
+            :language: python
 
 
 ..  seealso::

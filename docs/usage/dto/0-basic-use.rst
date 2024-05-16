@@ -99,45 +99,21 @@ Enabling the backend
 You can enable this backend globally for all DTOs by passing the appropriate feature
 flag to your Litestar application:
 
-.. code-block:: python
-
-    from litestar import Litestar
-    from litestar.config.app import ExperimentalFeatures
-
-    app = Litestar(experimental_features=[ExperimentalFeatures.DTO_CODEGEN])
+.. literalinclude:: /examples/data_transfer_objects/enabling_backend.py
+    :language: python
 
 
 or selectively for individual DTOs:
 
-.. code-block:: python
-
-    from dataclasses import dataclass
-    from litestar.dto import DTOConfig, DataclassDTO
+.. literalinclude:: /examples/data_transfer_objects/individual_dto.py
+    :language: python
 
 
-    @dataclass
-    class Foo:
-        name: str
-
-
-    class FooDTO(DataclassDTO[Foo]):
-        config = DTOConfig(experimental_codegen_backend=True)
 
 The same flag can be used to disable the backend selectively:
 
-.. code-block:: python
-
-    from dataclasses import dataclass
-    from litestar.dto import DTOConfig, DataclassDTO
-
-
-    @dataclass
-    class Foo:
-        name: str
-
-
-    class FooDTO(DataclassDTO[Foo]):
-        config = DTOConfig(experimental_codegen_backend=False)
+.. literalinclude:: /examples/data_transfer_objects/disable_backend_selectively.py
+    :language: python
 
 
 Performance improvements

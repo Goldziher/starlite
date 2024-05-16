@@ -79,11 +79,8 @@ specific item on the list is needed. This could be done using query parameters, 
 there's an easier, and more semantically coherent way of expressing this: path
 parameters.
 
-.. code-block:: python
-
-    @get("/{name:str}")
-    async def greeter(name: str) -> str:
-        return "Hello, " + name
+.. literalinclude:: /examples/todo_app/create/dynamic_route.py
+    :language: python
 
 
 So far all the paths in your application are static, meaning they are expressed by a

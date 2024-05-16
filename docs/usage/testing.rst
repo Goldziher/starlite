@@ -13,18 +13,9 @@ instance of Litestar as the ``app`` kwarg.
 
 Let's say we have a very simple app with a health check endpoint:
 
-.. code-block:: python
+.. literalinclude:: /examples/testing/test_client_base.py
     :caption: my_app/main.py
-
-    from litestar import Litestar, MediaType, get
-
-
-    @get(path="/health-check", media_type=MediaType.TEXT)
-    def health_check() -> str:
-        return "healthy"
-
-
-    app = Litestar(route_handlers=[health_check])
+    :language: python
 
 
 We would then test it using the test client like so:
@@ -34,38 +25,17 @@ We would then test it using the test client like so:
     .. tab-item:: Sync
         :sync: sync
 
-        .. code-block:: python
+        .. literalinclude:: /examples/testing/test_client_sync.py
             :caption: tests/test_health_check.py
+            :language: python
 
-            from litestar.status_codes import HTTP_200_OK
-            from litestar.testing import TestClient
-
-            from my_app.main import app
-
-
-            def test_health_check():
-                with TestClient(app=app) as client:
-                    response = client.get("/health-check")
-                    assert response.status_code == HTTP_200_OK
-                    assert response.text == "healthy"
 
     .. tab-item:: Async
         :sync: async
 
-        .. code-block:: python
+        .. literalinclude:: /examples/testing/test_client_async.py
             :caption: tests/test_health_check.py
-
-            from litestar.status_codes import HTTP_200_OK
-            from litestar.testing import AsyncTestClient
-
-            from my_app.main import app
-
-
-            async def test_health_check():
-                async with AsyncTestClient(app=app) as client:
-                    response = await client.get("/health-check")
-                    assert response.status_code == HTTP_200_OK
-                    assert response.text == "healthy"
+            :language: python
 
 
 Since we would probably need to use the client in multiple places, it's better to make it into a pytest fixture:
@@ -76,49 +46,18 @@ Since we would probably need to use the client in multiple places, it's better t
     .. tab-item:: Sync
         :sync: sync
 
-        .. code-block:: python
+        .. literalinclude:: /examples/testing/test_client_conf_sync.py
             :caption: tests/conftest.py
-
-            from typing import TYPE_CHECKING, Iterator
-
-            import pytest
-
-            from litestar.testing import TestClient
-
-            from my_app.main import app
-
-            if TYPE_CHECKING:
-                from litestar import Litestar
-
-
-            @pytest.fixture(scope="function")
-            def test_client() -> Iterator[TestClient[Litestar]]:
-                with TestClient(app=app) as client:
-                    yield client
+            :language: python
 
 
     .. tab-item:: Async
         :sync: async
 
-        .. code-block:: python
+        .. literalinclude:: /examples/testing/test_client_conf_async.py
             :caption: tests/conftest.py
+            :language: python
 
-            from typing import TYPE_CHECKING, AsyncIterator
-
-            import pytest
-
-            from litestar.testing import AsyncTestClient
-
-            from my_app.main import app
-
-            if TYPE_CHECKING:
-                from litestar import Litestar
-
-
-            @pytest.fixture(scope="function")
-            async def test_client() -> AsyncIterator[AsyncTestClient[Litestar]]:
-                async with AsyncTestClient(app=app) as client:
-                    yield client
 
 
 We would then be able to rewrite our test like so:
@@ -246,37 +185,16 @@ expects ``route_handlers`` to be a list, here you can also pass individual value
 
 For example, you can do this:
 
-.. code-block:: python
-    :caption: my_app/tests/test_health_check.py
+.. literalinclude:: /examples/testing/test_app_1.py
+   :caption: my_app/tests/test_health_check.py
+   :language: python
 
-    from litestar.status_codes import HTTP_200_OK
-    from litestar.testing import create_test_client
-
-    from my_app.main import health_check
-
-
-    def test_health_check():
-        with create_test_client(route_handlers=[health_check]) as client:
-            response = client.get("/health-check")
-            assert response.status_code == HTTP_200_OK
-            assert response.text == "healthy"
 
 But also this:
 
-.. code-block:: python
-    :caption: my_app/tests/test_health_check.py
-
-    from litestar.status_codes import HTTP_200_OK
-    from litestar.testing import create_test_client
-
-    from my_app.main import health_check
-
-
-    def test_health_check():
-        with create_test_client(route_handlers=health_check) as client:
-            response = client.get("/health-check")
-            assert response.status_code == HTTP_200_OK
-            assert response.text == "healthy"
+.. literalinclude:: /examples/testing/test_app_2.py
+   :caption: my_app/tests/test_health_check.py
+   :language: python
 
 
 RequestFactory
@@ -290,63 +208,23 @@ For example, lets say we wanted to unit test a *guard* function in isolation, to
 from the :doc:`route guards </usage/security/guards>` documentation:
 
 
-.. code-block:: python
-    :caption: my_app/guards.py
+.. literalinclude:: /examples/testing/test_request_factory_1.py
+   :caption: my_app/guards.py
+   :language: python
 
-    from litestar import Request
-    from litestar.exceptions import NotAuthorizedException
-    from litestar.handlers.base import BaseRouteHandler
-
-
-    def secret_token_guard(request: Request, route_handler: BaseRouteHandler) -> None:
-        if (
-            route_handler.opt.get("secret")
-            and not request.headers.get("Secret-Header", "") == route_handler.opt["secret"]
-        ):
-            raise NotAuthorizedException()
 
 We already have our route handler in place:
 
-.. code-block:: python
-    :caption: my_app/secret.py
+.. literalinclude:: /examples/testing/test_request_factory_2.py
+   :caption: my_app/secret.py
+   :language: python
 
-    from os import environ
-
-    from litestar import get
-
-    from my_app.guards import secret_token_guard
-
-
-    @get(path="/secret", guards=[secret_token_guard], opt={"secret": environ.get("SECRET")})
-    def secret_endpoint() -> None: ...
 
 We could thus test the guard function like so:
 
-.. code-block:: python
-    :caption: tests/guards/test_secret_token_guard.py
-
-    import pytest
-
-    from litestar.exceptions import NotAuthorizedException
-    from litestar.testing import RequestFactory
-
-    from my_app.guards import secret_token_guard
-    from my_app.secret import secret_endpoint
-
-    request = RequestFactory().get("/")
-
-
-    def test_secret_token_guard_failure_scenario():
-        copied_endpoint_handler = secret_endpoint.copy()
-        copied_endpoint_handler.opt["secret"] = None
-        with pytest.raises(NotAuthorizedException):
-            secret_token_guard(request=request, route_handler=copied_endpoint_handler)
-
-
-    def test_secret_token_guard_success_scenario():
-        copied_endpoint_handler = secret_endpoint.copy()
-        copied_endpoint_handler.opt["secret"] = "super-secret"
-        secret_token_guard(request=request, route_handler=copied_endpoint_handler)
+.. literalinclude:: /examples/testing/test_request_factory_3.py
+   :caption: tests/guards/test_secret_token_guard.py
+   :language: python
 
 
 Using polyfactory
@@ -357,110 +235,22 @@ and powerful way to generate mock data from pydantic models and dataclasses.
 
 Let's say we have an API that talks to an external service and retrieves some data:
 
-.. code-block:: python
-    :caption: main.py
-
-    from typing import Protocol, runtime_checkable
-
-    from polyfactory.factories.pydantic import BaseModel
-    from litestar import get
-
-
-    class Item(BaseModel):
-        name: str
-
-
-    @runtime_checkable
-    class Service(Protocol):
-        def get(self) -> Item: ...
-
-
-    @get(path="/item")
-    def get_item(service: Service) -> Item:
-        return service.get()
+.. literalinclude:: /examples/testing/test_polyfactory_1.py
+   :caption: main.py
+   :language: python
 
 
 We could test the ``/item`` route like so:
 
-.. code-block:: python
-    :caption: tests/conftest.py
+.. literalinclude:: /examples/testing/test_polyfactory_2.py
+   :caption: tests/conftest.py
+   :language: python
 
-    import pytest
-
-    from litestar.di import Provide
-    from litestar.status_codes import HTTP_200_OK
-    from litestar.testing import create_test_client
-
-    from my_app.main import Service, Item, get_item
-
-
-    @pytest.fixture()
-    def item():
-        return Item(name="Chair")
-
-
-    def test_get_item(item: Item):
-        class MyService(Service):
-            def get_one(self) -> Item:
-                return item
-
-        with create_test_client(
-            route_handlers=get_item, dependencies={"service": Provide(lambda: MyService())}
-        ) as client:
-            response = client.get("/item")
-            assert response.status_code == HTTP_200_OK
-            assert response.json() == item.dict()
 
 While we can define the test data manually, as is done in the above, this can be quite cumbersome. That's
 where `polyfactory <https://github.com/litestar-org/polyfactory>`_ library comes in. It generates mock data for
 pydantic models and dataclasses based on type annotations. With it, we could rewrite the above example like so:
 
-
-.. code-block:: python
-    :caption: main.py
-
-    from typing import Protocol, runtime_checkable
-
-    import pytest
-    from pydantic import BaseModel
-    from polyfactory.factories.pydantic_factory import ModelFactory
-    from litestar.status_codes import HTTP_200_OK
-    from litestar import get
-    from litestar.di import Provide
-    from litestar.testing import create_test_client
-
-
-    class Item(BaseModel):
-        name: str
-
-
-    @runtime_checkable
-    class Service(Protocol):
-        def get_one(self) -> Item: ...
-
-
-    @get(path="/item")
-    def get_item(service: Service) -> Item:
-        return service.get_one()
-
-
-    class ItemFactory(ModelFactory[Item]):
-        model = Item
-
-
-    @pytest.fixture()
-    def item():
-        return ItemFactory.build()
-
-
-    def test_get_item(item: Item):
-        class MyService(Service):
-            def get_one(self) -> Item:
-                return item
-
-        with create_test_client(
-            route_handlers=get_item, dependencies={"service": Provide(lambda: MyService())}
-        ) as client:
-            response = client.get("/item")
-            assert response.status_code == HTTP_200_OK
-            assert response.json() == item.dict()
+.. literalinclude:: /examples/testing/test_polyfactory_3.py
+   :caption: main.py
+   :language: python

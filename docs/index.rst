@@ -85,22 +85,9 @@ At a minimum, make sure you have installed ``litestar[standard]``, which include
 
 First, create a file named ``app.py`` with the following contents:
 
-.. code-block:: python
+.. literalinclude:: /examples/index/minimal_example.py
+    :language: python
 
-   from litestar import Litestar, get
-
-
-   @get("/")
-   async def index() -> str:
-       return "Hello, world!"
-
-
-   @get("/books/{book_id:int}")
-   async def get_book(book_id: int) -> dict[str, int]:
-       return {"book_id": book_id}
-
-
-   app = Litestar([index, get_book])
 
 Then, run the following command:
 
@@ -178,87 +165,29 @@ Expanded Example
 
 **Define your data model** using pydantic or any library based on it (for example ormar, beanie, SQLModel):
 
-.. code-block:: python
-
-    from pydantic import BaseModel, UUID4
-
-
-    class User(BaseModel):
-        first_name: str
-        last_name: str
-        id: UUID4
-
-
+.. literalinclude:: /examples/index/expanded_example_1.py
+    :language: python
 
 
 You can also use dataclasses (standard library and Pydantic),
 :class:`typing.TypedDict`, or :class:`msgspec.Struct`.
 
-.. code-block:: python
+.. literalinclude:: /examples/index/expanded_example_2.py
+    :language: python
 
-   from uuid import UUID
-
-   from dataclasses import dataclass
-   from litestar.dto import DTOConfig, DataclassDTO
-
-
-   @dataclass
-   class User:
-       first_name: str
-       last_name: str
-       id: UUID
-
-
-   class PartialUserDTO(DataclassDTO[User]):
-       config = DTOConfig(exclude={"id"}, partial=True)
 
 **Define a Controller for your data model:**
 
-.. code-block:: python
-
-    from typing import List
-
-    from litestar import Controller, get, post, put, patch, delete
-    from litestar.dto import DTOData
-    from pydantic import UUID4
-
-    from my_app.models import User, PartialUserDTO
-
-
-    class UserController(Controller):
-        path = "/users"
-
-        @post()
-        async def create_user(self, data: User) -> User: ...
-
-        @get()
-        async def list_users(self) -> List[User]: ...
-
-        @patch(path="/{user_id:uuid}", dto=PartialUserDTO)
-        async def partial_update_user(
-            self, user_id: UUID4, data: DTOData[User]
-        ) -> User: ...
-
-        @put(path="/{user_id:uuid}")
-        async def update_user(self, user_id: UUID4, data: User) -> User: ...
-
-        @get(path="/{user_id:uuid}")
-        async def get_user(self, user_id: UUID4) -> User: ...
-
-        @delete(path="/{user_id:uuid}")
-        async def delete_user(self, user_id: UUID4) -> None: ...
+.. literalinclude:: /examples/index/expanded_example_3.py
+    :language: python
 
 
 When instantiating your app, import your *controller* into your application's
 entry-point and pass it to Litestar:
 
-.. code-block:: python
+.. literalinclude:: /examples/index/expanded_example_4.py
+    :language: python
 
-   from litestar import Litestar
-
-   from my_app.controllers.user import UserController
-
-   app = Litestar(route_handlers=[UserController])
 
 To **run your application**, use an ASGI server such as `uvicorn <https://www.uvicorn.org/>`_ :
 

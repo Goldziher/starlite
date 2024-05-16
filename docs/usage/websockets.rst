@@ -17,18 +17,8 @@ in incoming data in an already pre-processed form and returns data to be seriali
 sent over the connection. The low level details will be handled behind the curtains.
 
 
-.. code-block:: python
-
-    from litestar import Litestar
-    from litestar.handlers.websocket_handlers import websocket_listener
-
-
-    @websocket_listener("/")
-    async def handler(data: str) -> str:
-        return data
-
-
-    app = Litestar([handler])
+.. literalinclude:: /examples/websockets/websocket_base.py
+    :language: python
 
 
 This handler will accept connections on ``/``, and wait to receive data. Once a message

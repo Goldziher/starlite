@@ -19,14 +19,9 @@ Once these requirements are satisfied, you can instrument your Litestar applicat
 of :class:`OpenTelemetryConfig <litestar.contrib.opentelemetry.OpenTelemetryConfig>` and passing the middleware it creates to
 the Litestar constructor:
 
-.. code-block:: python
+.. literalinclude:: /examples/metrics/opentelemetry.py
+    :language: python
 
-   from litestar import Litestar
-   from litestar.contrib.opentelemetry import OpenTelemetryConfig
-
-   open_telemetry_config = OpenTelemetryConfig()
-
-   app = Litestar(middleware=[open_telemetry_config.middleware])
 
 The above example will work out of the box if you configure a global ``tracer_provider`` and/or ``metric_provider`` and an
 exporter to use these (see the

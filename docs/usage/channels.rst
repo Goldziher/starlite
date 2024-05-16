@@ -121,20 +121,14 @@ The channels managed by the plugin can be either defined upfront, passing them t
 channel) by setting ``arbitrary_channels_allowed=True``.
 
 
-.. code-block:: python
+.. literalinclude:: /examples/channels/passing_channels_explicitly.py
     :caption: Passing channels explicitly
-
-    from litestar.channels import ChannelsPlugin
-
-    channels_plugin = ChannelsPlugin(..., channels=["foo", "bar"])
+    :language: python
 
 
-.. code-block:: python
+.. literalinclude:: /examples/channels/allowing_arbitrary_channels.py
     :caption: Allowing arbitrary channels
-
-    from litestar.channels import ChannelsPlugin
-
-    channels_plugin = ChannelsPlugin(..., arbitrary_channels_allowed=True)
+    :language: python
 
 
 If ``arbitrary_channels_allowed`` is not ``True``, trying to publish or subscribe to a
@@ -148,9 +142,9 @@ Publishing data
 One of the core aspects of the plugin is publishing data, which is done through its
 :meth:`publish <ChannelsPlugin.publish>` method:
 
-.. code-block:: python
-
-    channels.publish({"message": "Hello"}, "general")
+.. literalinclude:: /examples/channels/publish_data.py
+    :caption: Publish data
+    :language: python
 
 
 The above example will publish the data to the channel ``general``, subsequently putting
@@ -194,43 +188,29 @@ unsubscribed. Using the ``subscriber`` and ``unsubscribe`` methods directly shou
 be done when a context manager cannot be used, e.g. when the subscription would span
 different contexts.
 
-
-.. code-block:: python
+.. literalinclude:: /examples/channels/subscribe_method_manually.py
     :caption: Calling the subscription methods manually
-
-    subscriber = await channels.subscribe(["foo", "bar"])
-    try:
-        ...  # do some stuff here
-    finally:
-        await channels.unsubscribe(subscriber)
+    :language: python
 
 
-
-.. code-block:: python
+.. literalinclude:: /examples/channels/subscribe_method_manually.py
     :caption: Using the context manager
-
-    async with channels.start_subscription(["foo", "bar"]) as subscriber:
-        ...  # do some stuff here
+    :language: python
 
 
 It is also possible to unsubscribe from individual channels, which may be desirable if
 subscriptions need to be managed dynamically.
 
-.. code-block:: python
-
-    subscriber = await channels.subscribe(["foo", "bar"])
-    ...  # do some stuff here
-    await channels.unsubscribe(subscriber, ["foo"])
+.. literalinclude:: /examples/channels/unsubscribe_method_manually.py
+    :caption: Calling the unsubscription methods manually
+    :language: python
 
 
 Or, using the context manager
 
-.. code-block:: python
-
-    async with channels.start_subscription(["foo", "bar"]) as subscriber:
-        ...  # do some stuff here
-        await channels.unsubscribe(subscriber, ["foo"])
-
+.. literalinclude:: /examples/channels/subscribe_method_context_manager.py
+    :caption: Using the context manager
+    :language: python
 
 
 Managing history
@@ -362,30 +342,14 @@ The channels plugin provides two different strategies for managing this backpres
    added while the backlog is full
 
 
-.. code-block:: python
+.. literalinclude:: /examples/channels/backoff_strategy.py
     :caption: Backoff strategy
-
-    from litestar.channels import ChannelsPlugin
-    from litestar.channels.memory import MemoryChannelsBackend
-
-    channels = ChannelsPlugin(
-        backend=MemoryChannelsBackend(),
-        max_backlog=1000,
-        backlog_strategy="backoff",
-    )
+    :language: python
 
 
-.. code-block:: python
+.. literalinclude:: /examples/channels/eviction_strategy.py
     :caption: Eviction strategy
-
-    from litestar.channels import ChannelsPlugin
-    from litestar.channels.memory import MemoryChannelsBackend
-
-    channels = ChannelsPlugin(
-        backend=MemoryChannelsBackend(),
-        max_backlog=1000,
-        backlog_strategy="dropleft",
-    )
+    :language: python
 
 
 Backends

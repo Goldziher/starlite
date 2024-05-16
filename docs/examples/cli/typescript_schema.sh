@@ -1,0 +1,1 @@
+litestar schema typescript

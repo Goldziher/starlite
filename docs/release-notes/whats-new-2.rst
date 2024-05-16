@@ -240,31 +240,14 @@ plain :class:`Mapping[str, str] <typing.Mapping>`. The typing of
 :class:`ResponseHeader <.datastructures.response_header.ResponseHeader>` was also
 changed to be more strict and now only allows string values.
 
-.. code-block:: python
+.. literalinclude:: /examples/whats_new/response_headers_v1.py
     :caption: 1.51
-
-    from starlite import ResponseHeader, get
-
-
-    @get(response_headers={"my-header": ResponseHeader(value="header-value")})
-    async def handler() -> str: ...
+    :language: python
 
 
-.. code-block:: python
+.. literalinclude:: /examples/whats_new/response_headers_v2.py
     :caption: 2.x
-
-    from litestar import ResponseHeader, get
-
-
-    @get(response_headers=[ResponseHeader(name="my-header", value="header-value")])
-    async def handler() -> str: ...
-
-
-    # or
-
-
-    @get(response_headers={"my-header": "header-value"})
-    async def handler() -> str: ...
+    :language: python
 
 
 Response cookies
@@ -273,17 +256,16 @@ Response cookies
 Response cookies might now also be set using a
 :class:`Mapping[str, str] <typing.Mapping>`, analogous to `Response headers`_.
 
-.. code-block:: python
+.. literalinclude:: /examples/whats_new/response_cookies_v2.py
+    :caption: 1.51
+    :language: python
 
-    @get("/", response_cookies=[Cookie(key="foo", value="bar")])
-    async def handler() -> None: ...
 
 is equivalent to
 
-.. code-block:: python
-
-    @get("/", response_cookies={"foo": "bar"})
-    async def handler() -> None: ...
+.. literalinclude:: /examples/whats_new/response_cookies_v2.py
+    :caption: 2.x
+    :language: python
 
 
 SQLAlchemy Plugin
@@ -336,17 +318,14 @@ The 2 argument for of ``before_send`` hook handlers has been removed. Existing h
 should be changed to include an additional ``scope`` parameter.
 
 
-.. code-block:: python
+.. literalinclude:: /examples/whats_new/before_send_v1.py
     :caption: 1.51
+    :language: python
 
-    async def before_send(message: Message, state: State) -> None: ...
 
-
-.. code-block:: python
+.. literalinclude:: /examples/whats_new/before_send_v2.py
     :caption: 2.x
-
-    async def before_send(message: Message, state: State, scope: Scope) -> None: ...
-
+    :language: python
 
 
 .. seealso::
@@ -363,17 +342,16 @@ with a ``state`` keyword argument, accepting an optional
 
 Existing code using this keyword argument will need to be changed from
 
-.. code-block:: python
+.. literalinclude:: /examples/whats_new/initial_state_v1.py
     :caption: 1.51
+    :language: python
 
-    app = Starlite(..., initial_state={"some": "key"})
 
 to
 
-.. code-block:: python
+.. literalinclude:: /examples/whats_new/initial_state_v2.py
     :caption: 2.x
-
-    app = Litestar(..., state=State({"some": "key"}))
+    :language: python
 
 
 Stores
@@ -444,28 +422,8 @@ and can be used to define DTOs:
 
 For example, to define a DTO from a dataclass:
 
-.. code-block:: python
-
-    from dataclasses import dataclass
-
-    from litestar import get
-    from litestar.dto import DTOConfig, DataclassDTO
-
-
-    @dataclass
-    class MyType:
-        some_field: str
-        another_field: int
-
-
-    class MyDTO(DataclassDTO[MyType]):
-        config = DTOConfig(exclude={"another_field"})
-
-
-    @get(dto=MyDTO)
-    async def handler() -> MyType:
-        return MyType(some_field="some value", another_field=42)
-
+.. literalinclude:: /examples/data_transfer_objects/define_dto_from_dataclass.py
+    :language: python
 
 .. literalinclude:: /examples/data_transfer_objects/the_return_dto_parameter.py
     :language: python
@@ -503,18 +461,14 @@ their first parameter. If your ``on_startup`` and ``on_shutdown`` hooks made use
 application state, they will now have to access it through the provided application
 instance.
 
-.. code-block:: python
+.. literalinclude:: /examples/whats_new/lifespan_hook_v1.py
+    :language: python
     :caption: 1.51
 
-    def on_startup(state: State) -> None:
-        print(state.something)
 
-
-.. code-block:: python
+.. literalinclude:: /examples/whats_new/lifespan_hook_v2.py
+    :language: python
     :caption: 2.x
-
-    def on_startup(app: Litestar) -> None:
-        print(app.state.something)
 
 
 Dependencies without ``Provide``
@@ -524,21 +478,16 @@ Dependencies may now be declared without :class:`~litestar.di.Provide`, by passi
 callable directly. This can be advantageous in places where the configuration options
 of :class:`~litestar.di.Provide` are not needed.
 
-.. code-block:: python
+.. literalinclude:: /examples/whats_new/dependencies_without_provide_v1.py
+    :language: python
+    :caption: 1.51
 
-    async def some_dependency() -> str: ...
-
-
-    app = Litestar(dependencies={"some": Provide(some_dependency)})
 
 is equivalent to
 
-.. code-block:: python
-
-    async def some_dependency() -> str: ...
-
-
-    app = Litestar(dependencies={"some": some_dependency})
+.. literalinclude:: /examples/whats_new/dependencies_without_provide_v2.py
+    :language: python
+    :caption: 2.x
 
 
 ``sync_to_thread``
@@ -555,26 +504,14 @@ a thread pool, passing ``sync_to_thread=False`` will also silence the warning.
     ``LITESTAR_WARN_IMPLICIT_SYNC_TO_THREAD=0``
 
 
-.. code-block:: python
+.. literalinclude:: /examples/whats_new/sync_to_thread_v1.py
+    :language: python
     :caption: 1.51
 
-    @get()
-    def handler() -> None: ...
 
-
-.. code-block:: python
+.. literalinclude:: /examples/whats_new/sync_to_thread_v2.py
+    :language: python
     :caption: 2.x
-
-    @get(sync_to_thread=False)
-    def handler() -> None: ...
-
-or
-
-.. code-block:: python
-    :caption: 2.x
-
-    @get(sync_to_thread=True)
-    def handler() -> None: ...
 
 
 .. seealso::
@@ -626,17 +563,9 @@ handlers, OOP based event dispatching, data iterators and more.
 .. literalinclude:: /examples/websockets/with_dto.py
     :language: python
 
-.. code-block:: python
+.. literalinclude:: /examples/websockets/receiving_json_and_sending_it_back_as_messagepack.py
     :caption: Receiving JSON and sending it back as MessagePack
-
-    from litestar import websocket, WebSocket
-
-
-    @websocket("/")
-    async def handler(socket: WebSocket) -> None:
-        await socket.accept()
-        async for message in socket.iter_data(mode):
-            await socket.send_msgpack(message)
+    :language: python
 
 
 .. seealso::
@@ -659,15 +588,14 @@ TBD
 :class:`Annotated <typing.Annotated>` can now be used in route handler and
 dependencies to specify additional information about the fields
 
-.. code-block:: python
+.. literalinclude:: /examples/whats_new/attrs_v1.py
+    :language: python
+    :caption: 1.51
 
-    @get("/")
-    def index(param: int = Parameter(gt=5)) -> dict[str, int]: ...
 
-.. code-block:: python
-
-    @get("/")
-    def index(param: Annotated[int, Parameter(gt=5)]) -> dict[str, int]: ...
+.. literalinclude:: /examples/whats_new/attrs_v2.py
+    :language: python
+    :caption: 2.x
 
 
 Channels

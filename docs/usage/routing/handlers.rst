@@ -6,15 +6,10 @@ handler :term:`decorators <decorator>` exported from Litestar.
 
 For example:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/handler.py
     :caption: Defining a route handler by decorating a function with the :class:`@get() <.handlers.get>` :term:`decorator`
+    :language: python
 
-    from litestar import get
-
-
-    @get("/")
-    def greet() -> str:
-       return "hello world"
 
 In the above example, the :term:`decorator` includes all the information required to define the endpoint operation for
 the combination of the path ``"/"`` and the HTTP verb ``GET``. In this case it will be a HTTP response with a
@@ -29,51 +24,33 @@ All route handler :term:`decorators <decorator>` accept an optional path :term:`
 This :term:`argument` can be declared as a :term:`kwarg <argument>` using the
 :paramref:`~.handlers.base.BaseRouteHandler.path` parameter:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/declaring_path.py
     :caption: Defining a route handler by passing the path as a keyword argument
+    :language: python
 
-    from litestar import get
-
-
-    @get(path="/some-path")
-    async def my_route_handler() -> None: ...
 
 It can also be passed as an :term:`argument` without the keyword:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/declaring_path_argument.py
     :caption: Defining a route handler but not using the keyword argument
+    :language: python
 
-    from litestar import get
-
-
-    @get("/some-path")
-    async def my_route_handler() -> None: ...
 
 And the value for this :term:`argument` can be either a string path, as in the above examples, or a :class:`list` of
 :class:`string <str>`  paths:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/declaring_multiple_paths.py
     :caption: Defining a route handler with multiple paths
+    :language: python
 
-    from litestar import get
-
-
-    @get(["/some-path", "/some-other-path"])
-    async def my_route_handler() -> None: ...
 
 This is particularly useful when you want to have optional
 :ref:`path parameters <usage/routing/parameters:Path Parameters>`:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/declaring_path_optional_parameter.py
     :caption: Defining a route handler with a path that has an optional path parameter
+    :language: python
 
-    from litestar import get
-
-
-    @get(
-       ["/some-path", "/some-path/{some_id:int}"],
-    )
-    async def my_route_handler(some_id: int = 1) -> None: ...
 
 .. _handler-function-kwargs:
 
@@ -107,22 +84,10 @@ Note that if your parameters collide with any of the reserved :term:`keyword arg
 
 For example:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/reserved_keyword_argument.py
     :caption: Providing an alternative name for a reserved keyword argument
+    :language: python
 
-    from typing import Any, Dict
-    from litestar import Request, get
-    from litestar.datastructures import Headers, State
-
-
-    @get(path="/")
-    async def my_request_handler(
-       state: State,
-       request: Request,
-       headers: Dict[str, str],
-       query: Dict[str, Any],
-       cookies: Dict[str, Any],
-    ) -> None: ...
 
 .. tip:: You can define a custom typing for your application state and then use it as a type instead of just using the
     :class:`~.datastructures.state.State` class from Litestar
@@ -150,29 +115,17 @@ The most commonly used route handlers are those that handle HTTP requests and re
 These route handlers all inherit from the :class:`~.handlers.HTTPRouteHandler` class, which is aliased as the
 :term:`decorator` called :func:`~.handlers.route`:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/route_handler_http_1.py
     :caption: Defining a route handler by decorating a function with the :class:`@route() <.handlers.route>`
-      :term:`decorator`
+    :language: python
 
-    from litestar import HttpMethod, route
-
-
-    @route(path="/some-path", http_method=[HttpMethod.GET, HttpMethod.POST])
-    async def my_endpoint() -> None: ...
 
 As mentioned above, :func:`@route() <.handlers.route>` is merely an alias for ``HTTPRouteHandler``,
 thus the below code is equivalent to the one above:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/route_handler_http_2.py
     :caption: Defining a route handler by decorating a function with the
-      :class:`HTTPRouteHandler <.handlers.HTTPRouteHandler>` class
-
-    from litestar import HttpMethod
-    from litestar.handlers.http_handlers import HTTPRouteHandler
-
-
-    @HTTPRouteHandler(path="/some-path", http_method=[HttpMethod.GET, HttpMethod.POST])
-    async def my_endpoint() -> None: ...
+    :language: python
 
 
 Semantic handler :term:`decorators <decorator>`
@@ -194,51 +147,10 @@ These are used exactly like :func:`@route() <.handlers.route>` with the sole exc
 
 .. dropdown:: Click to see the predefined route handlers
 
-    .. code-block:: python
+    .. literalinclude:: /examples/routing/handler_decorator.py
         :caption: Predefined :term:`decorators <decorator>` for HTTP route handlers
+        :language: python
 
-        from litestar import delete, get, patch, post, put, head
-        from litestar.dto import DTOConfig, DTOData
-        from litestar.contrib.pydantic import PydanticDTO
-
-        from pydantic import BaseModel
-
-
-        class Resource(BaseModel): ...
-
-
-        class PartialResourceDTO(PydanticDTO[Resource]):
-           config = DTOConfig(partial=True)
-
-
-        @get(path="/resources")
-        async def list_resources() -> list[Resource]: ...
-
-
-        @post(path="/resources")
-        async def create_resource(data: Resource) -> Resource: ...
-
-
-        @get(path="/resources/{pk:int}")
-        async def retrieve_resource(pk: int) -> Resource: ...
-
-
-        @head(path="/resources/{pk:int}")
-        async def retrieve_resource_head(pk: int) -> None: ...
-
-
-        @put(path="/resources/{pk:int}")
-        async def update_resource(data: Resource, pk: int) -> Resource: ...
-
-
-        @patch(path="/resources/{pk:int}", dto=PartialResourceDTO)
-        async def partially_update_resource(
-           data: DTOData[PartialResourceDTO], pk: int
-        ) -> Resource: ...
-
-
-        @delete(path="/resources/{pk:int}")
-        async def delete_resource(pk: int) -> None: ...
 
 Although these :term:`decorators <decorator>` are merely subclasses of :class:`~.handlers.HTTPRouteHandler` that pre-set
 the :paramref:`~.handlers.HTTPRouteHandler.http_method`, using :func:`@get() <.handlers.get>`,
@@ -265,33 +177,18 @@ A WebSocket connection can be handled with a :func:`@websocket() <.handlers.Webs
 
     For a more high level approach to handling WebSockets, see :doc:`/usage/websockets`
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/handler_websocket_1.py
     :caption: Using the :func:`@websocket() <.handlers.WebsocketRouteHandler>` route handler :term:`decorator`
+    :language: python
 
-    from litestar import WebSocket, websocket
-
-
-    @websocket(path="/socket")
-    async def my_websocket_handler(socket: WebSocket) -> None:
-       await socket.accept()
-       await socket.send_json({...})
-       await socket.close()
 
 The :func:`@websocket() <.handlers.WebsocketRouteHandler>` :term:`decorator` is an alias of the
 :class:`~.handlers.WebsocketRouteHandler` class. Thus, the below code is equivalent to the one above:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/handler_websocket_2.py
     :caption: Using the :class:`~.handlers.WebsocketRouteHandler` class directly
+    :language: python
 
-    from litestar import WebSocket
-    from litestar.handlers.websocket_handlers import WebsocketRouteHandler
-
-
-    @WebsocketRouteHandler(path="/socket")
-    async def my_websocket_handler(socket: WebSocket) -> None:
-       await socket.accept()
-       await socket.send_json({...})
-       await socket.close()
 
 In difference to HTTP routes handlers, websocket handlers have the following requirements:
 
@@ -312,49 +209,18 @@ ASGI route handlers
 
 If you need to write your own ASGI application, you can do so using the :func:`@asgi() <.handlers.asgi>` :term:`decorator`:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/handler_asgi_1.py
     :caption: Using the :func:`@asgi() <.handlers.asgi>` route handler :term:`decorator`
+    :language: python
 
-    from litestar.types import Scope, Receive, Send
-    from litestar.status_codes import HTTP_400_BAD_REQUEST
-    from litestar import Response, asgi
-
-
-    @asgi(path="/my-asgi-app")
-    async def my_asgi_app(scope: Scope, receive: Receive, send: Send) -> None:
-       if scope["type"] == "http":
-           if scope["method"] == "GET":
-               response = Response({"hello": "world"})
-               await response(scope=scope, receive=receive, send=send)
-           return
-       response = Response(
-           {"detail": "unsupported request"}, status_code=HTTP_400_BAD_REQUEST
-       )
-       await response(scope=scope, receive=receive, send=send)
 
 Like other route handlers, the :func:`@asgi() <.handlers.asgi>` :term:`decorator` is an alias of the
 :class:`~.handlers.ASGIRouteHandler` class. Thus, the code below is equivalent to the one above:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/handler_asgi_2.py
     :caption: Using the :class:`~.handlers.ASGIRouteHandler` class directly
+    :language: python
 
-    from litestar import Response
-    from litestar.handlers.asgi_handlers import ASGIRouteHandler
-    from litestar.status_codes import HTTP_400_BAD_REQUEST
-    from litestar.types import Scope, Receive, Send
-
-
-    @ASGIRouteHandler(path="/my-asgi-app")
-    async def my_asgi_app(scope: Scope, receive: Receive, send: Send) -> None:
-       if scope["type"] == "http":
-           if scope["method"] == "GET":
-               response = Response({"hello": "world"})
-               await response(scope=scope, receive=receive, send=send)
-           return
-       response = Response(
-           {"detail": "unsupported request"}, status_code=HTTP_400_BAD_REQUEST
-       )
-       await response(scope=scope, receive=receive, send=send)
 
 Limitations of ASGI route handlers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -390,50 +256,11 @@ The default value for :paramref:`~.handlers.base.BaseRouteHandler.name` is value
 :paramref:`~.handlers.base.BaseRouteHandler.name` can be used to dynamically retrieve (i.e. during runtime) a mapping
 containing the route handler instance and paths, also it can be used to build a URL path for that handler:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/handler_indexing_1.py
     :caption: Using the :paramref:`~.handlers.base.BaseRouteHandler.name` :term:`kwarg <argument>` to retrieve a route
       handler instance and paths
+    :language: python
 
-    from litestar import Litestar, Request, get
-    from litestar.exceptions import NotFoundException
-    from litestar.response import Redirect
-
-
-    @get("/abc", name="one")
-    def handler_one() -> None:
-        pass
-
-
-    @get("/xyz", name="two")
-    def handler_two() -> None:
-        pass
-
-
-    @get("/def/{param:int}", name="three")
-    def handler_three(param: int) -> None:
-        pass
-
-
-    @get("/{handler_name:str}", name="four")
-    def handler_four(request: Request, name: str) -> Redirect:
-        handler_index = request.app.get_handler_index_by_name(name)
-        if not handler_index:
-            raise NotFoundException(f"no handler matching the name {name} was found")
-
-        # handler_index == { "paths": ["/"], "handler": ..., "qualname": ... }
-        # do something with the handler index below, e.g. send a redirect response to the handler, or access
-        # handler.opt and some values stored there etc.
-
-        return Redirect(path=handler_index[0])
-
-
-    @get("/redirect/{param_value:int}", name="five")
-    def handler_five(request: Request, param_value: int) -> Redirect:
-        path = request.app.route_reverse("three", param=param_value)
-        return Redirect(path=path)
-
-
-    app = Litestar(route_handlers=[handler_one, handler_two, handler_three])
 
 :meth:`~.app.Litestar.route_reverse` will raise :exc:`~.exceptions.NoRouteMatchFoundException` if route with given
 name was not found or if any of path :term:`parameters <parameter>` is missing or if any of passed path
@@ -446,31 +273,10 @@ parameters, so you can apply custom formatting and pass the result to :meth:`~.a
 If handler has multiple paths attached to it :meth:`~.app.Litestar.route_reverse` will return the path that consumes
 the most number of :term:`keyword arguments <argument>` passed to the function.
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/handler_indexing_2.py
     :caption: Using the :meth:`~.app.Litestar.route_reverse` method to build a URL path for a route handler
+    :language: python
 
-    from litestar import get, Request
-
-
-    @get(
-       ["/some-path", "/some-path/{id:int}", "/some-path/{id:int}/{val:str}"],
-       name="handler_name",
-    )
-    def handler(id: int = 1, val: str = "default") -> None: ...
-
-
-    @get("/path-info")
-    def path_info(request: Request) -> str:
-       path_optional = request.app.route_reverse("handler_name")
-       # /some-path`
-
-       path_partial = request.app.route_reverse("handler_name", id=100)
-       # /some-path/100
-
-       path_full = request.app.route_reverse("handler_name", id=100, val="value")
-       # /some-path/100/value`
-
-       return f"{path_optional} {path_partial} {path_full}"
 
 When a handler is associated with multiple routes having identical path :term:`parameters <parameter>`
 (e.g., an indexed handler registered across multiple routers), the output of :meth:`~.app.Litestar.route_reverse` is
@@ -489,14 +295,10 @@ Adding arbitrary metadata to handlers
 All route handler :term:`decorators <decorator>` accept a key called ``opt`` which accepts a :term:`dictionary <dict>`
 of arbitrary values, e.g.,
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/handler_metadata_1.py
     :caption: Adding arbitrary metadata to a route handler through the ``opt`` :term:`kwarg <argument>`
+    :language: python
 
-    from litestar import get
-
-
-    @get("/", opt={"my_key": "some-value"})
-    def handler() -> None: ...
 
 This dictionary can be accessed by a :doc:`route guard </usage/security/guards>`, or by accessing the
 :attr:`~.connection.ASGIConnection.route_handler` property on a :class:`~.connection.request.Request` object,
@@ -505,17 +307,10 @@ or using the :class:`ASGI scope <litestar.types.Scope>` object directly.
 Building on ``opt``, you can pass any arbitrary :term:`kwarg <argument>` to the route handler :term:`decorator`,
 and it will be automatically set as a key in the ``opt`` dictionary:
 
-.. code-block:: python
+.. literalinclude:: /examples/routing/handler_metadata_2.py
     :caption: Adding arbitrary metadata to a route handler through the ``opt`` :term:`kwarg <argument>`
+    :language: python
 
-    from litestar import get
-
-
-    @get("/", my_key="some-value")
-    def handler() -> None: ...
-
-
-    assert handler.opt["my_key"] == "some-value"
 
 You can specify the ``opt`` :term:`dictionary <dict>` at all layers of your application.
 On specific route handlers, on a controller, a router, and even on the app instance itself as described in
@@ -538,39 +333,19 @@ or ``flake8-type-checking`` will actively monitor, and suggest against.
 
 For example, the name ``Model`` is *not* available at runtime in the following snippet:
 
-.. code-block:: python
+.. literalinclude:: /examples/signature_namespace/handler_signature_1.py
     :caption: A route handler with a type that is not available at runtime
+    :language: python
 
-    from __future__ import annotations
-
-    from typing import TYPE_CHECKING
-
-    from litestar import Controller, post
-
-    if TYPE_CHECKING:
-        from domain import Model
-
-
-    class MyController(Controller):
-        @post()
-        def create_item(data: Model) -> Model:
-            return data
 
 In this example, Litestar will be unable to generate the signature model because the type ``Model`` does not exist in
 the module scope at runtime. We can address this on a case-by-case basis by silencing our linters, for example:
 
-.. code-block:: python
+.. literalinclude:: /examples/signature_namespace/handler_signature_2.py
     :no-upgrade:
-    :caption: Silencing linters for a type that is not available at runtime
+    :caption: A Silencing linters for a type that is not available at runtime
+    :language: python
 
-    from __future__ import annotations
-
-    from typing import TYPE_CHECKING
-
-    from litestar import Controller, post
-
-    # Choose the appropriate noqa directive according to your linter
-    from domain import Model  # noqa: TCH002
 
 However, this approach can get tedious; as an alternative, Litestar accepts a ``signature_types`` sequence at
 every :ref:`layer <layered-architecture>` of the application, as demonstrated in the following example:

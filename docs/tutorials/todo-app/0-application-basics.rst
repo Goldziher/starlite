@@ -74,13 +74,9 @@ Litestar that you only want to use this function when a ``GET`` request is being
     and replaces it with the return value of the decorator function.
     Without the decorator, the example would look like this:
 
-    .. code-block:: python
+    .. literalinclude:: /examples/todo_app/hello_world_2.py
+        :language: python
 
-        async def hello_world() -> str:
-            return "Hello, world!"
-
-
-        hello_world = get("/")(hello_world)
 
     For an in-depth explanation of decorators, you can read this excellent Real Python
     article: `Primer on Python Decorators <https://realpython.com/primer-on-python-decorators/>`_

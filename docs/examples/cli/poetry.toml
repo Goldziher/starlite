@@ -1,0 +1,2 @@
+[tool.poetry.plugins."litestar.commands"]
+my_command = "my_litestar_plugin.cli:main"

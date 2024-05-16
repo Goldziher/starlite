@@ -5,15 +5,8 @@ OpenAPI schema generation is enabled by default. To configure it you can pass an
 :class:`OpenAPIConfig <.openapi.OpenAPIConfig>` to the :class:`Litestar <litestar.app.Litestar>` class using the
 ``openapi_config`` kwarg:
 
-.. code-block:: python
-
-   from litestar import Litestar
-   from litestar.openapi import OpenAPIConfig
-
-   app = Litestar(
-       route_handlers=[...], openapi_config=OpenAPIConfig(title="My API", version="1.0.0")
-   )
-
+.. literalinclude:: /examples/openapi/schema_generation.py
+   :language: python
 
 
 Disabling schema generation
@@ -22,12 +15,8 @@ Disabling schema generation
 If you wish to disable schema generation and not include the schema endpoints in your API, simply pass ``None`` as the
 value for ``openapi_config``:
 
-.. code-block:: python
-
-   from litestar import Litestar
-
-   app = Litestar(route_handlers=[...], openapi_config=None)
-
+.. literalinclude:: /examples/openapi/disable_schema_generation.py
+   :language: python
 
 
 Configuring schema generation on a route handler
@@ -36,13 +25,9 @@ Configuring schema generation on a route handler
 By default, an `operation <https://spec.openapis.org/oas/latest.html#operation-object>`_ schema is generated for all route
 handlers. You can omit a route handler from the schema by setting ``include_in_schema=False``:
 
-.. code-block:: python
+.. literalinclude:: /examples/openapi/configure_schema_generation_on_route_1.py
+   :language: python
 
-   from litestar import get
-
-
-   @get(path="/some-path", include_in_schema=False)
-   def my_route_handler() -> None: ...
 
 You can also modify the generated schema for the route handler using the following kwargs:
 
@@ -94,78 +79,15 @@ You can also modify the generated schema for the route handler using the followi
     `operation_id` will be prefixed with the method name when function is decorated with `HTTPRouteHandler` and multiple
     `http_method`. Will also be prefixed with path strings used in `Routers` and `Controllers` to make sure id is unique.
 
-.. code-block:: python
+.. literalinclude:: /examples/openapi/configure_schema_generation_on_route_2.py
+   :language: python
 
-   from datetime import datetime
-   from typing import Optional
-
-   from pydantic import BaseModel
-
-   from litestar import get
-   from litestar.openapi.datastructures import ResponseSpec
-
-
-   class Item(BaseModel): ...
-
-
-   class ItemNotFound(BaseModel):
-       was_removed: bool
-       removed_at: Optional[datetime]
-
-
-   @get(
-       path="/items/{pk:int}",
-       responses={
-           404: ResponseSpec(
-               data_container=ItemNotFound, description="Item was removed or not found"
-           )
-       },
-   )
-   def retrieve_item(pk: int) -> Item: ...
 
 You can also specify ``security`` and ``tags`` on higher level of the application, e.g. on a controller, router, or the
 app instance itself. For example:
 
-.. code-block:: python
-
-   from litestar import Litestar, get
-   from litestar.openapi import OpenAPIConfig
-   from litestar.openapi.spec import Components, SecurityScheme, Tag
-
-
-   @get(
-       "/public",
-       tags=["public"],
-       security=[{}],  # this endpoint is marked as having optional security
-   )
-   def public_path_handler() -> dict[str, str]:
-       return {"hello": "world"}
-
-
-   @get("/other", tags=["internal"], security=[{"apiKey": []}])
-   def internal_path_handler() -> None: ...
-
-
-   app = Litestar(
-       route_handlers=[public_path_handler, internal_path_handler],
-       openapi_config=OpenAPIConfig(
-           title="my api",
-           version="1.0.0",
-           tags=[
-               Tag(name="public", description="This endpoint is for external users"),
-               Tag(name="internal", description="This endpoint is for internal users"),
-           ],
-           security=[{"BearerToken": []}],
-           components=Components(
-               security_schemes={
-                   "BearerToken": SecurityScheme(
-                       type="http",
-                       scheme="bearer",
-                   )
-               },
-           ),
-       ),
-   )
+.. literalinclude:: /examples/openapi/configure_schema_generation_on_route_3.py
+   :language: python
 
 
 Accessing the OpenAPI schema in code
@@ -175,15 +97,8 @@ The OpenAPI schema is generated during the :class:`Litestar <litestar.app.Litest
 its accessible as ``app.openapi_schema``. As such you can always access it inside route handlers, dependencies, etc. by
 access the request instance:
 
-.. code-block:: python
-
-   from litestar import Request, get
-
-
-   @get(path="/")
-   def my_route_handler(request: Request) -> dict:
-       schema = request.app.openapi_schema
-       return schema.dict()
+.. literalinclude:: /examples/openapi/accessing_schema_in_code.py
+   :language: python
 
 
 Customizing Pydantic model schemas

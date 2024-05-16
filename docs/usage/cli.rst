@@ -87,9 +87,8 @@ run
 
 The ``run`` command executes a Litestar application using `uvicorn <https://www.uvicorn.org/>`_.
 
-.. code-block:: shell
-
-   litestar run
+.. literalinclude:: /examples/cli/run.sh
+    :language: shell
 
 .. caution::
 
@@ -143,15 +142,15 @@ Options
 
 The ``--reload-dir`` flag allows you to specify directories to watch for changes. If you specify this flag, the ``--reload`` flag is implied. You can specify multiple directories by passing the flag multiple times:
 
-.. code-block:: shell
+.. literalinclude:: /examples/cli/reload_dir.sh
+    :language: shell
 
-   litestar run --reload-dir=. --reload-dir=../other-library/src
 
 To set multiple directories via an environment variable, use a comma-separated list:
 
-.. code-block:: shell
+.. literalinclude:: /examples/cli/reload_dir_multiple_directories.sh
+    :language: shell
 
-   LITESTAR_RELOAD_DIRS=.,../other-library/src
 
 --reload-include
 ++++++++++++++++
@@ -160,15 +159,14 @@ The ``--reload-include`` flag allows you to specify glob patterns to include whe
 
 You can specify multiple glob patterns by passing the flag multiple times:
 
-.. code-block:: shell
-
-   litestar run --reload-include="*.rst" --reload-include="*.yml"
+.. literalinclude:: /examples/cli/reload_include.sh
+    :language: shell
 
 To set multiple directories via an environment variable, use a comma-separated list:
 
-.. code-block:: shell
+.. literalinclude:: /examples/cli/reload_include_multiple_directories.sh
+    :language: shell
 
-   LITESTAR_RELOAD_INCLUDES=*.rst,*.yml
 
 --reload-exclude
 ++++++++++++++++
@@ -177,31 +175,30 @@ The ``--reload-exclude`` flag allows you to specify glob patterns to exclude whe
 
 You can specify multiple glob patterns by passing the flag multiple times:
 
-.. code-block:: shell
-
-   litestar run --reload-exclude="*.py" --reload-exclude="*.yml"
+.. literalinclude:: /examples/cli/reload_exclude.sh
+    :language: shell
 
 To set multiple directories via an environment variable, use a comma-separated list:
 
-.. code-block:: shell
+.. literalinclude:: /examples/cli/reload_exclude_multiple_directories.sh
+    :language: shell
 
-   LITESTAR_RELOAD_EXCLUDES=*.py,*.yml
 
 SSL
 +++
 
 You can pass paths to an SSL certificate and it's private key to run the server using the HTTPS protocol:
 
-.. code-block:: shell
+.. literalinclude:: /examples/cli/ssl.sh
+    :language: shell
 
-   litestar run --ssl-certfile=certs/cert.pem --ssl-keyfile=certs/key.pem
 
 Both flags must be provided and both files must exist. These are then passed to ``uvicorn``.
 You can also use the  ``--create-self-signed-cert`` flag:
 
-.. code-block:: shell
+.. literalinclude:: /examples/cli/ssl_self_signed.sh
+    :language: shell
 
-   litestar run --ssl-certfile=certs/cert.pem --ssl-keyfile=certs/key.pem --create-self-signed-cert
 
 This way, if the given files don't exist, a self-signed certificate and a passwordless key will be generated.
 If the files are found, they will be reused.
@@ -211,9 +208,8 @@ info
 
 The ``info`` command displays useful information about the selected application and its configuration.
 
-.. code-block:: shell
-
-   litestar info
+.. literalinclude:: /examples/cli/info.sh
+    :language: shell
 
 
 .. image:: /images/cli/litestar_info.png
@@ -225,9 +221,9 @@ routes
 
 The ``routes`` command displays a tree view of the routing table.
 
-.. code-block:: shell
+.. literalinclude:: /examples/cli/routes.sh
+    :language: shell
 
-   litestar routes
 
 Options
 ~~~~~~~
@@ -257,18 +253,18 @@ delete
 
 The ``delete`` subcommand deletes a specific session from the backend.
 
-.. code-block:: shell
+.. literalinclude:: /examples/cli/sessions_delete.sh
+    :language: shell
 
-      litestar sessions delete cc3debc7-1ab6-4dc8-a220-91934a473717
 
 clear
 ~~~~~
 
 The `clear` subcommand is used to remove all sessions from the backend.
 
-.. code-block:: shell
+.. literalinclude:: /examples/cli/sessions_clear.sh
+    :language: shell
 
-   litestar sessions clear
 
 openapi
 ^^^^^^^
@@ -282,9 +278,9 @@ The `schema` subcommand generates OpenAPI specifications from the Litestar appli
 JSON or YAML. The serialization format depends on the filename, which is by default `openapi_schema.json`. You can
 specify a different filename using the `--output` flag. For example:
 
-.. code-block:: shell
+.. literalinclude:: /examples/cli/openapi_schema.sh
+    :language: shell
 
-   litestar schema openapi --output my-specs.yml
 
 typescript
 ~~~~~~~~~~
@@ -292,37 +288,35 @@ typescript
 The `typescript` subcommand generates TypeScript definitions from the Litestar application's OpenAPI specifications.
 For example:
 
-.. code-block:: shell
 
-   litestar schema typescript
+.. literalinclude:: /examples/cli/typescript_schema.sh
+    :language: shell
+
 
 By default, this command outputs a file called `api-specs.ts`. You can change this using the `--output` option:
 
-.. code-block:: shell
 
-   litestar schema typescript --output my-types.ts
+.. literalinclude:: /examples/cli/typescript_schema_path.sh
+    :language: shell
+
 
 You can also specify the top-level TypeScript namespace that will be created, which is `API` by default:
 
-.. code-block:: typescript
+.. literalinclude:: /examples/cli/typescript_schema.ts
+    :language: typescript
 
-   export namespace API {
-       // ...
-   }
 
 To do this, use the `--namespace` option:
 
-.. code-block:: shell
+.. literalinclude:: /examples/cli/typescript_schema_namespace.sh
+    :language: shell
 
-   litestar schema typescript --namespace MyNamespace
 
 This will result in:
 
-.. code-block:: typescript
+.. literalinclude:: /examples/cli/typescript_schema_namespace.ts
+    :language: typescript
 
-   export namespace MyNamespace {
-       // ...
-   }
 
 Extending the CLI
 -----------------
@@ -343,39 +337,23 @@ entries should point to a :class:`click.Command` or :class:`click.Group`:
 
     .. tab-item:: setup.py
 
-        .. code-block:: python
+        .. literalinclude:: /examples/cli/entry_points.py
+            :language: typescript
 
-           from setuptools import setup
-
-           setup(
-               name="my-litestar-plugin",
-               ...,
-               entry_points={
-                   "litestar.commands": ["my_command=my_litestar_plugin.cli:main"],
-               },
-           )
 
     .. tab-item:: pdm
 
-        .. code-block:: toml
+        .. literalinclude:: /examples/cli/pdm.toml
             :caption: Using `PDM <https://pdm.fming.dev/>`_
+            :language: toml
 
-            [project.scripts]
-            my_command = "my_litestar_plugin.cli:main"
-
-            # Or, as an entrypoint:
-
-            [project.entry-points."litestar.commands"]
-            my_command = "my_litestar_plugin.cli:main"
 
     .. tab-item:: Poetry
 
-        .. code-block:: toml
+        .. literalinclude:: /examples/cli/poetry.toml
             :caption: Using `Poetry <https://python-poetry.org/>`_
+            :language: toml
 
-
-            [tool.poetry.plugins."litestar.commands"]
-            my_command = "my_litestar_plugin.cli:main"
 
 Using a plugin
 ^^^^^^^^^^^^^^
@@ -386,21 +364,8 @@ A plugin extending the CLI can be created using the
 initialization of the CLI, and receive the root :class:`click.Group` as its first
 argument, which can then be used to add or override commands:
 
-.. code-block:: python
-
-    from litestar import Litestar
-    from litestar.plugins import CLIPluginProtocol
-    from click import Group
-
-
-    class CLIPlugin(CLIPluginProtocol):
-        def on_cli_init(self, cli: Group) -> None:
-            @cli.command()
-            def is_debug_mode(app: Litestar):
-                print(app.debug)
-
-
-    app = Litestar(plugins=[CLIPlugin()])
+.. literalinclude:: /examples/cli/plugin.py
+    :language: python
 
 
 Accessing the app instance
@@ -410,14 +375,9 @@ When extending the Litestar CLI, you will most likely need access to the loaded 
 You can achieve this by adding the special ``app`` parameter to your CLI functions. This will cause the
 ``Litestar`` instance to be injected into the function whenever it is called from a click-context.
 
-.. code-block:: python
+.. literalinclude:: /examples/cli/app_instance.py
+    :language: python
 
-   import click
-   from litestar import Litestar
-
-
-   @click.command()
-   def my_command(app: Litestar) -> None: ...
 
 CLI Reference
 -------------

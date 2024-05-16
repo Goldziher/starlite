@@ -9,38 +9,16 @@ the websocket connection.
 For example, the following function can be used as a middleware because it receives the ``app`` kwarg and returns
 an ``ASGIApp``:
 
-.. code-block:: python
+.. literalinclude:: /examples/middleware/using_middleware_1.py
+    :language: python
 
-   from litestar.types import ASGIApp, Scope, Receive, Send
-
-
-   def middleware_factory(app: ASGIApp) -> ASGIApp:
-       async def my_middleware(scope: Scope, receive: Receive, send: Send) -> None:
-           # do something here
-           ...
-           await app(scope, receive, send)
-
-       return my_middleware
 
 We can then pass this middleware to the :class:`Litestar <.app.Litestar>` instance, where it will be called on
 every request:
 
-.. code-block:: python
+.. literalinclude:: /examples/middleware/using_middleware_2.py
+    :language: python
 
-   from litestar.types import ASGIApp, Scope, Receive, Send
-   from litestar import Litestar
-
-
-   def middleware_factory(app: ASGIApp) -> ASGIApp:
-       async def my_middleware(scope: Scope, receive: Receive, send: Send) -> None:
-           # do something here
-           ...
-           await app(scope, receive, send)
-
-       return my_middleware
-
-
-   app = Litestar(route_handlers=[...], middleware=[middleware_factory])
 
 In the above example, Litestar will call the ``middleware_factory`` function and pass to it ``app``. It's important to
 understand that this kwarg does not designate the Litestar application but rather the next ``ASGIApp`` in the stack. It

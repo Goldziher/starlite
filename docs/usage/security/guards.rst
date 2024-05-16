@@ -14,81 +14,26 @@ the example.
 
 We begin by creating an :class:`~enum.Enum` with two roles - ``consumer`` and ``admin``:
 
-.. code-block:: python
+.. literalinclude:: /examples/guards/enum.py
     :caption: Defining the UserRole enum
+    :language: python
 
-    from enum import Enum
-
-
-    class UserRole(str, Enum):
-       CONSUMER = "consumer"
-       ADMIN = "admin"
 
 Our ``User`` model will now look like this:
 
-.. dropdown:: Click to expand the User model
+.. literalinclude:: /examples/guards/model.py
+    :caption: User model for role based authorization
+    :language: python
 
-    .. code-block:: python
-        :caption: User model for role based authorization
-
-        from pydantic import BaseModel, UUID4
-        from enum import Enum
-
-
-        class UserRole(str, Enum):
-           CONSUMER = "consumer"
-           ADMIN = "admin"
-
-
-        class User(BaseModel):
-           id: UUID4
-           role: UserRole
-
-           @property
-           def is_admin(self) -> bool:
-               """Determines whether the user is an admin user"""
-               return self.role == UserRole.ADMIN
 
 Given that the ``User`` model has a ``role`` property we can use it to authorize a request.
 Let us create a guard that only allows admin users to access certain route handlers and then add it to a route
 handler function:
 
-.. dropdown:: Click to expand the ``admin_user_guard`` guard
+.. literalinclude:: /examples/guards/guard.py
+    :caption: Defining the ``admin_user_guard`` guard used to authorize certain route handlers
+    :language: python
 
-    .. code-block:: python
-        :caption: Defining the ``admin_user_guard`` guard used to authorize certain route handlers
-
-        from enum import Enum
-
-        from pydantic import BaseModel, UUID4
-        from litestar import post
-        from litestar.connection import ASGIConnection
-        from litestar.exceptions import NotAuthorizedException
-        from litestar.handlers.base import BaseRouteHandler
-
-
-        class UserRole(str, Enum):
-           CONSUMER = "consumer"
-           ADMIN = "admin"
-
-
-        class User(BaseModel):
-           id: UUID4
-           role: UserRole
-
-           @property
-           def is_admin(self) -> bool:
-               """Determines whether the user is an admin user"""
-               return self.role == UserRole.ADMIN
-
-
-        def admin_user_guard(connection: ASGIConnection, _: BaseRouteHandler) -> None:
-           if not connection.user.is_admin:
-               raise NotAuthorizedException()
-
-
-        @post(path="/user", guards=[admin_user_guard])
-        def create_user(data: User) -> User: ...
 
 Thus, only an admin user would be able to send a post request to the ``create_user`` handler.
 
@@ -98,32 +43,10 @@ Guard scopes
 Guards are part of Litestar's :ref:`layered architecture <usage/applications:layered architecture>` and can be declared
 on all layers of the app - the Litestar instance, routers, controllers, and individual route handlers:
 
-.. dropdown:: Example of declaring guards on different layers of the app
+.. literalinclude:: /examples/guards/guard_scope.py
+    :caption: Declaring guards on different layers of the app
+    :language: python
 
-    .. code-block:: python
-        :caption: Declaring guards on different layers of the app
-
-        from litestar import Controller, Router, Litestar
-        from litestar.connection import ASGIConnection
-        from litestar.handlers.base import BaseRouteHandler
-
-
-        def my_guard(connection: ASGIConnection, handler: BaseRouteHandler) -> None: ...
-
-
-        # controller
-        class UserController(Controller):
-           path = "/user"
-           guards = [my_guard]
-
-           ...
-
-
-        # router
-        admin_router = Router(path="admin", route_handlers=[UserController], guards=[my_guard])
-
-        # app
-        app = Litestar(route_handlers=[admin_router], guards=[my_guard])
 
 The placement of guards within the Litestar application depends on the scope and level of access control needed:
 
@@ -151,25 +74,5 @@ other flag. This can be achieved with :ref:`the opts kwarg <handler_opts>` of ro
 To illustrate this let us say we want to have an endpoint that is guarded by a "secret" token, to which end we create
 the following guard:
 
-.. code-block:: python
-
-   from litestar import get
-   from litestar.exceptions import NotAuthorizedException
-   from litestar.connection import ASGIConnection
-   from litestar.handlers.base import BaseRouteHandler
-   from os import environ
-
-
-   def secret_token_guard(
-       connection: ASGIConnection, route_handler: BaseRouteHandler
-   ) -> None:
-       if (
-           route_handler.opt.get("secret")
-           and not connection.headers.get("Secret-Header", "")
-           == route_handler.opt["secret"]
-       ):
-           raise NotAuthorizedException()
-
-
-   @get(path="/secret", guards=[secret_token_guard], opt={"secret": environ.get("SECRET")})
-   def secret_endpoint() -> None: ...
+.. literalinclude:: /examples/guards/route_handler.py
+    :language: python

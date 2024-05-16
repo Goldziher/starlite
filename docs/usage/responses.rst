@@ -5,20 +5,9 @@ Litestar allows for several ways in which HTTP responses can be specified and ha
 case. The base pattern though is straightforward - simply return a value from a route handler function and let
 Litestar take care of the rest:
 
-.. code-block:: python
+.. literalinclude:: /examples/responses/response_simple.py
+    :language: python
 
-   from pydantic import BaseModel
-   from litestar import get
-
-
-   class Resource(BaseModel):
-       id: int
-       name: str
-
-
-   @get("/resources")
-   def retrieve_resource() -> Resource:
-       return Resource(id=1, name="my resource")
 
 In the example above, the route handler function returns an instance of the ``Resource`` pydantic class. This value will
 then be used by Litestar to construct an instance of the :class:`Response <litestar.response.Response>`
@@ -34,14 +23,9 @@ You do not have to specify the ``media_type`` kwarg in the route handler functio
 if you wish to return a response other than JSON, you should specify this value. You can use
 the :class:`MediaType <litestar.enums.MediaType>` enum for this purpose:
 
-.. code-block:: python
+.. literalinclude:: /examples/responses/response_media_type.py
+    :language: python
 
-   from litestar import MediaType, get
-
-
-   @get("/resources", media_type=MediaType.TEXT)
-   def retrieve_resource() -> str:
-       return "The rumbling rabbit ran around the rock"
 
 The value of the ``media_type`` kwarg affects both the serialization of response data and the generation of OpenAPI docs.
 The above example will cause Litestar to serialize the response as a simple bytes string with a ``Content-Type`` header
@@ -97,51 +81,27 @@ format which can be a time and space efficient alternative to JSON.
 It supports all the same types as JSON serialization. To send a ``MessagePack`` response,
 simply specify the media type as ``MediaType.MESSAGEPACK``\ :
 
-.. code-block:: python
+.. literalinclude:: /examples/responses/response_messagepack.py
+    :language: python
 
-   from typing import Dict
-   from litestar import get, MediaType
-
-
-   @get(path="/health-check", media_type=MediaType.MESSAGEPACK)
-   def health_check() -> Dict[str, str]:
-       return {"hello": "world"}
 
 Plaintext responses
 +++++++++++++++++++
 
 For ``MediaType.TEXT``, route handlers should return a :class:`str` or :class:`bytes` value:
 
-.. code-block:: python
+.. literalinclude:: /examples/responses/response_plaintext.py
+    :language: python
 
-   from litestar import get, MediaType
-
-
-   @get(path="/health-check", media_type=MediaType.TEXT)
-   def health_check() -> str:
-       return "healthy"
 
 HTML responses
 ++++++++++++++
 
 For ``MediaType.HTML``, route handlers should return a :class:`str` or :class:`bytes` value that contains HTML:
 
-.. code-block:: python
+.. literalinclude:: /examples/responses/response_html.py
+    :language: python
 
-   from litestar import get, MediaType
-
-
-   @get(path="/page", media_type=MediaType.HTML)
-   def health_check() -> str:
-       return """
-       <html>
-           <body>
-               <div>
-                   <span>Hello World!</span>
-               </div>
-           </body>
-       </html>
-       """
 
 .. tip::
 
@@ -167,21 +127,9 @@ Status Codes
 
 You can control the response ``status_code`` by setting the corresponding kwarg to the desired value:
 
-.. code-block:: python
+.. literalinclude:: /examples/responses/response_status_codes.py
+    :language: python
 
-   from pydantic import BaseModel
-   from litestar import get
-   from litestar.status_codes import HTTP_202_ACCEPTED
-
-
-   class Resource(BaseModel):
-       id: int
-       name: str
-
-
-   @get("/resources", status_code=HTTP_202_ACCEPTED)
-   def retrieve_resource() -> Resource:
-       return Resource(id=1, name="my resource")
 
 If ``status_code`` is not set by the user, the following defaults are used:
 
@@ -251,17 +199,9 @@ Returning ASGI Applications
 
 Litestar also supports returning ASGI applications directly, as you would responses. For example:
 
-.. code-block:: python
+.. literalinclude:: /examples/responses/returning_asgi_applications.py
+    :language: python
 
-   from litestar import get
-   from litestar.types import ASGIApp, Receive, Scope, Send
-
-
-   @get("/")
-   def handler() -> ASGIApp:
-       async def my_asgi_app(scope: Scope, receive: Receive, send: Send) -> None: ...
-
-       return my_asgi_app
 
 What is an ASGI Application?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -275,42 +215,23 @@ For example, all the following examples are ASGI applications:
 Function ASGI Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code-block:: python
+.. literalinclude:: /examples/responses/function_asgi_application.py
+    :language: python
 
-   from litestar.types import Receive, Scope, Send
-
-
-   async def my_asgi_app_function(scope: Scope, receive: Receive, send: Send) -> None:
-       # do something here
-       ...
 
 Method ASGI Application
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code-block:: python
+.. literalinclude:: /examples/responses/method_asgi_application.py
+    :language: python
 
-   from litestar.types import Receive, Scope, Send
-
-
-   class MyClass:
-       async def my_asgi_app_method(
-           self, scope: Scope, receive: Receive, send: Send
-       ) -> None:
-           # do something here
-           ...
 
 Class ASGI Application
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. code-block:: python
+.. literalinclude:: /examples/responses/class_asgi_application.py
+    :language: python
 
-   from litestar.types import Receive, Scope, Send
-
-
-   class ASGIApp:
-       async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-           # do something here
-           ...
 
 Returning responses from third party libraries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -318,17 +239,9 @@ Returning responses from third party libraries
 Because you can return any ASGI Application from a route handler, you can also use any ASGI application from other
 libraries. For example, you can return the response classes from Starlette or FastAPI directly from route handlers:
 
-.. code-block:: python
+.. literalinclude:: /examples/responses/returning_responses_from_third_party.py
+    :language: python
 
-   from starlette.responses import JSONResponse
-
-   from litestar import get
-   from litestar.types import ASGIApp
-
-
-   @get("/")
-   def handler() -> ASGIApp:
-       return JSONResponse(content={"hello": "world"})  # type: ignore
 
 .. attention::
 
@@ -371,11 +284,8 @@ The respective descriptions will be used for the OpenAPI documentation.
     If you don't need those, you can optionally define `response_headers` using a mapping - such as a dictionary -
     as well:
 
-    .. code-block:: python
-
-        @get(response_headers={"my-header": "header-value"})
-        async def handler() -> str: ...
-
+    .. literalinclude:: /examples/responses/response_headers_attributes.py
+        :language: python
 
 
 Setting Headers Dynamically
@@ -517,10 +427,8 @@ Of the two declarations of ``my-cookie`` only the route handler one will be used
     If all you need for your cookies are key and value, you can supply them using a :class:`Mapping[str, str] <typing.Mapping>`
     - like a :class:`dict` - instead:
 
-    .. code-block:: python
-
-        @get(response_cookies={"my-cookie": "cookie-value"})
-        async def handler() -> str: ...
+    .. literalinclude:: /examples/responses/response_cookies_dict.py
+        :language: python
 
 
 .. seealso::
@@ -581,19 +489,9 @@ status code in the 30x range.
 
 In Litestar, a redirect response looks like this:
 
-.. code-block:: python
+.. literalinclude:: /examples/responses/redirect_response.py
+   :language: python
 
-   from litestar.status_codes import HTTP_302_FOUND
-   from litestar import get
-   from litestar.response import Redirect
-
-
-   @get(path="/some-path", status_code=HTTP_302_FOUND)
-   def redirect() -> Redirect:
-       # do some stuff here
-       # ...
-       # finally return redirect
-       return Redirect(path="/other-path")
 
 To return a redirect response you should do the following:
 
@@ -606,19 +504,9 @@ File Responses
 
 File responses send a file:
 
-.. code-block:: python
+.. literalinclude:: /examples/responses/file_response.py
+   :language: python
 
-   from pathlib import Path
-   from litestar import get
-   from litestar.response import File
-
-
-   @get(path="/file-download")
-   def handle_file_download() -> File:
-       return File(
-           path=Path(Path(__file__).resolve().parent, "report").with_suffix(".pdf"),
-           filename="report.pdf",
-       )
 
 The :class:`File <.response.File>` class expects two kwargs:
 
@@ -638,19 +526,8 @@ The :class:`File <.response.File>` class expects two kwargs:
 
 For example:
 
-.. code-block:: python
-
-   from pathlib import Path
-   from litestar import get
-   from litestar.response import File
-
-
-   @get(path="/file-download", media_type="application/pdf")
-   def handle_file_download() -> File:
-       return File(
-           path=Path(Path(__file__).resolve().parent, "report").with_suffix(".pdf"),
-           filename="report.pdf",
-       )
+.. literalinclude:: /examples/responses/file_response_2.py
+   :language: python
 
 
 Streaming Responses
@@ -704,15 +581,9 @@ Template responses are used to render templates into HTML. To use a template res
 :ref:`register a template engine <usage/templating:registering a template engine>` on the application level. Once an
 engine is in place, you can use a template response like so:
 
-.. code-block:: python
+.. literalinclude:: /examples/responses/template_responses.py
+    :language: python
 
-   from litestar import Request, get
-   from litestar.response import Template
-
-
-   @get(path="/info")
-   def info(request: Request) -> Template:
-       return Template(template_name="info.html", context={"user": request.user})
 
 In the above example, :class:`Template <.response.Template>` is passed the template name, which is a
 path like value, and a context dictionary that maps string keys into values that will be rendered in the template.
