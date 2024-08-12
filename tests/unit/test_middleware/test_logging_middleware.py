@@ -113,7 +113,10 @@ def test_logging_middleware_struct_logger(handler: HTTPRouteHandler) -> None:
         }
         assert cap_logs[1] == {
             "status_code": 200,
-            "cookies": {"first-cookie": "abc", "Path": "/", "SameSite": "lax", "second-cookie": "xxx"},
+            "cookies": [
+                {"first-cookie": "abc", "Path": "/", "SameSite": "lax"},
+                {"second-cookie": "xxx", "Path": "/", "SameSite": "lax"},
+            ],
             "headers": {"token": "123", "regular": "abc", "content-length": "17", "content-type": "application/json"},
             "body": '{"hello":"world"}',
             "event": "HTTP Response",

@@ -94,7 +94,7 @@ def test_request_extraction_cookie_obfuscation(req: Request[Any, Any, Any], key:
 
 async def test_response_data_extractor() -> None:
     headers = {"common": "abc", "special": "123", "content-type": "application/json"}
-    cookies = [Cookie(key="regular"), Cookie(key="auth")]
+    cookies = [Cookie(key="regular"), Cookie(key="auth", path="/auth", httponly=True, samesite="strict")]
     response = ASGIResponse(body=b'{"hello":"world"}', cookies=cookies, headers=headers)
     extractor = ResponseDataExtractor()
     messages: List[Any] = []
@@ -109,7 +109,10 @@ async def test_response_data_extractor() -> None:
     assert extracted_data.get("status_code") == HTTP_200_OK
     assert extracted_data.get("body") == b'{"hello":"world"}'
     assert extracted_data.get("headers") == {**headers, "content-length": "17"}
-    assert extracted_data.get("cookies") == {"Path": "/", "SameSite": "lax", "auth": "", "regular": ""}
+    assert extracted_data.get("cookies") == [
+        {"Path": "/", "SameSite": "lax", "regular": ""},
+        {"Path": "/auth", "SameSite": "strict", "auth": "", "": "HttpOnly"},
+    ]
 
 
 async def test_request_data_extractor_skip_keys() -> None:
