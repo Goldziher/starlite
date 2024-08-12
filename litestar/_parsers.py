@@ -56,7 +56,7 @@ def parse_cookie_string(cookie_string: str) -> dict[str, str]:
     Returns:
         A string keyed dictionary of values
     """
-    cookies = [cookie.split("=", 1) if "=" in cookie else ("", cookie) for cookie in cookie_string.split(";")]
+    cookies = [cookie.split("=", 1) if "=" in cookie else (cookie, "") for cookie in cookie_string.split(";")]
     output: dict[str, str] = {
         k: unquote(unquote_cookie(v))
         for k, v in filter(
