@@ -51,7 +51,7 @@ class ResponseCacheMiddleware(AbstractMiddleware):
 
                 if messages and message["type"] == HTTP_RESPONSE_BODY and not message["more_body"]:
                     key = (route_handler.cache_key_builder or self.config.key_builder)(Request(scope))
-                    store = self.config.get_store_from_app(scope["app"])
+                    store = self.config.get_store_from_app(scope["app"], route_handler.cache_store)
                     await store.set(key, encode_msgpack(messages), expires_in=expires_in)
             await send(message)
 

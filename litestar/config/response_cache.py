@@ -76,6 +76,6 @@ class ResponseCacheConfig:
     """A callable that receives connection scope and a status code, and returns a boolean indicating whether the
     response should be cached."""
 
-    def get_store_from_app(self, app: Litestar) -> Store:
+    def get_store_from_app(self, app: Litestar, cache_store: str | None = None) -> Store:
         """Get the store defined in :attr:`store` from an :class:`Litestar <.app.Litestar>` instance."""
-        return app.stores.get(self.store)
+        return app.stores.get(cache_store or self.store)

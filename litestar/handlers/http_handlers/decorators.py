@@ -68,6 +68,7 @@ def route(
     cache: bool | int | type[CACHE_FOREVER] = False,
     cache_control: CacheControlHeader | None = None,
     cache_key_builder: CacheKeyBuilder | None = None,
+    cache_store: str | None = None,
     dependencies: Dependencies | None = None,
     dto: type[AbstractDTO] | None | EmptyType = Empty,
     etag: ETag | None = None,
@@ -126,6 +127,7 @@ def route(
             :class:`CacheControlHeader <.datastructures.CacheControlHeader>` that will be added to the response.
         cache_key_builder: A :class:`cache-key builder function <.types.CacheKeyBuilder>`. Allows for customization
             of the cache key if caching is configured on the application level.
+        cache_store: A string to override the default cache namespace.
         dependencies: A string keyed mapping of dependency :class:`Provider <.di.Provide>` instances.
         dto: :class:`AbstractDTO <.dto.base_dto.AbstractDTO>` to use for (de)serializing and
             validation of request data.
@@ -190,6 +192,7 @@ def route(
             cache=cache,
             cache_control=cache_control,
             cache_key_builder=cache_key_builder,
+            cache_store=cache_store,
             content_encoding=content_encoding,
             content_media_type=content_media_type,
             dependencies=dependencies,
@@ -239,6 +242,7 @@ def get(
     cache: bool | int | type[CACHE_FOREVER] = False,
     cache_control: CacheControlHeader | None = None,
     cache_key_builder: CacheKeyBuilder | None = None,
+    cache_store: str | None = None,
     dependencies: Dependencies | None = None,
     dto: type[AbstractDTO] | None | EmptyType = Empty,
     etag: ETag | None = None,
@@ -297,6 +301,7 @@ def get(
             :class:`CacheControlHeader <.datastructures.CacheControlHeader>` that will be added to the response.
         cache_key_builder: A :class:`cache-key builder function <.types.CacheKeyBuilder>`. Allows for customization
             of the cache key if caching is configured on the application level.
+        cache_store: A string to override the default cache namespace.
         dependencies: A string keyed mapping of dependency :class:`Provider <.di.Provide>` instances.
         dto: :class:`AbstractDTO <.dto.base_dto.AbstractDTO>` to use for (de)serializing and
             validation of request data.
@@ -357,6 +362,7 @@ def get(
             cache=cache,
             cache_control=cache_control,
             cache_key_builder=cache_key_builder,
+            cache_store=cache_store,
             content_encoding=content_encoding,
             content_media_type=content_media_type,
             dependencies=dependencies,
@@ -407,6 +413,7 @@ def head(
     cache: bool | int | type[CACHE_FOREVER] = False,
     cache_control: CacheControlHeader | None = None,
     cache_key_builder: CacheKeyBuilder | None = None,
+    cache_store: str | None = None,
     dependencies: Dependencies | None = None,
     dto: type[AbstractDTO] | None | EmptyType = Empty,
     etag: ETag | None = None,
@@ -469,6 +476,7 @@ def head(
             :class:`CacheControlHeader <.datastructures.CacheControlHeader>` that will be added to the response.
         cache_key_builder: A :class:`cache-key builder function <.types.CacheKeyBuilder>`. Allows for customization
             of the cache key if caching is configured on the application level.
+        cache_store: A string to override the default cache namespace.
         dependencies: A string keyed mapping of dependency :class:`Provider <.di.Provide>` instances.
         dto: :class:`AbstractDTO <.dto.base_dto.AbstractDTO>` to use for (de)serializing and
             validation of request data.
@@ -529,6 +537,7 @@ def head(
             cache=cache,
             cache_control=cache_control,
             cache_key_builder=cache_key_builder,
+            cache_store=cache_store,
             content_encoding=content_encoding,
             content_media_type=content_media_type,
             dependencies=dependencies,
@@ -579,6 +588,7 @@ def patch(
     cache: bool | int | type[CACHE_FOREVER] = False,
     cache_control: CacheControlHeader | None = None,
     cache_key_builder: CacheKeyBuilder | None = None,
+    cache_store: str | None = None,
     dependencies: Dependencies | None = None,
     dto: type[AbstractDTO] | None | EmptyType = Empty,
     etag: ETag | None = None,
@@ -637,6 +647,7 @@ def patch(
             :class:`CacheControlHeader <.datastructures.CacheControlHeader>` that will be added to the response.
         cache_key_builder: A :class:`cache-key builder function <.types.CacheKeyBuilder>`. Allows for customization
             of the cache key if caching is configured on the application level.
+        cache_store: A string to override the default cache namespace.
         dependencies: A string keyed mapping of dependency :class:`Provider <.di.Provide>` instances.
         dto: :class:`AbstractDTO <.dto.base_dto.AbstractDTO>` to use for (de)serializing and
             validation of request data.
@@ -697,6 +708,7 @@ def patch(
             cache=cache,
             cache_control=cache_control,
             cache_key_builder=cache_key_builder,
+            cache_store=cache_store,
             content_encoding=content_encoding,
             content_media_type=content_media_type,
             dependencies=dependencies,
@@ -747,6 +759,7 @@ def post(
     cache: bool | int | type[CACHE_FOREVER] = False,
     cache_control: CacheControlHeader | None = None,
     cache_key_builder: CacheKeyBuilder | None = None,
+    cache_store: str | None = None,
     dependencies: Dependencies | None = None,
     dto: type[AbstractDTO] | None | EmptyType = Empty,
     etag: ETag | None = None,
@@ -805,6 +818,7 @@ def post(
             :class:`CacheControlHeader <.datastructures.CacheControlHeader>` that will be added to the response.
         cache_key_builder: A :class:`cache-key builder function <.types.CacheKeyBuilder>`. Allows for customization
             of the cache key if caching is configured on the application level.
+        cache_store: A string to override the default cache namespace.
         dependencies: A string keyed mapping of dependency :class:`Provider <.di.Provide>` instances.
         dto: :class:`AbstractDTO <.dto.base_dto.AbstractDTO>` to use for (de)serializing and
             validation of request data.
@@ -865,6 +879,7 @@ def post(
             cache=cache,
             cache_control=cache_control,
             cache_key_builder=cache_key_builder,
+            cache_store=cache_store,
             content_encoding=content_encoding,
             content_media_type=content_media_type,
             dependencies=dependencies,
@@ -915,6 +930,7 @@ def put(
     cache: bool | int | type[CACHE_FOREVER] = False,
     cache_control: CacheControlHeader | None = None,
     cache_key_builder: CacheKeyBuilder | None = None,
+    cache_store: str | None = None,
     dependencies: Dependencies | None = None,
     dto: type[AbstractDTO] | None | EmptyType = Empty,
     etag: ETag | None = None,
@@ -973,6 +989,7 @@ def put(
             :class:`CacheControlHeader <.datastructures.CacheControlHeader>` that will be added to the response.
         cache_key_builder: A :class:`cache-key builder function <.types.CacheKeyBuilder>`. Allows for customization
             of the cache key if caching is configured on the application level.
+        cache_store: A string to override the default cache namespace.
         dependencies: A string keyed mapping of dependency :class:`Provider <.di.Provide>` instances.
         dto: :class:`AbstractDTO <.dto.base_dto.AbstractDTO>` to use for (de)serializing and
             validation of request data.
@@ -1033,6 +1050,7 @@ def put(
             cache=cache,
             cache_control=cache_control,
             cache_key_builder=cache_key_builder,
+            cache_store=cache_store,
             content_encoding=content_encoding,
             content_media_type=content_media_type,
             dependencies=dependencies,
@@ -1083,6 +1101,7 @@ def delete(
     cache: bool | int | type[CACHE_FOREVER] = False,
     cache_control: CacheControlHeader | None = None,
     cache_key_builder: CacheKeyBuilder | None = None,
+    cache_store: str | None = None,
     dependencies: Dependencies | None = None,
     dto: type[AbstractDTO] | None | EmptyType = Empty,
     etag: ETag | None = None,
@@ -1141,6 +1160,7 @@ def delete(
             :class:`CacheControlHeader <.datastructures.CacheControlHeader>` that will be added to the response.
         cache_key_builder: A :class:`cache-key builder function <.types.CacheKeyBuilder>`. Allows for customization
             of the cache key if caching is configured on the application level.
+        cache_store: A string to override the default cache namespace.
         dto: :class:`AbstractDTO <.dto.base_dto.AbstractDTO>` to use for (de)serializing and
             validation of request data.
         dependencies: A string keyed mapping of dependency :class:`Provider <.di.Provide>` instances.
@@ -1200,6 +1220,7 @@ def delete(
             cache=cache,
             cache_control=cache_control,
             cache_key_builder=cache_key_builder,
+            cache_store=cache_store,
             content_encoding=content_encoding,
             content_media_type=content_media_type,
             dependencies=dependencies,
