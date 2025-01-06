@@ -22,6 +22,8 @@ from tests.models import User, UserFactory
 if TYPE_CHECKING:
     from litestar.connection import ASGIConnection
 
+pytestmark = pytest.mark.anyio
+
 
 @pytest.fixture(scope="module")
 def mock_db() -> MemoryStore:

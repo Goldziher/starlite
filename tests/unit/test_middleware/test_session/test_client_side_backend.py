@@ -23,6 +23,8 @@ from litestar.testing import RequestFactory, create_test_client
 from litestar.types.asgi_types import HTTPResponseStartEvent
 from tests.helpers import randbytes
 
+pytestmark = pytest.mark.anyio
+
 
 @pytest.mark.parametrize(
     "secret, should_raise",

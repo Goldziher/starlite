@@ -27,6 +27,8 @@ if TYPE_CHECKING:
 
     from litestar.stores.base import NamespacedStore, Store
 
+pytestmark = pytest.mark.anyio
+
 
 @pytest.fixture()
 def mock_redis() -> None:
@@ -85,7 +87,6 @@ async def test_expires(store: Store, frozen_datetime: Coordinates) -> None:
     assert stored_value is None
 
 
-@pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("renew_for", [10, timedelta(seconds=10)])
 async def test_get_and_renew(store: Store, renew_for: int | timedelta, frozen_datetime: Coordinates) -> None:
     if isinstance(store, (RedisStore, ValkeyStore)):
@@ -101,7 +102,6 @@ async def test_get_and_renew(store: Store, renew_for: int | timedelta, frozen_da
     assert stored_value is not None
 
 
-@pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("renew_for", [10, timedelta(seconds=10)])
 @pytest.mark.xdist_group("redis")
 async def test_get_and_renew_redis(redis_store: RedisStore, renew_for: int | timedelta) -> None:
@@ -117,7 +117,6 @@ async def test_get_and_renew_redis(redis_store: RedisStore, renew_for: int | tim
     assert stored_value is not None
 
 
-@pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("renew_for", [10, timedelta(seconds=10)])
 @pytest.mark.xdist_group("valkey")
 async def test_get_and_renew_valkey(valkey_store: ValkeyStore, renew_for: int | timedelta) -> None:
@@ -307,19 +306,19 @@ async def test_valkey_delete_all_no_namespace_raises(valkey_client: Valkey) -> N
 
 
 @pytest.mark.xdist_group("redis")
-def test_redis_namespaced_key(redis_store: RedisStore) -> None:
+async def test_redis_namespaced_key(redis_store: RedisStore) -> None:
     assert redis_store.namespace == "LITESTAR"
     assert redis_store._make_key("foo") == "LITESTAR:foo"
 
 
 @pytest.mark.xdist_group("valkey")
-def test_valkey_namespaced_key(valkey_store: ValkeyStore) -> None:
+async def test_valkey_namespaced_key(valkey_store: ValkeyStore) -> None:
     assert valkey_store.namespace == "LITESTAR"
     assert valkey_store._make_key("foo") == "LITESTAR:foo"
 
 
 @pytest.mark.xdist_group("redis")
-def test_redis_with_namespace(redis_store: RedisStore) -> None:
+async def test_redis_with_namespace(redis_store: RedisStore) -> None:
     namespaced_test = redis_store.with_namespace("TEST")
     namespaced_test_foo = namespaced_test.with_namespace("FOO")
     assert namespaced_test.namespace == "LITESTAR_TEST"
@@ -328,7 +327,7 @@ def test_redis_with_namespace(redis_store: RedisStore) -> None:
 
 
 @pytest.mark.xdist_group("valkey")
-def test_valkey_with_namespace(valkey_store: ValkeyStore) -> None:
+async def test_valkey_with_namespace(valkey_store: ValkeyStore) -> None:
     namespaced_test = valkey_store.with_namespace("TEST")
     namespaced_test_foo = namespaced_test.with_namespace("FOO")
     assert namespaced_test.namespace == "LITESTAR_TEST"
@@ -337,13 +336,13 @@ def test_valkey_with_namespace(valkey_store: ValkeyStore) -> None:
 
 
 @pytest.mark.xdist_group("redis")
-def test_redis_namespace_explicit_none(redis_client: Redis) -> None:
+async def test_redis_namespace_explicit_none(redis_client: Redis) -> None:
     assert RedisStore.with_client(url="redis://127.0.0.1", namespace=None).namespace is None
     assert RedisStore(redis=redis_client, namespace=None).namespace is None
 
 
 @pytest.mark.xdist_group("valkey")
-def test_valkey_namespace_explicit_none(valkey_client: Valkey) -> None:
+async def test_valkey_namespace_explicit_none(valkey_client: Valkey) -> None:
     assert ValkeyStore.with_client(url="redis://127.0.0.1", namespace=None).namespace is None
     assert ValkeyStore(valkey=valkey_client, namespace=None).namespace is None
 

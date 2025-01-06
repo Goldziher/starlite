@@ -28,7 +28,8 @@ async def aiosqlite_engine() -> AsyncIterator[AsyncEngine]:
     yield create_async_engine("sqlite+aiosqlite://", connect_args={"check_same_thread": False})
 
 
-def test_sqlalchemy_async_plugin_example(
+@pytest.mark.anyio
+async def test_sqlalchemy_async_plugin_example(
     data: dict[str, Any], monkeypatch: MonkeyPatch, aiosqlite_engine: AsyncEngine
 ) -> None:
     from docs.examples.contrib.sqlalchemy.plugins import sqlalchemy_async_plugin_example
@@ -48,7 +49,8 @@ def test_sqlalchemy_sync_plugin_example(data: dict[str, Any], monkeypatch: Monke
         assert client.post("/", json=data[0]).json() == data
 
 
-def test_sqlalchemy_async_init_plugin_example(
+@pytest.mark.anyio
+async def test_sqlalchemy_async_init_plugin_example(
     data: dict[str, Any], monkeypatch: MonkeyPatch, aiosqlite_engine: AsyncEngine
 ) -> None:
     from docs.examples.contrib.sqlalchemy.plugins import sqlalchemy_async_init_plugin_example
@@ -59,6 +61,7 @@ def test_sqlalchemy_async_init_plugin_example(
         assert client.post("/", json=data[0]).json() == data
 
 
+@pytest.mark.anyio
 async def test_sqlalchemy_sync_init_plugin_example(
     data: dict[str, Any], monkeypatch: MonkeyPatch, sqlite_engine: Engine
 ) -> None:
@@ -70,6 +73,7 @@ async def test_sqlalchemy_sync_init_plugin_example(
         assert client.post("/", json=data[0]).json() == data
 
 
+@pytest.mark.anyio
 async def test_sqlalchemy_async_init_plugin_dependencies(
     monkeypatch: MonkeyPatch, aiosqlite_engine: AsyncEngine
 ) -> None:

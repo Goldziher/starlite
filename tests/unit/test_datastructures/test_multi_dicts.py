@@ -7,6 +7,8 @@ import pytest
 from litestar.datastructures import UploadFile
 from litestar.datastructures.multi_dicts import FormMultiDict, ImmutableMultiDict, MultiDict
 
+pytestmark = pytest.mark.anyio
+
 
 @pytest.mark.parametrize("multi_class", [MultiDict, ImmutableMultiDict])
 def test_multi_to_dict(multi_class: type[MultiDict | ImmutableMultiDict]) -> None:

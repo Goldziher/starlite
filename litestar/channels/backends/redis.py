@@ -102,7 +102,7 @@ class RedisChannelsPubSubBackend(RedisChannelsBackend):
         pass
 
     async def on_shutdown(self) -> None:
-        await self._pub_sub.reset()
+        await self._pub_sub.aclose()
 
     async def subscribe(self, channels: Iterable[str]) -> None:
         """Subscribe to ``channels``, and enable publishing to them"""

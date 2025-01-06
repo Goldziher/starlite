@@ -24,6 +24,8 @@ from litestar.utils.compat import async_next
 if TYPE_CHECKING:
     from litestar.types import Receive, Scope, Send
 
+pytestmark = pytest.mark.anyio
+
 
 @pytest.mark.parametrize("mode", ["text", "binary"])
 def test_websocket_send_receive_json(mode: Literal["text", "binary"]) -> None:

@@ -5,6 +5,7 @@ import pytest
 from litestar.utils.compat import async_next
 
 
+@pytest.mark.anyio
 async def test_async_next() -> None:
     async def generator() -> AsyncGenerator:
         yield 1

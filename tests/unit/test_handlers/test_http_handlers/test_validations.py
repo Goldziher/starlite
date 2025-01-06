@@ -18,6 +18,8 @@ from litestar.status_codes import (
 )
 from tests.models import DataclassPerson
 
+pytestmark = pytest.mark.anyio
+
 
 def test_route_handler_validation_http_method() -> None:
     # doesn't raise for http methods
@@ -37,6 +39,7 @@ def test_route_handler_validation_http_method() -> None:
         route(http_method=[HttpMethod.GET, "poft"], status_code=HTTP_200_OK)  # type: ignore[list-item]
 
 
+@pytest.mark.anyio
 async def test_function_validation() -> None:
     with pytest.raises(ImproperlyConfiguredException):
 

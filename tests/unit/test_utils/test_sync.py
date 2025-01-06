@@ -1,4 +1,8 @@
+import pytest
+
 from litestar.utils.sync import ensure_async_callable
+
+pytestmark = pytest.mark.anyio
 
 
 async def test_function_wrapper_wraps_method_correctly() -> None:

@@ -117,6 +117,7 @@ include = [
 [tool.uv]
 default-groups = ["dev", "linting", "test", "docs"]
 
+
 [dependency-groups]
 dev = [
   "litestar[full]",
@@ -136,9 +137,8 @@ dev = [
   "hypercorn>=0.16.0",
   "daphne>=4.0.0",
   "opentelemetry-sdk",
-  "httpx-sse"
+  "httpx-sse",
 ]
-
 docs = [
   "sphinx>=7.1.2",
   "sphinx-autobuild>=2021.3.14",
@@ -166,12 +166,10 @@ linting = [
 ]
 test = [
   "covdefaults",
-  "pytest",
-  "pytest-asyncio",
+  "pytest<8.0.0",
   "pytest-cov",
   "pytest-lazy-fixtures",
   "pytest-mock",
-  "pytest-rerunfailures",
   "pytest-timeout",
   "pytest-xdist",
   "time-machine",
@@ -202,11 +200,8 @@ fail_under = 50
 
 [tool.pytest.ini_options]
 addopts = "--strict-markers --strict-config --dist=loadgroup -m 'not server_integration'"
-asyncio_mode = "auto"
 filterwarnings = [
   "error",
-  # https://github.com/pytest-dev/pytest-asyncio/issues/724
-  "default:.*socket.socket:pytest.PytestUnraisableExceptionWarning",
   "ignore::trio.TrioDeprecationWarning:anyio._backends._trio*:",
   "ignore::DeprecationWarning:pkg_resources.*",
   "ignore::DeprecationWarning:google.rpc",
@@ -240,7 +235,7 @@ enable_error_code = [
   "possibly-undefined",
   "redundant-self",
 ]
-python_version = "3.8"
+python_version = "3.9"
 
 disallow_any_generics = false
 show_error_codes = true
@@ -398,8 +393,6 @@ lint.select = [
   "W", # pycodestyle - warning
   "YTT", # flake8-2020
 ]
-
-line-length = 120
 lint.ignore = [
   "A003", # flake8-builtins - class attribute {name} is shadowing a python builtin
   "B010", # flake8-bugbear - do not call setattr with a constant attribute value
@@ -420,6 +413,8 @@ lint.ignore = [
   "ISC001", # Ruff formatter incompatible
   "CPY001", # ruff - copyright notice at the top of the file
 ]
+
+line-length = 120
 src = ["litestar", "tests", "docs/examples"]
 target-version = "py38"
 

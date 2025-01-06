@@ -21,6 +21,8 @@ from litestar.testing import TestClient, create_test_client
 if TYPE_CHECKING:
     from pathlib import Path
 
+pytestmark = pytest.mark.anyio
+
 
 @pytest.mark.parametrize("unit", ["minute", "second", "hour", "day"])
 async def test_rate_limiting(unit: DurationUnit) -> None:

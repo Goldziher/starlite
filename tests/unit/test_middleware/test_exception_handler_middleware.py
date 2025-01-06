@@ -30,6 +30,8 @@ if TYPE_CHECKING:
     from litestar.types import Scope
     from litestar.types.callable_types import GetLogger
 
+pytestmark = pytest.mark.anyio
+
 
 async def dummy_app(scope: Any, receive: Any, send: Any) -> None:
     return None

@@ -2,12 +2,16 @@ from os import urandom
 from pathlib import Path
 from typing import Optional
 
+import pytest
+
 from litestar import post
 from litestar.datastructures import UploadFile
 from litestar.enums import RequestEncodingType
 from litestar.params import Body
 from litestar.status_codes import HTTP_201_CREATED
 from litestar.testing import create_test_client
+
+pytestmark = pytest.mark.anyio
 
 
 async def test_upload_file_methods() -> None:

@@ -12,6 +12,8 @@ from litestar.response.sse import ServerSentEventMessage
 from litestar.testing import create_async_test_client
 from litestar.types import SSEData
 
+pytestmark = pytest.mark.anyio
+
 
 async def test_sse_steaming_response() -> None:
     @get(

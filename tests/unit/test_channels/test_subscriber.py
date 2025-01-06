@@ -11,8 +11,10 @@ from litestar.utils.compat import async_next
 
 from .util import get_from_stream
 
+pytestmark = pytest.mark.anyio
 
-def test_subscriber_backlog_backoff() -> None:
+
+async def test_subscriber_backlog_backoff() -> None:
     subscriber = Subscriber(plugin=MagicMock(), max_backlog=2, backlog_strategy="backoff")
 
     assert subscriber.put_nowait(b"foo")
@@ -21,9 +23,10 @@ def test_subscriber_backlog_backoff() -> None:
 
     assert subscriber.qsize == 2
     assert [subscriber._queue.get_nowait(), subscriber._queue.get_nowait()] == [b"foo", b"bar"]
+    await subscriber.stop()
 
 
-def test_subscriber_backlog_dropleft() -> None:
+async def test_subscriber_backlog_dropleft() -> None:
     subscriber = Subscriber(plugin=MagicMock(), max_backlog=2, backlog_strategy="dropleft")
 
     assert subscriber.put_nowait(b"foo")
@@ -32,6 +35,7 @@ def test_subscriber_backlog_dropleft() -> None:
 
     assert subscriber.qsize == 2
     assert [subscriber._queue.get_nowait(), subscriber._queue.get_nowait()] == [b"bar", b"baz"]
+    await subscriber.stop()
 
 
 async def test_iter_events_none_breaks() -> None:

@@ -18,6 +18,8 @@ from tests.unit.test_static_files.conftest import MakeConfig
 if TYPE_CHECKING:
     from litestar.types import FileSystemProtocol
 
+pytestmark = pytest.mark.anyio
+
 
 def test_default_static_files_config(tmpdir: Path, make_config: MakeConfig) -> None:
     path = tmpdir / "test.txt"

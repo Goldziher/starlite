@@ -35,6 +35,8 @@ if TYPE_CHECKING:
 
     from litestar.routes import HTTPRoute
 
+pytestmark = pytest.mark.anyio
+
 
 def my_generator() -> Generator[str, None, None]:
     for count in range(1, 11):

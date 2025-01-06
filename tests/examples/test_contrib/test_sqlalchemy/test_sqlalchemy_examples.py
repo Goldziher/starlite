@@ -11,6 +11,7 @@ from litestar.testing import TestClient
 pytestmark = pytest.mark.xdist_group("sqlalchemy_examples")
 
 
+@pytest.mark.anyio
 async def test_sqlalchemy_declarative_models(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
     engine = create_async_engine("sqlite+aiosqlite:///test.sqlite", poolclass=NullPool)
 

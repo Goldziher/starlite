@@ -32,6 +32,7 @@ def fx_sync_client() -> Iterator[httpx.Client]:
         yield client
 
 
+@pytest.mark.anyio
 async def test_subprocess_async_client(async_client: httpx.AsyncClient) -> None:
     """Demonstrates functionality of the async client with an infinite SSE source that cannot be tested with the
     regular async test client.

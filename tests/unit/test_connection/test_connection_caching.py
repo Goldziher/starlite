@@ -10,6 +10,8 @@ from litestar.testing import RequestFactory
 from litestar.types import Empty, HTTPReceiveMessage, Scope
 from litestar.utils.scope.state import ScopeState
 
+pytestmark = pytest.mark.anyio
+
 
 async def test_multiple_request_object_data_caching(create_scope: Callable[..., Scope], mock: MagicMock) -> None:
     """Test that accessing the request data on multiple request objects only attempts to await `receive()` once.

@@ -203,6 +203,7 @@ def test_logging_middleware_post_body() -> None:
         assert res.json() == {"foo": "bar"}
 
 
+@pytest.mark.anyio
 async def test_logging_middleware_post_binary_file_without_structlog(monkeypatch: "MonkeyPatch") -> None:
     # https://github.com/litestar-org/litestar/issues/2529
 

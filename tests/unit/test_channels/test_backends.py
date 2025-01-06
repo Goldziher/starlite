@@ -17,6 +17,8 @@ from litestar.channels.backends.redis import RedisChannelsStreamBackend
 from litestar.exceptions import ImproperlyConfiguredException
 from litestar.utils.compat import async_next
 
+pytestmark = pytest.mark.anyio
+
 
 @pytest.fixture(
     params=[
@@ -90,7 +92,6 @@ async def test_pub_sub_no_subscriptions(channels_backend: ChannelsBackend) -> No
         await asyncio.wait_for(async_next(event_generator), timeout=0.01)
 
 
-@pytest.mark.flaky(reruns=5)  # this should not really happen but just in case, we retry
 async def test_pub_sub_no_subscriptions_by_unsubscribes(channels_backend: ChannelsBackend) -> None:
     await channels_backend.subscribe(["foo", "bar"])
     await channels_backend.publish(b"something", ["foo"])
@@ -147,7 +148,6 @@ async def test_redis_streams_backend_flushall(redis_stream_backend: RedisChannel
     assert result == 3
 
 
-@pytest.mark.flaky(reruns=5)  # this should not really happen but just in case, we retry
 @pytest.mark.xdist_group("redis")
 async def test_redis_stream_backend_expires(redis_client: Redis) -> None:
     backend = RedisChannelsStreamBackend(redis=redis_client, stream_ttl=timedelta(milliseconds=10), history=2)

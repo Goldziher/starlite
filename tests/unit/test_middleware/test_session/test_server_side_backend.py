@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 
     from litestar.middleware.session.server_side import ServerSideSessionBackend
 
+pytestmark = pytest.mark.anyio
+
 
 def generate_session_data() -> bytes:
     return encode_json({token_hex(): token_hex()})

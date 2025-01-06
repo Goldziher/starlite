@@ -19,6 +19,8 @@ from litestar.types.asgi_types import ASGIApp, HTTPResponseBodyEvent, HTTPRespon
 
 BrotliMode = Literal["text", "generic", "font"]
 
+pytestmark = pytest.mark.anyio
+
 
 @pytest.fixture()
 def handler() -> HTTPRouteHandler:

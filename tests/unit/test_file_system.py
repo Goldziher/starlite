@@ -12,6 +12,11 @@ from litestar.file_system import BaseLocalFileSystem, FileSystemAdapter
 if TYPE_CHECKING:
     from litestar.types import FileSystemProtocol
 
+pytestmark = pytest.mark.anyio
+
+
+pytestmark = pytest.mark.anyio
+
 
 @pytest.mark.parametrize("file_system", (BaseLocalFileSystem(), LocalFileSystem()))
 async def test_file_adapter_open(tmpdir: Path, file_system: "FileSystemProtocol") -> None:

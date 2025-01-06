@@ -7,6 +7,8 @@ from pytest import FixtureRequest
 from litestar import WebSocket, get, websocket
 from litestar.testing import create_test_client
 
+pytestmark = pytest.mark.anyio
+
 
 @pytest.fixture
 def cleanup_mock() -> MagicMock:

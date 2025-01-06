@@ -21,6 +21,8 @@ from tests.models import (
 _DEFAULT_REQUEST_FACTORY_URL = "http://test.org:3000/"
 pet = DataclassPetFactory.build()
 
+pytestmark = pytest.mark.anyio
+
 
 async def test_request_factory_empty_body() -> None:
     request = RequestFactory().post(data={})

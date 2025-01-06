@@ -23,6 +23,8 @@ if TYPE_CHECKING:
 
 _ExceptionGroup = get_exception_group()
 
+pytestmark = pytest.mark.anyio
+
 
 def test_add_mount_route_disallow_path_parameter() -> None:
     async def handler(scope: Scope, receive: Receive, send: Send) -> None:

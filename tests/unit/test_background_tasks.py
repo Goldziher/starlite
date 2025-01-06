@@ -1,9 +1,13 @@
 from typing import List
 
+import pytest
+
 from litestar import get
 from litestar.background_tasks import BackgroundTask, BackgroundTasks
 from litestar.status_codes import HTTP_200_OK
 from litestar.testing import create_test_client
+
+pytestmark = pytest.mark.anyio
 
 
 async def test_background_tasks_regular_execution() -> None:

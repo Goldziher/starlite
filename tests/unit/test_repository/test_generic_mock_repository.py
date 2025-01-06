@@ -24,6 +24,8 @@ AuthorRepositoryType = Type[AuthorRepository]
 ModelType = Type[Union[base.UUIDBase, base.BigIntBase]]
 AuditModelType = Type[Union[base.UUIDAuditBase, base.BigIntAuditBase]]
 
+pytestmark = pytest.mark.anyio
+
 
 class CreateAuditModelFixture(Protocol):
     def __call__(self, extra_columns: dict[str, type[Mapped] | Mapped] | None = None) -> AuditModelType: ...

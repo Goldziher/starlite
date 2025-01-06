@@ -21,7 +21,10 @@ from litestar.status_codes import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CON
 from litestar.testing import create_test_client
 from tests.models import DataclassPerson, DataclassPersonFactory
 
+pytestmark = pytest.mark.anyio
 
+
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "decorator, http_method, expected_status_code, return_value, return_annotation",
     [

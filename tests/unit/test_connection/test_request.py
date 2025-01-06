@@ -32,6 +32,8 @@ if TYPE_CHECKING:
 
     from litestar.types import ASGIApp, Receive, Scope, Send
 
+pytestmark = pytest.mark.anyio
+
 
 @get("/", sync_to_thread=False, request_max_body_size=None)
 def _route_handler() -> None:
