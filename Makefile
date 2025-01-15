@@ -132,7 +132,7 @@ docs-clean: 										## Dump the existing built docs
 	@rm -rf docs/_build
 	@echo "=> Removed existing documentation build assets"
 
-docs-serve: docs-clean 								## Serve the docs locally
+docs-serve:  								## Serve the docs locally
 	@echo "=> Serving documentation"
 	uv run sphinx-autobuild docs docs/_build/ -j auto --watch litestar --watch docs --watch tests --watch CONTRIBUTING.rst --port 8002
 
