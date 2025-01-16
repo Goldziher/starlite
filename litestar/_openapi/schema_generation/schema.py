@@ -616,6 +616,22 @@ class SchemaCreator:
                         )
                     setattr(schema, schema_key, value)
 
+            if isinstance(field.kwarg_definition, KwargDefinition) and (extra := field.kwarg_definition.schema_extra):
+                for schema_key, value in extra.items():
+                    if not hasattr(schema, schema_key):
+                        raise ValueError(
+                            f"`schema_extra` declares key `{schema_key}` which does not exist in `Schema` object"
+                        )
+                    setattr(schema, schema_key, value)
+
+            if isinstance(field.kwarg_definition, KwargDefinition) and (extra := field.kwarg_definition.schema_extra):
+                for schema_key, value in extra.items():
+                    if not hasattr(schema, schema_key):
+                        raise ValueError(
+                            f"`schema_extra` declares key `{schema_key}` which does not exist in `Schema` object"
+                        )
+                    setattr(schema, schema_key, value)
+
         if schema.default is None and field.default is not Empty:
             schema.default = field.default
 

@@ -410,6 +410,115 @@ def test_run_command_arguments_precedence(
             assert expected in mock_subprocess_run.call_args_list[0].args[0]
 
 
+@pytest.mark.parametrize(
+    "cli, env, expected",
+    (
+        (
+            ("--reload", True),
+            ("LITESTAR_RELOAD", False),
+            "--reload",
+        ),
+        (
+            ("--reload-dir", [".", "../somewhere_else"]),
+            ("LITESTAR_RELOAD_DIRS", ["../somewhere_else3", "../somewhere_else2"]),
+            ["--reload-dir=.", "--reload-dir=../somewhere_else"],
+        ),
+        (
+            ("--reload-include", ["*.rst", "*.yml"]),
+            ("LITESTAR_RELOAD_INCLUDES", ["*.rst2", "*.yml2"]),
+            ["--reload-include=*.rst", "--reload-include=*.yml"],
+        ),
+        (
+            ("--reload-exclude", ["*.rst", "*.yml"]),
+            ("LITESTAR_RELOAD_EXCLUDES", ["*.rst2", "*.yml2"]),
+            ["--reload-exclude=*.rst", "--reload-exclude=*.yml"],
+        ),
+        (
+            ("--wc", 2),
+            ("LITESTAR_WEB_CONCURRENCY", 4),
+            "--workers=2",
+        ),
+        (
+            ("--fd", 0),
+            ("LITESTAR_FILE_DESCRIPTOR", 1),
+            "--fd=0",
+        ),
+        (
+            ("--uds", "/run/uvicorn/litestar_test.sock"),
+            ("LITESTAR_UNIX_DOMAIN_SOCKET", "/run/uvicorn/litestar_test2.sock"),
+            "--uds=/run/uvicorn/litestar_test.sock",
+        ),
+        (
+            ("-d", True),
+            ("LITESTAR_DEBUG", False),
+            ("LITESTAR_DEBUG", "1"),
+        ),
+        (
+            ("--pdb", True),
+            ("LITESTAR_PDB", False),
+            ("LITESTAR_PDB", "1"),
+        ),
+    ),
+)
+def test_run_command_arguments_precedence(
+    cli: Tuple[str, Union[Literal[True], List[str], str]],
+    env: Tuple[str, Union[Literal[True], List[str], str]],
+    expected: str,
+    runner: CliRunner,
+    monkeypatch: MonkeyPatch,
+    mock_subprocess_run: MagicMock,
+    tmp_project_dir: Path,
+    create_app_file: CreateAppFileFixture,
+    mock_uvicorn_run: MagicMock,
+) -> None:
+    args = []
+    args.extend(["--app", f"{Path('my_app.py').stem}:app"])
+    args.extend(["--app-dir", str(Path(tmp_project_dir / "custom_subfolder"))])
+    args.extend(["run"])
+    create_app_file("my_app.py", directory="custom_subfolder")
+
+    env_name, env_value = env
+    cli_name, cli_value = cli
+
+    if env_name:
+        if isinstance(env_value, list):
+            monkeypatch.setenv(env_name, "".join(env_value))
+        else:
+            monkeypatch.setenv(env_name, env_value)  # type: ignore[arg-type] # pyright: ignore (reportGeneralTypeIssues)
+
+    if cli_name:
+        if cli_value is True:
+            args.append(cli_name)
+        elif isinstance(cli_value, list):
+            for value in cli_value:
+                args.extend([cli_name, value])
+        else:
+            args.extend([cli_name, cli_value])
+
+    result = runner.invoke(cli_command, args)
+
+    assert result.exception is None
+    assert result.exit_code == 0
+
+    if cli_name in ["--fd", "--uds"]:
+        mock_subprocess_run.assert_not_called()
+        if isinstance(expected, list):  # type: ignore[unreachable]
+            assert all(_ in mock_uvicorn_run.call_args_list[0].args[0] for _ in expected)  # type: ignore[unreachable]
+        else:
+            assert mock_uvicorn_run.call_args_list[0].kwargs.get(cli_name.strip("--")) == cli_value
+
+    elif cli_name in ["-d", "--pdb"]:
+        assert os.environ.get(expected[0]) == expected[1]
+
+    else:
+        mock_subprocess_run.assert_called_once()
+
+        if isinstance(expected, list):  # type: ignore[unreachable]
+            assert all(_ in mock_subprocess_run.call_args_list[0].args[0] for _ in expected)  # type: ignore[unreachable]
+        else:
+            assert expected in mock_subprocess_run.call_args_list[0].args[0]
+
+
 @pytest.fixture()
 def unset_env() -> Generator[None, None, None]:
     initial_env = {**os.environ}

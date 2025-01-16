@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Type
-from unittest.mock import ANY, MagicMock
 
 import pytest
 from typing_extensions import Annotated
@@ -9,11 +8,10 @@ from litestar import Controller, Litestar, get, post
 from litestar._openapi.datastructures import OpenAPIContext
 from litestar._openapi.request_body import create_request_body
 from litestar.datastructures.upload_file import UploadFile
-from litestar.dto import AbstractDTO
 from litestar.enums import RequestEncodingType
 from litestar.handlers import BaseRouteHandler
 from litestar.openapi.config import OpenAPIConfig
-from litestar.openapi.spec import RequestBody
+from litestar.openapi.spec import Example, RequestBody
 from litestar.params import Body
 from litestar.typing import FieldDefinition
 
@@ -168,16 +166,21 @@ def test_upload_file_model_schema_generation() -> None:
     }
 
 
-def test_request_body_generation_with_dto(create_request: RequestBodyFactory) -> None:
-    mock_dto = MagicMock(spec=AbstractDTO)
+def test_example_in_request_body_schema_generation() -> None:
+    @dataclass
+    class SampleClass:
+        name: str
+        age: int
 
-    @post(path="/form-upload", dto=mock_dto)  # pyright: ignore
-    async def handler(data: Dict[str, Any]) -> None:
+    @post(path="/example")
+    async def handler(
+        data: Annotated[SampleClass, Body(examples=[Example(summary="example", value={"name": "John", "age": 30})])],
+    ) -> None:
         return None
 
-    Litestar(route_handlers=[handler])
-    field_definition = FieldDefinition.from_annotation(Dict[str, Any])
-    create_request(handler, field_definition)
-    mock_dto.create_openapi_schema.assert_called_once_with(
-        field_definition=field_definition, handler_id=handler.handler_id, schema_creator=ANY
-    )
+    app = Litestar([handler])
+    schema = app.openapi_schema.to_schema()
+
+    assert schema["paths"]["/example"]["post"]["requestBody"]["content"]["application/json"]["examples"] == {
+        "example": {"summary": "example", "value": {"name": "John", "age": 30}}
+    }
