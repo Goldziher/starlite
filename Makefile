@@ -134,7 +134,7 @@ docs-clean: 										## Dump the existing built docs
 
 docs-serve:  								## Serve the docs locally
 	@echo "=> Serving documentation"
-	uv run sphinx-autobuild docs docs/_build/ -j auto --watch litestar --watch docs --watch tests --watch CONTRIBUTING.rst --port 8002
+	uv run sphinx-autobuild docs docs/_build/ -j auto --watch litestar --watch docs --watch tests --watch CONTRIBUTING.rst
 
 docs: docs-clean 									## Dump the existing built docs and rebuild them
 	@echo "=> Building documentation"

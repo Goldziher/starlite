@@ -1936,6 +1936,15 @@
         "test",
         "code"
       ]
+    },
+    {
+      "login": "sloria",
+      "name": "Steven Loria",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2379650?v=4",
+      "profile": "https://stevenloria.com",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
