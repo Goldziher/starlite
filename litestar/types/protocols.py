@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar, Collection, Iterable, Protocol, TypeVar, runtime_checkable
+from typing import Any, ClassVar, Collection, Iterable, Protocol, TypeVar, runtime_checkable
 
 __all__ = (
     "DataclassProtocol",
     "InstantiableCollection",
     "Logger",
 )
-
-if TYPE_CHECKING:
-    from types import TracebackType
 
 
 class Logger(Protocol):
@@ -114,8 +111,3 @@ class InstantiableCollection(Collection[T_co], Protocol[T_co]):  # pyright: igno
     """A protocol for instantiable collection types."""
 
     def __init__(self, iterable: Iterable[T_co], /) -> None: ...
-
-
-class DebuggerModule(Protocol):
-    @staticmethod
-    def post_mortem(t: TracebackType | None = None) -> None: ...
