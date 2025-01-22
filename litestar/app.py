@@ -3,6 +3,7 @@ from __future__ import annotations
 import inspect
 import logging
 import os
+import pdb  # noqa: T100
 import warnings
 from contextlib import (
     AbstractAsyncContextManager,
@@ -101,6 +102,7 @@ if TYPE_CHECKING:
         TypeEncodersMap,
     )
     from litestar.types.callable_types import LifespanHook
+    from litestar.types.protocols import DebuggerModule
 
 
 __all__ = ("DEFAULT_OPENAPI_CONFIG", "HandlerIndex", "Litestar")
@@ -149,6 +151,7 @@ class Litestar(Router):
         "compression_config",
         "cors_config",
         "csrf_config",
+        "debugger_module",
         "event_emitter",
         "experimental_features",
         "get_logger",
@@ -222,6 +225,7 @@ class Litestar(Router):
         lifespan: Sequence[Callable[[Litestar], AbstractAsyncContextManager] | AbstractAsyncContextManager]
         | None = None,
         pdb_on_exception: bool | None = None,
+        debugger_module: DebuggerModule = pdb,
         experimental_features: Iterable[ExperimentalFeatures] | None = None,
     ) -> None:
         """Initialize a ``Litestar`` application.
@@ -285,6 +289,8 @@ class Litestar(Router):
 
                 .. versionadded:: 2.8.0
             pdb_on_exception: Drop into the PDB when an exception occurs.
+            debugger_module: A `pdb`-like debugger module that supports the `pdb` protocol.
+                This module will be used when `pdb_on_exception` is set to True.
             plugins: Sequence of plugins.
             request_class: An optional subclass of :class:`Request <.connection.Request>` to use for http connections.
             request_max_body_size: Maximum allowed size of the request body in bytes. If this size is exceeded, a
@@ -362,6 +368,7 @@ class Litestar(Router):
             path=path or "",
             parameters=parameters or {},
             pdb_on_exception=pdb_on_exception,
+            debugger_module=debugger_module,
             plugins=self._get_default_plugins(list(plugins or [])),
             request_class=request_class,
             request_max_body_size=request_max_body_size,
@@ -440,6 +447,7 @@ class Litestar(Router):
         self.websocket_class: type[WebSocket] = config.websocket_class or WebSocket
         self.debug = config.debug
         self.pdb_on_exception: bool = config.pdb_on_exception
+        self.debugger_module: DebuggerModule = config.debugger_module
         self.include_in_schema = include_in_schema
 
         if self.pdb_on_exception:
