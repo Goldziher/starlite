@@ -102,7 +102,7 @@ if TYPE_CHECKING:
         TypeEncodersMap,
     )
     from litestar.types.callable_types import LifespanHook
-    from litestar.types.protocols import DebuggerModule
+    from litestar.types.debugger_types import Debugger
 
 
 __all__ = ("DEFAULT_OPENAPI_CONFIG", "HandlerIndex", "Litestar")
@@ -225,7 +225,7 @@ class Litestar(Router):
         lifespan: Sequence[Callable[[Litestar], AbstractAsyncContextManager] | AbstractAsyncContextManager]
         | None = None,
         pdb_on_exception: bool | None = None,
-        debugger_module: DebuggerModule = pdb,
+        debugger_module: Debugger = pdb,
         experimental_features: Iterable[ExperimentalFeatures] | None = None,
     ) -> None:
         """Initialize a ``Litestar`` application.
@@ -447,7 +447,7 @@ class Litestar(Router):
         self.websocket_class: type[WebSocket] = config.websocket_class or WebSocket
         self.debug = config.debug
         self.pdb_on_exception: bool = config.pdb_on_exception
-        self.debugger_module: DebuggerModule = config.debugger_module
+        self.debugger_module: Debugger = config.debugger_module
         self.include_in_schema = include_in_schema
 
         if self.pdb_on_exception:

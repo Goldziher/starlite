@@ -49,9 +49,9 @@ if TYPE_CHECKING:
     )
     from litestar.types.callable_types import LifespanHook
     from litestar.types.composite_types import TypeDecodersSequence
+    from litestar.types.debugger_types import Debugger
     from litestar.types.empty import EmptyType
     from litestar.types.internal_types import TemplateConfigType
-    from litestar.types.protocols import DebuggerModule
 
 
 __all__ = (
@@ -161,7 +161,7 @@ class AppConfig:
     """
     pdb_on_exception: bool = field(default=False)
     """Drop into the PDB on an exception"""
-    debugger_module: DebuggerModule = field(default=pdb)
+    debugger_module: Debugger = field(default=pdb)
     """A `pdb`-like debugger module that supports the `pdb` protocol.
     This module will be used when `pdb_on_exception` is set to True."""
     plugins: list[PluginProtocol] = field(default_factory=list)
