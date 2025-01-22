@@ -13,7 +13,7 @@ repos:
       - id: check-case-conflict
       - id: check-toml
       - id: debug-statements
-        exclude: ^(litestar/config/app\.py|litestar/app\.py|test_apps/debugging\.py)$
+        exclude: ^(litestar/config/app\.py|litestar/app\.py|test_apps/debugging/main\.py)$
       - id: end-of-file-fixer
       - id: mixed-line-ending
       - id: trailing-whitespace
@@ -33,7 +33,7 @@ repos:
     rev: v2.3.0
     hooks:
       - id: codespell
-        exclude: "tests/openapi/typescript_converter/test_converter|README.md"
+        exclude: "tests/openapi/typescript_converter/test_converter|docs/usage/debugging.rst|README.md"
         additional_dependencies:
           - tomli
   - repo: https://github.com/python-formate/flake8-dunder-all
