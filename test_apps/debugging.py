@@ -1,19 +1,20 @@
 import asyncio
+import pdb  # noqa: T100
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict
 
-import pdb
-import ipdb
+import ipdb  # noqa: T100
 import pdbr
-import pudb
+import pudb  # noqa: T100
 import uvicorn
 
 from litestar import Litestar, get
 
+
 @get("/")
 async def zero_division_error() -> Dict[str, str]:
     """Handler function that returns a greeting dictionary."""
-    1/0  # type: ignore
+    1 / 0  # noqa: B018
     return {"message": "ZeroDevisionError didn't occur."}
 
 
@@ -34,7 +35,7 @@ async def start_servers():
             asyncio.get_event_loop().run_in_executor(executor, run_server, pdb_app, 8000),
             asyncio.get_event_loop().run_in_executor(executor, run_server, ipdb_app, 8001),
             asyncio.get_event_loop().run_in_executor(executor, run_server, pudb_app, 8002),
-            asyncio.get_event_loop().run_in_executor(executor, run_server, pdbr_app, 8003)
+            asyncio.get_event_loop().run_in_executor(executor, run_server, pdbr_app, 8003),
         )
 
 

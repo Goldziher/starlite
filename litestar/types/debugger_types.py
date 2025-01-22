@@ -1,8 +1,7 @@
 from types import TracebackType
-from typing import Protocol,  Type, Optional, Union, NoReturn, TYPE_CHECKING
+from typing import NoReturn, Optional, Protocol, Type, Union
 
-if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias
 
 
 class PDBProtocol(Protocol):
