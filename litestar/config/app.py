@@ -162,7 +162,7 @@ class AppConfig:
     pdb_on_exception: bool = field(default=False)
     """Drop into the PDB on an exception"""
     debugger_module: Debugger = field(default=pdb)
-    """A `pdb`-like debugger module that supports the `pdb` protocol.
+    """A `pdb`-like debugger module that supports the `post_mortem()` protocol.
     This module will be used when `pdb_on_exception` is set to True."""
     plugins: list[PluginProtocol] = field(default_factory=list)
     """List of :class:`SerializationPluginProtocol <.plugins.SerializationPluginProtocol>`."""
