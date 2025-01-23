@@ -330,7 +330,7 @@ def test_pdb_on_exception(mocker: MockerFixture) -> None:
     def handler() -> None:
         raise ValueError("Test debug exception")
 
-    mock_post_mortem = mocker.patch("litestar.middleware._internal.exceptions.middleware.pdb.post_mortem")
+    mock_post_mortem = mocker.patch("litestar.app.pdb.post_mortem")
 
     app = Litestar([handler], pdb_on_exception=True)
 
