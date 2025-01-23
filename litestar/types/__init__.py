@@ -71,13 +71,13 @@ from .composite_types import (
     TypeDecodersSequence,
     TypeEncodersMap,
 )
+from .debugger_types import Debugger
 from .empty import Empty, EmptyType
 from .file_types import FileInfo, FileSystemProtocol
 from .helper_types import AnyIOBackend, MaybePartial, OptionalSequence, SSEData, StreamType, SyncOrAsyncUnion
 from .internal_types import ControllerRouterHandler, ReservedKwargs, RouteHandlerMapItem, RouteHandlerType
 from .protocols import DataclassProtocol, Logger
 from .serialization import DataContainerType, LitestarEncodableType
-from .debugger_types import Debugger
 
 __all__ = (
     "ASGIApp",
@@ -96,6 +96,7 @@ __all__ = (
     "ControllerRouterHandler",
     "DataContainerType",
     "DataclassProtocol",
+    "Debugger",
     "Dependencies",
     "Empty",
     "EmptyType",
@@ -167,5 +168,4 @@ __all__ = (
     "WebSocketSendEvent",
     "WebSocketSendMessage",
     "WebSocketSendMessage",
-    "Debugger",
 )

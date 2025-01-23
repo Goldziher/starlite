@@ -39,6 +39,7 @@ if TYPE_CHECKING:
         BeforeMessageSendHookHandler,
         BeforeRequestHookHandler,
         ControllerRouterHandler,
+        Debugger,
         ExceptionHandlersMap,
         Guard,
         Middleware,
@@ -46,7 +47,6 @@ if TYPE_CHECKING:
         ResponseCookies,
         ResponseHeaders,
         TypeEncodersMap,
-        Debugger,
     )
     from litestar.types.callable_types import LifespanHook
     from litestar.types.composite_types import TypeDecodersSequence
