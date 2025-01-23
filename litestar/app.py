@@ -289,7 +289,7 @@ class Litestar(Router):
 
                 .. versionadded:: 2.8.0
             pdb_on_exception: Drop into the PDB when an exception occurs.
-            debugger_module: A `pdb`-like debugger module that supports the `pdb` protocol.
+            debugger_module: A `pdb`-like debugger module that supports the `post_mortem()` protocol.
                 This module will be used when `pdb_on_exception` is set to True.
             plugins: Sequence of plugins.
             request_class: An optional subclass of :class:`Request <.connection.Request>` to use for http connections.
