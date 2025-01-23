@@ -46,10 +46,10 @@ if TYPE_CHECKING:
         ResponseCookies,
         ResponseHeaders,
         TypeEncodersMap,
+        Debugger,
     )
     from litestar.types.callable_types import LifespanHook
     from litestar.types.composite_types import TypeDecodersSequence
-    from litestar.types.debugger_types import Debugger
     from litestar.types.empty import EmptyType
     from litestar.types.internal_types import TemplateConfigType
 

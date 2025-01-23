@@ -100,9 +100,9 @@ if TYPE_CHECKING:
         Scope,
         Send,
         TypeEncodersMap,
+        Debugger,
     )
     from litestar.types.callable_types import LifespanHook
-    from litestar.types.debugger_types import Debugger
 
 
 __all__ = ("DEFAULT_OPENAPI_CONFIG", "HandlerIndex", "Litestar")

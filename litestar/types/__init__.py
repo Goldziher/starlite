@@ -77,6 +77,7 @@ from .helper_types import AnyIOBackend, MaybePartial, OptionalSequence, SSEData,
 from .internal_types import ControllerRouterHandler, ReservedKwargs, RouteHandlerMapItem, RouteHandlerType
 from .protocols import DataclassProtocol, Logger
 from .serialization import DataContainerType, LitestarEncodableType
+from .debugger_types import Debugger
 
 __all__ = (
     "ASGIApp",
@@ -166,4 +167,5 @@ __all__ = (
     "WebSocketSendEvent",
     "WebSocketSendMessage",
     "WebSocketSendMessage",
+    "Debugger",
 )
