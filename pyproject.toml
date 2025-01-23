@@ -113,16 +113,18 @@ structlog = ["structlog"]
 [project.scripts]
 litestar = "litestar.__main__:run_cli"
 
-
 [tool.hatch.build.targets.sdist]
 include = [
   'docs/PYPI_README.md',
   '/litestar',
 ]
 
-
 [tool.uv]
 default-groups = ["dev", "linting", "test", "docs"]
+
+#[tool.uv.sources]
+# Only needed when working on the theme; also need to uncomment docs package
+#litestar-sphinx-theme = { path = "../litestar-sphinx-theme", editable = true }
 
 [dependency-groups]
 dev = [
@@ -147,7 +149,6 @@ dev = [
   "opentelemetry-sdk",
   "httpx-sse"
 ]
-
 docs = [
   "sphinx>=7.1.2",
   "sphinx-autobuild>=2021.3.14",
@@ -158,7 +159,7 @@ docs = [
   "sphinxcontrib-mermaid>=0.9.2",
   "auto-pytabs[sphinx]>=0.5.0",
   "sphinx-paramlinks>=0.6.0",
-#    "litestar-sphinx-theme @ {root:uri}/../litestar-sphinx-theme", # only needed when working on the theme
+#    "litestar-sphinx-theme", # only needed when working on the theme
   "litestar-sphinx-theme @ git+https://github.com/litestar-org/litestar-sphinx-theme.git@v3",
   "asyncpg",
   "psycopg",
@@ -415,8 +416,6 @@ lint.select = [
   "W", # pycodestyle - warning
   "YTT", # flake8-2020
 ]
-
-line-length = 120
 lint.ignore = [
   "A003", # flake8-builtins - class attribute {name} is shadowing a python builtin
   "B010", # flake8-bugbear - do not call setattr with a constant attribute value
@@ -437,6 +436,8 @@ lint.ignore = [
   "ISC001", # Ruff formatter incompatible
   "CPY001", # ruff - copyright notice at the top of the file
 ]
+
+line-length = 120
 src = ["litestar", "tests", "docs/examples"]
 target-version = "py38"
 

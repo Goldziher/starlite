@@ -285,7 +285,7 @@ suppress_warnings = [
 # -- Style configuration -----------------------------------------------------
 html_theme = "litestar_sphinx_theme"
 html_title = "Litestar Framework"
-pygments_style = "lightbulb"
+pygments_style = "dracula" # should probably move to core theme
 
 html_static_path = ["_static"]
 templates_path = ["_templates"]
