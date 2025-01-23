@@ -15,7 +15,7 @@ from litestar import Litestar, get
 @get("/")
 async def zero_division_error() -> Dict[str, str]:
     """Handler function that returns a greeting dictionary."""
-    1 / 0  # pyright: ignore # noqa: B018  
+    1 / 0  # pyright: ignore # noqa: B018
     return {"message": "ZeroDevisionError didn't occur."}
 
 
