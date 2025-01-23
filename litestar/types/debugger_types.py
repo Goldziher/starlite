@@ -1,4 +1,4 @@
-from types import TracebackType
+from types import ModuleType, TracebackType
 from typing import NoReturn, Optional, Protocol, Type, Union
 
 from typing_extensions import TypeAlias
@@ -35,4 +35,4 @@ class PUDBProtocol(Protocol):
     ) -> Optional[NoReturn]: ...
 
 
-Debugger: TypeAlias = Union[PDBProtocol, IPDBProtocol, PDBRProtocol, PUDBProtocol]
+Debugger: TypeAlias = Union[ModuleType, PDBProtocol, IPDBProtocol, PDBRProtocol, PUDBProtocol]
