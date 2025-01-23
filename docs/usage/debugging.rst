@@ -131,11 +131,13 @@ Using uvicorn
 Advanced Python debuggers
 --------------------------
 
-Configuring ``Litestar`` with the ``debug_module`` option.
-Currently supports the following debuggers:
-    `ipdb <https://github.com/gotcha/ipdb>`_, `PuDB <https://documen.tician.de/pudb/>`_ and `pdbr <https://github.com/cansarigol/pdbr>`_. Also supports `pdb++ <https://github.com/pdbpp/pdbpp>`_.
+You can configure Litestar with the debug_module option to enable interactive debugging. Currently, it supports the following debugging tools:
+`ipdb <https://github.com/gotcha/ipdb>`_, `PuDB <https://documen.tician.de/pudb/>`_ and `pdbr <https://github.com/cansarigol/pdbr>`_. Also supports `pdb++ <https://github.com/pdbpp/pdbpp>`_.
+The default value is `pdb <https://docs.python.org/3/library/pdb.html>`
 
     .. code-block:: python
+
         import ipdb
+
 
         app = Litestar(debug_module=ipdb)
