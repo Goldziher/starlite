@@ -33,7 +33,7 @@ repos:
     rev: v2.3.0
     hooks:
       - id: codespell
-        exclude: "tests/openapi/typescript_converter/test_converter|docs/usage/debugging.rst|README.md"
+        exclude: "tests/openapi/typescript_converter/test_converter|README.md"
         additional_dependencies:
           - tomli
   - repo: https://github.com/python-formate/flake8-dunder-all

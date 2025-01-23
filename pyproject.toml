@@ -192,7 +192,7 @@ build-backend = "hatchling.build"
 requires = ["hatchling"]
 
 [tool.codespell]
-ignore-words-list = "selectin"
+ignore-words-list = "selectin, documen"
 skip = 'uv.lock,docs/examples/contrib/sqlalchemy/us_state_lookup.json'
 
 [tool.coverage.run]
