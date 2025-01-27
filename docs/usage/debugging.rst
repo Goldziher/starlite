@@ -128,8 +128,8 @@ Using uvicorn
         :align: center
 
 
-Advanced Python debuggers
---------------------------
+Customizing the debugger
+-------------------------
 
 You can configure Litestar with the debug_module option to enable interactive debugging. Currently, it supports the following debugging tools:
 `ipdb <https://github.com/gotcha/ipdb>`_, `PuDB <https://documen.tician.de/pudb/>`_ and `pdbr <https://github.com/cansarigol/pdbr>`_. Also supports `pdb++ <https://github.com/pdbpp/pdbpp>`_.
