@@ -140,4 +140,4 @@ The default value is `pdb <https://docs.python.org/3/library/pdb.html>`_.
         import ipdb
 
 
-        app = Litestar(debug_module=ipdb)
+        app = Litestar(pdb_on_exception=True, debugger_module=ipdb)
