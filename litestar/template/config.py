@@ -54,4 +54,8 @@ class TemplateConfig(Generic[EngineType]):
     @cached_property
     def engine_instance(self) -> EngineType:
         """Return the template engine instance."""
-        return self.to_engine() if self.instance is None else self.instance
+        if self.instance is None:
+            return self.to_engine()
+        if callable(self.engine_callback):
+            self.engine_callback(self.instance)
+        return self.instance
