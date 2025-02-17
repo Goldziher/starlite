@@ -19,9 +19,17 @@ from litestar.utils.scope.state import ScopeState
 if TYPE_CHECKING:
     from contextlib import AbstractAsyncContextManager
 
-    from litestar.types import Receive, Scope, Send
+    from litestar.types import HTTPReceiveMessage, Message, Receive, Scope, Send
 
 _ExceptionGroup = get_exception_group()
+
+
+async def no_op_send(message: Message) -> None:
+    pass
+
+
+async def empty_http_receive() -> HTTPReceiveMessage:
+    return {"type": "http.request", "body": b"", "more_body": False}
 
 
 def test_add_mount_route_disallow_path_parameter() -> None:
@@ -243,7 +251,7 @@ async def test_asgi_router_set_exception_handlers_in_scope_routing_error(scope: 
     app = Litestar(route_handlers=[handler], exception_handlers={RuntimeError: app_exception_handlers_mock})
     scope["path"] = "/nowhere-to-be-found"
     with pytest.raises(NotFoundException):
-        await app.asgi_router(scope, AsyncMock(), AsyncMock())
+        await app.asgi_router(scope, empty_http_receive, no_op_send)
 
     state = ScopeState.from_scope(scope)
     assert state.exception_handlers is not Empty
@@ -266,7 +274,7 @@ async def test_asgi_router_set_exception_handlers_in_scope_successful_routing(
     app = Litestar(route_handlers=[handler], exception_handlers={RuntimeError: app_exception_handlers_mock})
     router = app.asgi_router
     scope["path"] = "/"
-    await router(scope, AsyncMock(), AsyncMock())
+    await router(scope, empty_http_receive, no_op_send)
     state = ScopeState.from_scope(scope)
     assert state.exception_handlers is not Empty
     assert state.exception_handlers[RuntimeError] is app_exception_handlers_mock

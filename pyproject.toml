@@ -47,7 +47,8 @@ dependencies = [
   "rich-click",
   "multipart>=1.2.0",
   # default litestar plugins
-  "litestar-htmx>=0.4.0"
+  "litestar-htmx>=0.4.0",
+  "exceptiongroup>=1.2.2",
 ]
 description = "Litestar - A production-ready, highly performant, extensible ASGI API Framework"
 keywords = ["api", "rest", "asgi", "litestar", "starlite"]
@@ -413,8 +414,6 @@ lint.select = [
   "W", # pycodestyle - warning
   "YTT", # flake8-2020
 ]
-
-line-length = 120
 lint.ignore = [
   "A003", # flake8-builtins - class attribute {name} is shadowing a python builtin
   "B010", # flake8-bugbear - do not call setattr with a constant attribute value
@@ -435,6 +434,8 @@ lint.ignore = [
   "ISC001", # Ruff formatter incompatible
   "CPY001", # ruff - copyright notice at the top of the file
 ]
+
+line-length = 120
 src = ["litestar", "tests", "docs/examples"]
 target-version = "py38"
 

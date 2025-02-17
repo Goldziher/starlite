@@ -72,7 +72,6 @@ person_instance = DataclassPersonFactory.build()
         (post, HttpMethod.POST, HTTP_201_CREATED),
         (put, HttpMethod.PUT, HTTP_200_OK),
         (patch, HttpMethod.PATCH, HTTP_200_OK),
-        (delete, HttpMethod.DELETE, HTTP_204_NO_CONTENT),
     ],
 )
 def test_data_using_model(decorator: Any, http_method: Any, expected_status_code: Any) -> None:
@@ -96,7 +95,6 @@ def test_data_using_model(decorator: Any, http_method: Any, expected_status_code
         (post, HttpMethod.POST, HTTP_201_CREATED),
         (put, HttpMethod.PUT, HTTP_200_OK),
         (patch, HttpMethod.PATCH, HTTP_200_OK),
-        (delete, HttpMethod.DELETE, HTTP_204_NO_CONTENT),
     ],
 )
 def test_data_using_list_of_models(decorator: Any, http_method: Any, expected_status_code: Any) -> None:

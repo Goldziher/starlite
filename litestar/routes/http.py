@@ -1,19 +1,24 @@
 from __future__ import annotations
 
+from functools import partial
 from itertools import chain
 from typing import TYPE_CHECKING, Any
 
+import anyio
 from msgspec.msgpack import decode as _decode_msgpack_plain
 
 from litestar.datastructures.multi_dicts import FormMultiDict
 from litestar.enums import HttpMethod, MediaType, ScopeType
 from litestar.exceptions import ClientException, ImproperlyConfiguredException, SerializationException
+from litestar.exceptions.base_exceptions import ClientDisconnect
 from litestar.handlers.http_handlers import HTTPRouteHandler
 from litestar.response import Response
 from litestar.routes.base import BaseRoute
 from litestar.status_codes import HTTP_204_NO_CONTENT
 from litestar.types.empty import Empty
 from litestar.utils.scope.state import ScopeState
+from litestar.utils.sync import AsyncCallable
+from exceptiongroup import ExceptionGroup
 
 if TYPE_CHECKING:
     from litestar._kwargs import KwargsModel
@@ -59,6 +64,36 @@ class HTTPRoute(BaseRoute):
             handler_names=[route_handler.handler_name for route_handler in self.route_handlers],
         )
 
+    async def _handle_response_cycle(
+        self,
+        scope: HTTPScope,
+        request: Request[Any, Any, Any],
+        route_handler: HTTPRouteHandler,
+        parameter_model: KwargsModel,
+        receive: Receive,
+        send: Send,
+        cancel_scope: anyio.CancelScope | None = None,
+    ) -> None:
+        try:
+            response = await self._get_response_for_request(
+                scope=scope, request=request, route_handler=route_handler, parameter_model=parameter_model
+            )
+
+            await response(scope, receive, send)
+
+            if after_response_handler := route_handler.resolve_after_response():
+                await after_response_handler(request)
+
+        finally:
+            if cancel_scope is not None:
+                cancel_scope.cancel()
+
+    async def _listen_for_disconnect(self, request: Request, cancel_scope: anyio.CancelScope) -> None:
+        try:
+            await request._listen_for_disconnect()
+        except ClientDisconnect:
+            cancel_scope.cancel()
+
     async def handle(self, scope: HTTPScope, receive: Receive, send: Send) -> None:  # type: ignore[override]
         """ASGI app that creates a Request from the passed in args, determines which handler function to call and then
         handles the call.
@@ -78,14 +113,37 @@ class HTTPRoute(BaseRoute):
             await route_handler.authorize_connection(connection=request)
 
         try:
-            response = await self._get_response_for_request(
-                scope=scope, request=request, route_handler=route_handler, parameter_model=parameter_model
-            )
+            if route_handler.has_sync_callable or isinstance(route_handler.fn, AsyncCallable):
+                # if it's a sync or to_thread function we can't actually cancel anything
+                # so we just await it directly
+                await self._handle_response_cycle(
+                    scope=scope,
+                    send=send,
+                    receive=receive,
+                    request=request,
+                    route_handler=route_handler,
+                    parameter_model=parameter_model,
+                )
+            else:
+                async with anyio.create_task_group() as tg:
+                    tg.start_soon(
+                        partial(
+                            self._handle_response_cycle,
+                            scope=scope,
+                            send=send,
+                            receive=receive,
+                            request=request,
+                            route_handler=route_handler,
+                            parameter_model=parameter_model,
+                            cancel_scope=tg.cancel_scope,
+                        ),
+                    )
+                    tg.start_soon(self._listen_for_disconnect, request, tg.cancel_scope)
+        except Exception as exc:
+            if isinstance(exc, ExceptionGroup):
+                raise exc.exceptions[0] from exc
+            raise
 
-            await response(scope, receive, send)
-
-            if after_response_handler := route_handler.resolve_after_response():
-                await after_response_handler(request)
         finally:
             if (form_data := ScopeState.from_scope(scope).form) is not Empty:
                 await FormMultiDict.from_form_data(form_data).close()

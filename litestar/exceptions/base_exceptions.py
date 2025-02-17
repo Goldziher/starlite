@@ -55,3 +55,7 @@ class SerializationException(LitestarException):
 
 class LitestarWarning(UserWarning):
     """Base class for Litestar warnings"""
+
+
+class ClientDisconnect(LitestarException):
+    pass

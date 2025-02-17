@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import math
 import warnings
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Generic, cast
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Final, Generic, cast
+
+import anyio
 
 from litestar._multipart import parse_content_header, parse_multipart_form
 from litestar._parsers import parse_url_encoded_form_data
@@ -23,6 +25,7 @@ from litestar.exceptions import (
     LitestarException,
     LitestarWarning,
 )
+from litestar.exceptions.base_exceptions import ClientDisconnect
 from litestar.exceptions.http_exceptions import RequestEntityTooLarge
 from litestar.serialization import decode_json, decode_msgpack
 from litestar.types import Empty, HTTPReceiveMessage
@@ -45,6 +48,9 @@ SERVER_PUSH_HEADERS = {
 }
 
 
+METHODS_WITHOUT_BODY: Final = frozenset(["GET", "HEAD", "DELETE", "TRACE"])
+
+
 class Request(Generic[UserT, AuthT, StateT], ASGIConnection["HTTPRouteHandler", UserT, AuthT, StateT]):
     """The Litestar Request class."""
 
@@ -53,9 +59,11 @@ class Request(Generic[UserT, AuthT, StateT], ASGIConnection["HTTPRouteHandler", 
         "_body",
         "_content_length",
         "_content_type",
+        "_expect_body",
         "_form",
         "_json",
         "_msgpack",
+        "_stream_consumed",
         "is_connected",
         "supports_push_promise",
     )
@@ -85,6 +93,8 @@ class Request(Generic[UserT, AuthT, StateT], ASGIConnection["HTTPRouteHandler", 
         self._accept: Accept | EmptyType = Empty
         self._content_length: int | None | EmptyType = Empty
         self.supports_push_promise = ASGIExtension.SERVER_PUSH in self._server_extensions
+        self._stream_consumed = anyio.Event()
+        self._expect_body = self.method not in METHODS_WITHOUT_BODY
 
     @property
     def method(self) -> Method:
@@ -172,6 +182,30 @@ class Request(Generic[UserT, AuthT, StateT], ASGIConnection["HTTPRouteHandler", 
             raise ClientException(f"Invalid content-length: {content_length_header!r}") from None
         return content_length
 
+    async def _listen_for_disconnect(self) -> None:
+        # we consider these methods empty and consume their - empty - body, since
+        # handlers are unlikely to do this, in order to trigger the next phase and
+        # start listening for 'http.disconnect'.
+        if self.method in METHODS_WITHOUT_BODY:
+            body = await self.body()
+            if body and not self._expect_body:
+                warnings.warn(
+                    f"Discarding unexpected request body for '{self.method} {self.url.path}' "
+                    "received while listening for disconnect",
+                    category=LitestarWarning,
+                    stacklevel=2,
+                )
+
+        await self._stream_consumed.wait()
+
+        message = await self.receive()
+        if message["type"] == "http.disconnect":
+            raise ClientDisconnect
+
+        raise InternalServerException(
+            f"Received unexpected {message['type']!r} message while listening for 'http.disconnect'"
+        )
+
     async def stream(self) -> AsyncGenerator[bytes, None]:
         """Return an async generator that streams chunks of bytes.
 
@@ -226,10 +260,11 @@ class Request(Generic[UserT, AuthT, StateT], ASGIConnection["HTTPRouteHandler", 
                         yield body
 
                     if not event.get("more_body", False):
+                        self._stream_consumed.set()
                         break
 
-                if event["type"] == "http.disconnect":
-                    raise InternalServerException("client disconnected prematurely")
+                elif event["type"] == "http.disconnect":
+                    raise ClientDisconnect()
 
             self.is_connected = False
             yield b""

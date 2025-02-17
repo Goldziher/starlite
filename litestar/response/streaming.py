@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from functools import partial
 from typing import TYPE_CHECKING, Any, AsyncGenerator, AsyncIterable, AsyncIterator, Callable, Iterable, Iterator, Union
-
-from anyio import CancelScope, create_task_group
 
 from litestar.enums import MediaType
 from litestar.response.base import ASGIResponse, Response
@@ -80,25 +77,6 @@ class ASGIStreamingResponse(ASGIResponse):
             iterator if isinstance(iterator, (AsyncIterable, AsyncIterator)) else AsyncIteratorWrapper(iterator)
         )
 
-    async def _listen_for_disconnect(self, cancel_scope: CancelScope, receive: Receive) -> None:
-        """Listen for a cancellation message, and if received - call cancel on the cancel scope.
-
-        Args:
-            cancel_scope: A task group cancel scope instance.
-            receive: The ASGI receive function.
-
-        Returns:
-            None
-        """
-        if not cancel_scope.cancel_called:
-            message = await receive()
-            if message["type"] == "http.disconnect":
-                # despite the IDE warning, this is not a coroutine because anyio 3+ changed this.
-                # therefore make sure not to await this.
-                cancel_scope.cancel()
-            else:
-                await self._listen_for_disconnect(cancel_scope=cancel_scope, receive=receive)
-
     async def _stream(self, send: Send) -> None:
         """Send the chunks from the iterator as a stream of ASGI 'http.response.body' events.
 
@@ -128,10 +106,7 @@ class ASGIStreamingResponse(ASGIResponse):
         Returns:
             None
         """
-
-        async with create_task_group() as task_group:
-            task_group.start_soon(partial(self._stream, send))
-            await self._listen_for_disconnect(cancel_scope=task_group.cancel_scope, receive=receive)
+        await self._stream(send)
 
 
 class Stream(Response[StreamType[Union[str, bytes]]]):

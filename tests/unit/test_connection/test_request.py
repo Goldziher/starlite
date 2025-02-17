@@ -20,6 +20,7 @@ from litestar.exceptions import (
     LitestarWarning,
     SerializationException,
 )
+from litestar.exceptions.base_exceptions import ClientDisconnect
 from litestar.middleware import MiddlewareProtocol
 from litestar.response.base import ASGIResponse
 from litestar.serialization import encode_json, encode_msgpack
@@ -382,7 +383,7 @@ def test_request_without_setting_receive(create_scope: Callable[..., Scope]) -> 
 
 
 async def test_request_disconnect(create_scope: Callable[..., Scope]) -> None:
-    """If a client disconnect occurs while reading request body then InternalServerException should be raised."""
+    """If a client disconnect occurs while reading request body then ClientDisconnect should be raised."""
 
     async def app(scope: Scope, receive: Receive, send: Send) -> None:
         request = Request[Any, Any, State](scope, receive)
@@ -391,7 +392,7 @@ async def test_request_disconnect(create_scope: Callable[..., Scope]) -> None:
     async def receiver() -> dict[str, str]:
         return {"type": "http.disconnect"}
 
-    with pytest.raises(InternalServerException):
+    with pytest.raises(ClientDisconnect):
         await app(
             create_scope(type="http", route_handler=_route_handler, method="POST", path="/"),
             receiver,  # type: ignore[arg-type]
