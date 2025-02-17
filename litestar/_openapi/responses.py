@@ -298,7 +298,11 @@ def create_error_responses(exceptions: list[type[HTTPException]]) -> Iterator[tu
                         "status_code": Schema(type=OpenAPIType.INTEGER),
                         "detail": Schema(type=OpenAPIType.STRING),
                         "extra": Schema(
-                            type=[OpenAPIType.NULL, OpenAPIType.OBJECT, OpenAPIType.ARRAY],
+                            any_of=[
+                                Schema(type=OpenAPIType.NULL),
+                                Schema(type=OpenAPIType.OBJECT),
+                                Schema(type=OpenAPIType.ARRAY, items=Schema()),
+                            ],
                             additional_properties=Schema(),
                         ),
                     },
