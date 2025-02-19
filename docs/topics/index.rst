@@ -13,3 +13,5 @@ deployment strategies, ASGI and WSGI, and so on.
 
     sync-vs-async
     deployment/index
+    dto-rationale
+
