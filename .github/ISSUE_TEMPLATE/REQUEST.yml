@@ -1,8 +1,10 @@
 name: "Feature Request"
 description: Create an issue for a new feature request
 title: "Enhancement: <title>"
-labels: ["Enhancement"]
-projects: ["litestar-org/16"]
+labels:
+  - "Enhancement"
+projects:
+  - "litestar-org/16"
 body:
   - type: textarea
     id: summary

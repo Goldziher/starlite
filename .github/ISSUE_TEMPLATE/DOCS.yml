@@ -1,8 +1,10 @@
 name: "Documentation Update"
 description: Create an issue for documentation changes
 title: "Docs: <title>"
-labels: ["Documentation :books:"]
-projects: ["litestar-org/16"]
+labels:
+  - "Documentation :books:"
+projects:
+  - "litestar-org/16"
 body:
   - type: textarea
     id: summary

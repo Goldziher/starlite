@@ -1,8 +1,11 @@
 name: "Bug Report"
 description: Create an issue for a bug.
 title: "Bug: <title>"
-labels: ["Bug :bug:", "Triage Required"]
-projects: ["litestar-org/16"]
+labels:
+  - "Bug :bug:"
+  - "Triage Required"
+projects:
+  - "litestar-org/16"
 body:
   - type: textarea
     id: description
@@ -24,11 +27,17 @@ body:
     id: mcve
     attributes:
       label: "MCVE"
-      description: "Please provide a minimal, complete, and verifiable example of the issue."
-      value: |
-        ```py
-        # Your MCVE code here
-        ```
+      description: >-
+        Please provide a minimal, complete, and verifiable example of the issue.
+        This will be automatically formatted into code, so no need for backticks.
+      placeholder: |
+        from litestar import Litestar, get
+
+        @get("/")
+        def hello_world() -> str:
+            return "hello world"
+
+        app = Litestar(route_handlers=[hello_world])
       render: python
     validations:
       required: false
@@ -42,7 +51,6 @@ body:
         2. Click on '....'
         3. Scroll down to '....'
         4. See error
-      render: bash
     validations:
       required: false
   - type: textarea
@@ -50,17 +58,17 @@ body:
     attributes:
       label: "Screenshots"
       description: If applicable, add screenshots to help explain your problem.
-      value: |
-        "![SCREENSHOT_DESCRIPTION](SCREENSHOT_LINK.png)"
-      render: bash
+      placeholder: Drag-and-drop images up add them directly or use Markdown to embed external images.
     validations:
       required: false
   - type: textarea
     id: logs
     attributes:
       label: "Logs"
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
-      render: bash
+      description: >-
+        Please copy and paste any relevant log output.
+        This will be automatically formatted into code, so no need for backticks.
+      render: text
     validations:
       required: false
   - type: textarea
