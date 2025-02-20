@@ -183,7 +183,7 @@ class AppConfig:
     subclasses of :class:`Controller <.controller.Controller>` or any function decorated by the route handler
     decorators.
     """
-    security: list[SecurityRequirement] = field(default_factory=list)
+    security: list[SecurityRequirement] | None = field(default=None)
     """A list of dictionaries that will be added to the schema of all route handlers in the application. See
     :data:`SecurityRequirement <.openapi.spec.SecurityRequirement>` for details.
     """
