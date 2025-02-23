@@ -50,7 +50,11 @@ class CORSMiddleware(AbstractMiddleware):
             )
             await asgi_response(scope, receive, send)
         elif origin:
-            await self.app(scope, receive, self.send_wrapper(send=send, origin=origin, has_cookie="cookie" in headers))
+            await self.app(
+                scope,
+                receive,
+                self.send_wrapper(send=send, origin=origin, has_cookie="cookie" in headers),
+            )
         else:
             await self.app(scope, receive, send)
 
@@ -113,7 +117,13 @@ class CORSMiddleware(AbstractMiddleware):
                 response_headers["Access-Control-Allow-Headers"] = ", ".join(
                     sorted(set(pre_flight_requested_headers) | DEFAULT_ALLOWED_CORS_HEADERS)  # pyright: ignore
                 )
-            elif any(header.lower() not in self.config.allow_headers for header in pre_flight_requested_headers):
+            elif any(
+                header.lower()
+                not in set(self.config.allow_headers).union(
+                    default_header.lower() for default_header in DEFAULT_ALLOWED_CORS_HEADERS
+                )
+                for header in pre_flight_requested_headers
+            ):
                 failures.append("headers")
 
         return (
