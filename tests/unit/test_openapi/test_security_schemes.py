@@ -12,8 +12,8 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture()
-def public_route() -> "HTTPRouteHandler":
-    @get("/handler")
+def global_security_route() -> "HTTPRouteHandler":
+    @get("/not-specified")
     def _handler() -> Any: ...
 
     return _handler
@@ -27,18 +27,30 @@ def protected_route() -> "HTTPRouteHandler":
     return _handler
 
 
-def test_schema_without_security_property(public_route: "HTTPRouteHandler") -> None:
-    app = Litestar(route_handlers=[public_route])
+@pytest.fixture()
+def explicit_unprotected_route() -> "HTTPRouteHandler":
+    @get("/unprotected", security=[])
+    def _handler() -> Any: ...
+
+    return _handler
+
+
+def test_schema_without_security_property(global_security_route: "HTTPRouteHandler") -> None:
+    app = Litestar(route_handlers=[global_security_route])
     schema = app.openapi_schema
 
     assert schema
     assert schema.components
     assert not schema.components.security_schemes
 
+    schema_dict = schema.to_schema()
+    route = schema_dict["paths"]["/not-specified"]["get"]
+    assert "security" not in route
 
-def test_schema_with_security_scheme_defined(public_route: "HTTPRouteHandler") -> None:
+
+def test_schema_with_security_scheme_defined(global_security_route: "HTTPRouteHandler") -> None:
     app = Litestar(
-        route_handlers=[public_route],
+        route_handlers=[global_security_route],
         openapi_config=OpenAPIConfig(
             title="test app",
             version="0.0.1",
@@ -67,7 +79,10 @@ def test_schema_with_security_scheme_defined(public_route: "HTTPRouteHandler") -
         }
     }
 
-    assert schema_dict.get("security", []) == [{"BearerToken": []}]
+    assert schema_dict.get("security", None) == [{"BearerToken": []}]
+
+    route = schema_dict["paths"]["/not-specified"]["get"]
+    assert "security" not in route
 
 
 def test_schema_with_route_security_overridden(protected_route: "HTTPRouteHandler") -> None:
@@ -92,6 +107,30 @@ def test_schema_with_route_security_overridden(protected_route: "HTTPRouteHandle
 
     route = schema_dict["paths"]["/protected"]["get"]
     assert route.get("security", None) == [{"BearerToken": []}]
+
+
+def test_schema_with_route_security_overridden_with_empty_list(explicit_unprotected_route: "HTTPRouteHandler") -> None:
+    app = Litestar(
+        route_handlers=[explicit_unprotected_route],
+        openapi_config=OpenAPIConfig(
+            title="test app",
+            version="0.0.1",
+            components=Components(
+                security_schemes={
+                    "BearerToken": SecurityScheme(
+                        type="http",
+                        scheme="bearer",
+                    )
+                },
+            ),
+        ),
+    )
+    schema = app.openapi_schema
+    assert schema
+    schema_dict = schema.to_schema()
+
+    route = schema_dict["paths"]["/unprotected"]["get"]
+    assert route.get("security", None) == []
 
 
 def test_layered_security_declaration() -> None:

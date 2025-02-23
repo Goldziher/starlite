@@ -192,7 +192,7 @@ class Router:
         self.response_headers = narrow_response_headers(response_headers)
         self.return_dto = return_dto
         self.routes: list[HTTPRoute | ASGIRoute | WebSocketRoute] = []
-        self.security = list(security or [])
+        self.security = None if security is None else list(security)
         self.signature_namespace = add_types_to_signature_namespace(
             signature_types or [], dict(signature_namespace or {})
         )

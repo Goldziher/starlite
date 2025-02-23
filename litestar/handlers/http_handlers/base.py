@@ -301,7 +301,7 @@ class HTTPRouteHandler(BaseRouteHandler):
         self._resolved_include_in_schema: bool | EmptyType = Empty
         self._resolved_response_class: type[Response] | EmptyType = Empty
         self._resolved_request_class: type[Request] | EmptyType = Empty
-        self._resolved_security: list[SecurityRequirement] | EmptyType = Empty
+        self._resolved_security: list[SecurityRequirement] | None | EmptyType = Empty
         self._resolved_tags: list[str] | EmptyType = Empty
         self._resolved_request_max_body_size: int | EmptyType | None = Empty
 
@@ -446,7 +446,7 @@ class HTTPRouteHandler(BaseRouteHandler):
 
         return self._resolved_include_in_schema
 
-    def resolve_security(self) -> list[SecurityRequirement]:
+    def resolve_security(self) -> list[SecurityRequirement] | None:
         """Resolve the security property by starting from the route handler and moving up.
 
         Security requirements are additive, so the security requirements of the route handler are the sum of all
@@ -455,11 +455,16 @@ class HTTPRouteHandler(BaseRouteHandler):
         Returns:
             list[SecurityRequirement]: The resolved security property.
         """
-        if self._resolved_security is Empty:
-            self._resolved_security = []
-            for layer in self.ownership_layers:
-                if isinstance(layer.security, Sequence):
-                    self._resolved_security.extend(layer.security)
+        if self._resolved_security is not Empty:
+            return self._resolved_security
+
+        self._resolved_security = None
+        for layer in self.ownership_layers:
+            if isinstance(layer.security, Sequence) and layer.security is not None:
+                if self._resolved_security is None:
+                    self._resolved_security = []
+
+                self._resolved_security.extend(layer.security)
 
         return self._resolved_security
 

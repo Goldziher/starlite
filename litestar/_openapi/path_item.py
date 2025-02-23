@@ -83,7 +83,7 @@ class PathItemFactory:
             responses=responses,
             request_body=request_body,
             parameters=parameters or None,  # type: ignore[arg-type]
-            security=route_handler.resolve_security() or None,
+            security=route_handler.resolve_security(),
         )
 
     def create_operation_id(self, route_handler: HTTPRouteHandler, http_method: HttpMethod) -> str:

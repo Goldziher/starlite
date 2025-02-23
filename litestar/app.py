@@ -372,7 +372,7 @@ class Litestar(Router):
             response_headers=response_headers or [],
             return_dto=return_dto,
             route_handlers=list(route_handlers) if route_handlers is not None else [],
-            security=list(security or []),
+            security=None if security is None else list(security),
             signature_namespace=dict(signature_namespace or {}),
             signature_types=list(signature_types or []),
             state=state or State(),
