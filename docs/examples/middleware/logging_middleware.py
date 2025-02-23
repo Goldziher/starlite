@@ -1,5 +1,3 @@
-from typing import Dict
-
 from litestar import Litestar, get
 from litestar.logging.config import LoggingConfig
 from litestar.middleware.logging import LoggingMiddlewareConfig
@@ -8,7 +6,7 @@ logging_middleware_config = LoggingMiddlewareConfig()
 
 
 @get("/", sync_to_thread=False)
-def my_handler() -> Dict[str, str]:
+def my_handler() -> dict[str, str]:
     return {"hello": "world"}
 
 

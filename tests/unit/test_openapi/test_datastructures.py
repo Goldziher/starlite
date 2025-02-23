@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, Generic, List, TypeVar
+from typing import Generic, TypeVar
 
 import msgspec
 import pytest
@@ -69,16 +69,16 @@ def test_get_normalized_schema_key() -> None:
         "DataclassPerson",
     )
 
-    builtin_dict = Dict[str, List[int]]
+    builtin_dict = dict[str, list[int]]
     assert _get_normalized_schema_key(FieldDefinition.from_annotation(builtin_dict)) == (
-        "typing",
-        "Dict_str_typing.List_int_",
+        "builtins",
+        "dict",
     )
 
-    builtin_with_custom = Dict[str, DataclassPerson]
+    builtin_with_custom = dict[str, DataclassPerson]
     assert _get_normalized_schema_key(FieldDefinition.from_annotation(builtin_with_custom)) == (
-        "typing",
-        "Dict_str_tests.models.DataclassPerson_",
+        "builtins",
+        "dict",
     )
 
     class LocalGeneric(Generic[T]):

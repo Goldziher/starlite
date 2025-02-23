@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from copy import copy
+import functools
 from functools import partial
-from typing import TYPE_CHECKING, Any, Callable, Mapping, Sequence, cast
+from typing import TYPE_CHECKING, Any, Callable, NoReturn, cast
 
 from litestar._signature import SignatureModel
 from litestar.di import Provide
 from litestar.dto import DTOData
-from litestar.exceptions import ImproperlyConfiguredException
-from litestar.plugins import DIPlugin, PluginRegistry
+from litestar.exceptions import ImproperlyConfiguredException, LitestarException
+from litestar.router import Router
 from litestar.serialization import default_deserializer, default_serializer
 from litestar.types import (
     Dependencies,
@@ -16,27 +16,30 @@ from litestar.types import (
     ExceptionHandlersMap,
     Guard,
     Middleware,
+    ParametersMap,
     TypeDecodersSequence,
     TypeEncodersMap,
 )
 from litestar.typing import FieldDefinition
-from litestar.utils import ensure_async_callable, get_name, normalize_path
+from litestar.utils import ensure_async_callable, get_name, join_paths, normalize_path
+from litestar.utils.deprecation import deprecated
+from litestar.utils.empty import value_or_default
 from litestar.utils.helpers import unwrap_partial
 from litestar.utils.signature import ParsedSignature, add_types_to_signature_namespace, merge_signature_namespaces
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Mapping, Sequence
+
     from typing_extensions import Self
 
     from litestar._kwargs import KwargsModel
     from litestar.app import Litestar
     from litestar.connection import ASGIConnection
-    from litestar.controller import Controller
     from litestar.dto import AbstractDTO
-    from litestar.params import ParameterKwarg
-    from litestar.router import Router
-    from litestar.types import AnyCallable, AsyncAnyCallable, ExceptionHandler
+    from litestar.routes import BaseRoute
+    from litestar.types import AsyncAnyCallable
+    from litestar.types.callable_types import AnyCallable, AsyncGuard
     from litestar.types.empty import EmptyType
-    from litestar.types.internal_types import PathParameterDefinition
 
 __all__ = ("BaseRouteHandler",)
 
@@ -48,29 +51,22 @@ class BaseRouteHandler:
     """
 
     __slots__ = (
-        "_fn",
+        "_dto",
+        "_parameter_field_definitions",
         "_parsed_data_field",
         "_parsed_fn_signature",
         "_parsed_return_field",
-        "_resolved_data_dto",
-        "_resolved_dependencies",
-        "_resolved_guards",
-        "_resolved_layered_parameters",
-        "_resolved_return_dto",
-        "_resolved_signature_namespace",
-        "_resolved_type_decoders",
-        "_resolved_type_encoders",
-        "_signature_model",
+        "_resolved_signature_model",
+        "_return_dto",
         "dependencies",
-        "dto",
         "exception_handlers",
+        "fn",
         "guards",
         "middleware",
         "name",
         "opt",
-        "owner",
+        "parameters",
         "paths",
-        "return_dto",
         "signature_namespace",
         "type_decoders",
         "type_encoders",
@@ -80,6 +76,7 @@ class BaseRouteHandler:
         self,
         path: str | Sequence[str] | None = None,
         *,
+        fn: AsyncAnyCallable,
         dependencies: Dependencies | None = None,
         dto: type[AbstractDTO] | None | EmptyType = Empty,
         exception_handlers: ExceptionHandlersMap | None = None,
@@ -90,6 +87,7 @@ class BaseRouteHandler:
         return_dto: type[AbstractDTO] | None | EmptyType = Empty,
         signature_namespace: Mapping[str, Any] | None = None,
         signature_types: Sequence[Any] | None = None,
+        parameters: ParametersMap | None = None,
         type_decoders: TypeDecodersSequence | None = None,
         type_encoders: TypeEncodersMap | None = None,
         **kwargs: Any,
@@ -99,6 +97,9 @@ class BaseRouteHandler:
         Args:
             path: A path fragment for the route handler function or a sequence of path fragments. If not given defaults
                 to ``/``
+            fn: The handler function
+
+                .. versionadded:: 3.0
             dependencies: A string keyed mapping of dependency :class:`Provider <.di.Provide>` instances.
             dto: :class:`AbstractDTO <.dto.base_dto.AbstractDTO>` to use for (de)serializing and
                 validation of request data.
@@ -117,49 +118,126 @@ class BaseRouteHandler:
                 These types will be added to the signature namespace using their ``__name__`` attribute.
             type_decoders: A sequence of tuples, each composed of a predicate testing for type identity and a msgspec hook for deserialization.
             type_encoders: A mapping of types to callables that transform them into types supported for serialization.
+            parameters: A mapping of :func:`Parameter <.params.Parameter>` definitions
             **kwargs: Any additional kwarg - will be set in the opt dictionary.
         """
         self._parsed_fn_signature: ParsedSignature | EmptyType = Empty
         self._parsed_return_field: FieldDefinition | EmptyType = Empty
         self._parsed_data_field: FieldDefinition | None | EmptyType = Empty
-        self._resolved_data_dto: type[AbstractDTO] | None | EmptyType = Empty
-        self._resolved_dependencies: dict[str, Provide] | EmptyType = Empty
-        self._resolved_guards: list[Guard] | EmptyType = Empty
-        self._resolved_layered_parameters: dict[str, FieldDefinition] | EmptyType = Empty
-        self._resolved_return_dto: type[AbstractDTO] | None | EmptyType = Empty
-        self._resolved_signature_namespace: dict[str, Any] | EmptyType = Empty
-        self._resolved_type_decoders: TypeDecodersSequence | EmptyType = Empty
-        self._resolved_type_encoders: TypeEncodersMap | EmptyType = Empty
-        self._signature_model: type[SignatureModel] | EmptyType = Empty
+        self._parameter_field_definitions: dict[str, FieldDefinition] | EmptyType = Empty
+        self._resolved_signature_model: type[SignatureModel] | EmptyType = Empty
 
-        self.dependencies = dependencies
-        self.dto = dto
-        self.exception_handlers = exception_handlers
-        self.guards = guards
-        self.middleware = middleware
+        self.dependencies = (
+            {
+                key: provider if isinstance(provider, Provide) else Provide(provider)
+                for key, provider in dependencies.items()
+            }
+            if dependencies
+            else {}
+        )
+        self._dto = dto
+        self._return_dto = return_dto
+        self.exception_handlers = exception_handlers or {}
+        self.guards: tuple[AsyncGuard, ...] = tuple(ensure_async_callable(guard) for guard in guards) if guards else ()
+        self.middleware = tuple(middleware) if middleware else ()
         self.name = name
         self.opt = dict(opt or {})
         self.opt.update(**kwargs)
-        self.owner: Controller | Router | None = None
-        self.return_dto = return_dto
         self.signature_namespace = add_types_to_signature_namespace(
             signature_types or [], dict(signature_namespace or {})
         )
-        self.type_decoders = type_decoders
-        self.type_encoders = type_encoders
+        self.type_decoders = type_decoders or ()
+        self.type_encoders = type_encoders or {}
         self.paths = (
             {normalize_path(p) for p in path} if path and isinstance(path, list) else {normalize_path(path or "/")}  # type: ignore[arg-type]
         )
+        self.fn = fn
+        self.parameters = parameters or {}
 
-    def __call__(self, fn: AsyncAnyCallable) -> Self:
-        """Replace a function with itself."""
-        self._fn = fn
-        return self
+    def _get_merge_opts(self, others: tuple[Router, ...]) -> dict[str, Any]:
+        """Get kwargs for .merge.
+
+        This is effectively the same as doing:
+
+        for other in others:
+            handler = handler.merge(other)
+
+        The downside of that approach is that it creates a bunch of intermediate
+        instances requires every subclass that adds properties to re-implement all the
+        merging logic.
+        With this approach, the subclass can instead override this method, call
+        super()._get_merge_opts(), and extend the dict returned by it.
+
+        The downside here is that we don't get type safety (as long as annotating
+        **kwargs with TypedDicts isn't supported anyway).
+
+        The plan is for this to go away in version 4, where we can move to fully static
+        handler config, separating the logic and configuration entirely.
+        """
+        path = (
+            functools.reduce(
+                lambda a, b: join_paths([a, b]),
+                (o.path for o in reversed(others)),
+            )
+            if others
+            else ""
+        )
+        merge_opts: dict[str, Any] = {
+            "fn": self.fn,
+            "name": self.name,
+            "path": [join_paths([path, p]) for p in self.paths],
+        }
+
+        other: BaseRouteHandler | Router
+        for other in (self, *others):  # type: ignore[assignment]
+            merge_opts["dependencies"] = {**other.dependencies, **merge_opts.get("dependencies", {})}
+            merge_opts["exception_handlers"] = {**other.exception_handlers, **merge_opts.get("exception_handlers", {})}
+            merge_opts["guards"] = (*other.guards, *merge_opts.get("guards", ()))
+
+            merge_opts["middleware"] = (*other.middleware, *merge_opts.get("middleware", ()))
+            merge_opts["opt"] = {**other.opt, **merge_opts.get("opt", {})}
+            merge_opts["type_decoders"] = (*merge_opts.get("type_decoders", ()), *other.type_decoders)
+            merge_opts["type_encoders"] = {**merge_opts.get("type_encoders", {}), **other.type_encoders}
+            merge_opts["parameters"] = {**merge_opts.get("parameters", {}), **other.parameters}
+            merge_opts["signature_namespace"] = merge_signature_namespaces(
+                merge_opts.get("signature_namespace", {}), other.signature_namespace
+            )
+
+            # '.dto' on the router is the dto config value supplied by the users,
+            # whereas '.dto' on the handler is the fully resolved dto. The dto config on
+            # the handler is stored under '._dto', so we have to do this little workaround
+            if other is not self:
+                other = cast(Router, other)  # mypy cannot narrow with the 'is not self' check
+                merge_opts["dto"] = value_or_default(merge_opts.get("dto", Empty), other.dto)
+                merge_opts["return_dto"] = value_or_default(merge_opts.get("return_dto", Empty), other.return_dto)
+
+        merge_opts["dto"] = value_or_default(self._dto, merge_opts.get("dto", Empty))
+        merge_opts["return_dto"] = value_or_default(self._return_dto, merge_opts.get("return_dto", Empty))
+
+        # due to the way we're traversing over the app layers, the middleware stack is
+        # constructed in the wrong order (handler > application). reversing the order
+        # here is easier than handling it correctly at every intermediary step.
+        #
+        # we only call this if 'others' is non-empty, to ensure we don't change anything
+        # if no layers have been merged (happens in '._with_changes' for example)
+        if others:
+            merge_opts["middleware"] = tuple(reversed(merge_opts["middleware"]))
+
+        return merge_opts
+
+    def _with_changes(self, **kwargs: Any) -> Self:
+        """Return a new instance of the handler, replacing attributes specified in **kwargs"""
+        opts = self._get_merge_opts(())
+        opts.update(kwargs)
+        return type(self)(**opts)
+
+    def merge(self, *others: Router) -> Self:
+        return type(self)(**self._get_merge_opts(others))
 
     @property
     def handler_id(self) -> str:
         """A unique identifier used for generation of DTOs."""
-        return f"{self!s}::{sum(id(layer) for layer in self.ownership_layers)}"
+        return f"{self!s}::{id(self)}"
 
     @property
     def default_deserializer(self) -> Callable[[Any, Any], Any]:
@@ -169,7 +247,7 @@ class BaseRouteHandler:
             A default deserializer for the route handler.
 
         """
-        return partial(default_deserializer, type_decoders=self.resolve_type_decoders())
+        return partial(default_deserializer, type_decoders=self.type_decoders)
 
     @property
     def default_serializer(self) -> Callable[[Any], Any]:
@@ -179,7 +257,7 @@ class BaseRouteHandler:
             A default serializer for the route handler.
 
         """
-        return partial(default_serializer, type_encoders=self.resolve_type_encoders())
+        return partial(default_serializer, type_encoders=self.type_encoders)
 
     @property
     def signature_model(self) -> type[SignatureModel]:
@@ -189,29 +267,15 @@ class BaseRouteHandler:
             A signature model for the route handler.
 
         """
-        if self._signature_model is Empty:
-            self._signature_model = SignatureModel.create(
-                dependency_name_set=self.dependency_name_set,
+        if self._resolved_signature_model is Empty:
+            self._resolved_signature_model = SignatureModel.create(
+                dependency_name_set=set(self.dependencies.keys()),
                 fn=cast("AnyCallable", self.fn),
                 parsed_signature=self.parsed_fn_signature,
-                data_dto=self.resolve_data_dto(),
-                type_decoders=self.resolve_type_decoders(),
+                data_dto=self.data_dto,
+                type_decoders=self.type_decoders,
             )
-        return self._signature_model
-
-    @property
-    def fn(self) -> AsyncAnyCallable:
-        """Get the handler function.
-
-        Raises:
-            ImproperlyConfiguredException: if handler fn is not set.
-
-        Returns:
-            Handler function
-        """
-        if not hasattr(self, "_fn"):
-            raise ImproperlyConfiguredException("No callable has been registered for this handler")
-        return self._fn
+        return self._resolved_signature_model
 
     @property
     def parsed_fn_signature(self) -> ParsedSignature:
@@ -223,9 +287,7 @@ class BaseRouteHandler:
             A ParsedSignature instance
         """
         if self._parsed_fn_signature is Empty:
-            self._parsed_fn_signature = ParsedSignature.from_fn(
-                unwrap_partial(self.fn), self.resolve_signature_namespace()
-            )
+            self._parsed_fn_signature = ParsedSignature.from_fn(unwrap_partial(self.fn), self.signature_namespace)
 
         return self._parsed_fn_signature
 
@@ -253,196 +315,116 @@ class BaseRouteHandler:
         """
         return get_name(unwrap_partial(self.fn))
 
-    @property
-    def dependency_name_set(self) -> set[str]:
-        """Set of all dependency names provided in the handler's ownership layers."""
-        layered_dependencies = (layer.dependencies or {} for layer in self.ownership_layers)
-        return {name for layer in layered_dependencies for name in layer}  # pyright: ignore
+    def _raise_not_registered(self) -> NoReturn:
+        raise LitestarException(
+            f"Handler {self!r}: Accessing this attribute is unsafe until the handler has been "
+            "registered with an application, as it may yield different results after registration."
+        )
 
-    @property
-    def ownership_layers(self) -> list[Self | Controller | Router]:
-        """Return the handler layers from the app down to the route handler.
-
-        ``app -> ... -> route handler``
-        """
-        layers = []
-
-        cur: Any = self
-        while cur:
-            layers.append(cur)
-            cur = cur.owner
-
-        return list(reversed(layers))
-
-    @property
-    def app(self) -> Litestar:
-        return cast("Litestar", self.ownership_layers[0])
-
+    @deprecated("3.0", removal_in="4.0", alternative=".type_encoders attribute")
     def resolve_type_encoders(self) -> TypeEncodersMap:
         """Return a merged type_encoders mapping.
 
-        This method is memoized so the computation occurs only once.
-
         Returns:
             A dict of type encoders
         """
-        if self._resolved_type_encoders is Empty:
-            self._resolved_type_encoders = {}
 
-            for layer in self.ownership_layers:
-                if type_encoders := getattr(layer, "type_encoders", None):
-                    self._resolved_type_encoders.update(type_encoders)
-        return cast("TypeEncodersMap", self._resolved_type_encoders)
+        return self.type_encoders
 
+    @deprecated("3.0", removal_in="4.0", alternative=".type_decoders attribute")
     def resolve_type_decoders(self) -> TypeDecodersSequence:
         """Return a merged type_encoders mapping.
 
-        This method is memoized so the computation occurs only once.
-
         Returns:
             A dict of type encoders
         """
-        if self._resolved_type_decoders is Empty:
-            self._resolved_type_decoders = []
 
-            for layer in self.ownership_layers:
-                if type_decoders := getattr(layer, "type_decoders", None):
-                    self._resolved_type_decoders.extend(list(type_decoders))
-        return cast("TypeDecodersSequence", self._resolved_type_decoders)
+        return self.type_decoders
 
+    @deprecated("3.0", removal_in="4.0", alternative=".parameter_field_definitions property")
     def resolve_layered_parameters(self) -> dict[str, FieldDefinition]:
+        return self.parameter_field_definitions
+
+    @property
+    def parameter_field_definitions(self) -> dict[str, FieldDefinition]:
         """Return all parameters declared above the handler."""
-        if self._resolved_layered_parameters is Empty:
-            parameter_kwargs: dict[str, ParameterKwarg] = {}
-
-            for layer in self.ownership_layers:
-                parameter_kwargs.update(getattr(layer, "parameters", {}) or {})
-
-            self._resolved_layered_parameters = {
+        if self._parameter_field_definitions is Empty:
+            self._parameter_field_definitions = {
                 key: FieldDefinition.from_kwarg(name=key, annotation=parameter.annotation, kwarg_definition=parameter)
-                for key, parameter in parameter_kwargs.items()
+                for key, parameter in self.parameters.items()
             }
+        return self._parameter_field_definitions
 
-        return self._resolved_layered_parameters
-
-    def resolve_guards(self) -> list[Guard]:
+    @deprecated("3.0", removal_in="4.0", alternative=".guards attribute")
+    def resolve_guards(self) -> tuple[Guard, ...]:
         """Return all guards in the handlers scope, starting from highest to current layer."""
-        if self._resolved_guards is Empty:
-            self._resolved_guards = []
 
-            for layer in self.ownership_layers:
-                self._resolved_guards.extend(layer.guards or [])  # pyright: ignore
+        return self.guards
 
-            self._resolved_guards = cast(
-                "list[Guard]", [ensure_async_callable(guard) for guard in self._resolved_guards]
-            )
-
-        return self._resolved_guards
-
-    def _get_plugin_registry(self) -> PluginRegistry | None:
-        from litestar.app import Litestar
-
-        root_owner = self.ownership_layers[0]
-        if isinstance(root_owner, Litestar):
-            return root_owner.plugins
-        return None
-
+    @deprecated("3.0", removal_in="4.0", alternative=".dependencies attribute")
     def resolve_dependencies(self) -> dict[str, Provide]:
         """Return all dependencies correlating to handler function's kwargs that exist in the handler's scope."""
-        plugin_registry = self._get_plugin_registry()
-        if self._resolved_dependencies is Empty:
-            self._resolved_dependencies = {}
-            for layer in self.ownership_layers:
-                for key, provider in (layer.dependencies or {}).items():
-                    self._resolved_dependencies[key] = self._resolve_dependency(
-                        key=key, provider=provider, plugin_registry=plugin_registry
-                    )
 
-        return self._resolved_dependencies
+        return self.dependencies
 
-    def _resolve_dependency(
-        self, key: str, provider: Provide | AnyCallable, plugin_registry: PluginRegistry | None
-    ) -> Provide:
-        if not isinstance(provider, Provide):
-            provider = Provide(provider)
+    def _finalize_dependencies(self, app: Litestar) -> None:
+        dependencies: dict[str, Provide] = {}
 
-        if self._resolved_dependencies is not Empty:  # pragma: no cover
-            self._validate_dependency_is_unique(dependencies=self._resolved_dependencies, key=key, provider=provider)
+        # keep track of which providers are available for each dependency
+        provider_keys: dict[Any, str] = {}
 
-        if not getattr(provider, "parsed_fn_signature", None):
-            dependency = unwrap_partial(provider.dependency)
-            plugin: DIPlugin | None = None
-            if plugin_registry:
-                plugin = next(
-                    (p for p in plugin_registry.di if isinstance(p, DIPlugin) and p.has_typed_init(dependency)),
-                    None,
+        for key, provider in self.dependencies.items():
+            # ensure that if a provider for this dependency has already been registered,
+            # registering this provider again is only allowed as an override, i.e. with
+            # the same key
+            if (existing_key := provider_keys.get(provider.dependency)) and existing_key != key:
+                raise ImproperlyConfiguredException(
+                    f"Provider for {provider.dependency!r} with key {key!r} is already defined under a different key "
+                    f"{existing_key!r}. If you wish to override a provider, it must have the same key."
                 )
-            if plugin:
-                signature, init_type_hints = plugin.get_typed_init(dependency)
-                provider.parsed_fn_signature = ParsedSignature.from_signature(signature, init_type_hints)
-            else:
-                provider.parsed_fn_signature = ParsedSignature.from_fn(dependency, self.resolve_signature_namespace())
 
-        if not getattr(provider, "signature_model", None):
-            provider.signature_model = SignatureModel.create(
-                dependency_name_set=self.dependency_name_set,
-                fn=provider.dependency,
-                parsed_signature=provider.parsed_fn_signature,
-                data_dto=self.resolve_data_dto(),
-                type_decoders=self.resolve_type_decoders(),
+            provider.finalize(
+                plugins=app.plugins,
+                signature_namespace=self.signature_namespace,
+                data_dto=self.data_dto,
+                dependency_keys=set(self.dependencies),
+                type_decoders=self.type_decoders,
             )
-        return provider
+            provider_keys[provider.dependency] = key
+            dependencies[key] = provider
 
-    def resolve_middleware(self) -> list[Middleware]:
-        """Build the middleware stack for the RouteHandler and return it.
+    @deprecated("3.0", removal_in="4.0", alternative=".middleware attribute")
+    def resolve_middleware(self) -> tuple[Middleware, ...]:
+        """Return registered middlewares"""
 
-        The middlewares are added from top to bottom (``app -> router -> controller -> route handler``) and then
-        reversed.
-        """
-        resolved_middleware: list[Middleware] = []
-        for layer in self.ownership_layers:
-            resolved_middleware.extend(layer.middleware or [])  # pyright: ignore
-        return list(reversed(resolved_middleware))
+        return self.middleware
 
+    @deprecated("3.0", removal_in="4.0", alternative=".exception_handlers attribute")
     def resolve_exception_handlers(self) -> ExceptionHandlersMap:
         """Resolve the exception_handlers by starting from the route handler and moving up.
 
         This method is memoized so the computation occurs only once.
         """
-        resolved_exception_handlers: dict[int | type[Exception], ExceptionHandler] = {}
-        for layer in self.ownership_layers:
-            resolved_exception_handlers.update(layer.exception_handlers or {})  # pyright: ignore
-        return resolved_exception_handlers
 
-    def resolve_opts(self) -> None:
-        """Build the route handler opt dictionary by going from top to bottom.
+        return self.exception_handlers
 
-        When merging keys from multiple layers, if the same key is defined by multiple layers, the value from the
-        layer closest to the response handler will take precedence.
-        """
-
-        opt: dict[str, Any] = {}
-        for layer in self.ownership_layers:
-            opt.update(layer.opt or {})  # pyright: ignore
-
-        self.opt = opt
-
+    @deprecated("3.0", removal_in="4.0", alternative=".signature_namespace attribute")
     def resolve_signature_namespace(self) -> dict[str, Any]:
-        """Build the route handler signature namespace dictionary by going from top to bottom.
+        """Build the route handler signature namespace dictionary by going from top to bottom"""
 
-        When merging keys from multiple layers, if the same key is defined by multiple layers, the value from the
-        layer closest to the response handler will take precedence.
-        """
-        if self._resolved_layered_parameters is Empty:
-            ns: dict[str, Any] = {}
-            for layer in self.ownership_layers:
-                merge_signature_namespaces(
-                    signature_namespace=ns, additional_signature_namespace=layer.signature_namespace
-                )
-            self._resolved_signature_namespace = ns
-        return cast("dict[str, Any]", self._resolved_signature_namespace)
+        return self.signature_namespace
 
+    @property
+    def data_dto(self) -> type[AbstractDTO] | None:
+        if self._dto is Empty:
+            self._raise_not_registered()
+        return self._dto
+
+    @deprecated("3.0", removal_in="4.0", alternative=".data_dto attribute")
     def resolve_data_dto(self) -> type[AbstractDTO] | None:
+        return self.data_dto
+
+    def _resolve_data_dto(self, app: Litestar) -> type[AbstractDTO] | None:
         """Resolve the data_dto by starting from the route handler and moving up.
         If a handler is found it is returned, otherwise None is set.
         This method is memoized so the computation occurs only once.
@@ -450,34 +432,40 @@ class BaseRouteHandler:
         Returns:
             An optional :class:`DTO type <.dto.base_dto.AbstractDTO>`
         """
-        if self._resolved_data_dto is Empty:
-            if data_dtos := cast(
-                "list[type[AbstractDTO] | None]",
-                [layer.dto for layer in self.ownership_layers if layer.dto is not Empty],
-            ):
-                data_dto: type[AbstractDTO] | None = data_dtos[-1]
-            elif self.parsed_data_field and (
-                plugins_for_data_type := [
+        data_dto: type[AbstractDTO] | None = None
+        if (_data_dto := self._dto) is not Empty:
+            data_dto = _data_dto
+        elif self.parsed_data_field and (
+            plugin_for_data_type := next(
+                (
                     plugin
-                    for plugin in self.app.plugins.serialization
+                    for plugin in app.plugins.serialization
                     if self.parsed_data_field.match_predicate_recursively(plugin.supports_type)
-                ]
-            ):
-                data_dto = plugins_for_data_type[0].create_dto_for_type(self.parsed_data_field)
-            else:
-                data_dto = None
+                ),
+                None,
+            )
+        ):
+            data_dto = plugin_for_data_type.create_dto_for_type(self.parsed_data_field)
 
-            if self.parsed_data_field and data_dto:
-                data_dto.create_for_field_definition(
-                    field_definition=self.parsed_data_field,
-                    handler_id=self.handler_id,
-                )
+        if self.parsed_data_field and data_dto:
+            data_dto.create_for_field_definition(
+                field_definition=self.parsed_data_field,
+                handler_id=self.handler_id,
+            )
 
-            self._resolved_data_dto = data_dto
+        return data_dto
 
-        return self._resolved_data_dto
+    @property
+    def return_dto(self) -> type[AbstractDTO] | None:
+        if self._return_dto is Empty:
+            self._raise_not_registered()
+        return self._return_dto
 
+    @deprecated("3.0", removal_in="4.0", alternative=".return_dto attribute")
     def resolve_return_dto(self) -> type[AbstractDTO] | None:
+        return self.return_dto
+
+    def _resolve_return_dto(self, app: Litestar, data_dto: type[AbstractDTO] | None) -> type[AbstractDTO] | None:
         """Resolve the return_dto by starting from the route handler and moving up.
         If a handler is found it is returned, otherwise None is set.
         This method is memoized so the computation occurs only once.
@@ -485,71 +473,56 @@ class BaseRouteHandler:
         Returns:
             An optional :class:`DTO type <.dto.base_dto.AbstractDTO>`
         """
-        if self._resolved_return_dto is Empty:
-            if return_dtos := cast(
-                "list[type[AbstractDTO] | None]",
-                [layer.return_dto for layer in self.ownership_layers if layer.return_dto is not Empty],
-            ):
-                return_dto: type[AbstractDTO] | None = return_dtos[-1]
-            elif plugins_for_return_type := [
+        if (_return_dto := self._return_dto) is not Empty:
+            return_dto: type[AbstractDTO] | None = _return_dto
+        elif plugin_for_return_type := next(
+            (
                 plugin
-                for plugin in self.app.plugins.serialization
+                for plugin in app.plugins.serialization
                 if self.parsed_return_field.match_predicate_recursively(plugin.supports_type)
-            ]:
-                return_dto = plugins_for_return_type[0].create_dto_for_type(self.parsed_return_field)
-            else:
-                return_dto = self.resolve_data_dto()
+            ),
+            None,
+        ):
+            return_dto = plugin_for_return_type.create_dto_for_type(self.parsed_return_field)
+        else:
+            return_dto = data_dto
 
-            if return_dto and return_dto.is_supported_model_type_field(self.parsed_return_field):
-                return_dto.create_for_field_definition(
-                    field_definition=self.parsed_return_field,
-                    handler_id=self.handler_id,
-                )
-                self._resolved_return_dto = return_dto
-            else:
-                self._resolved_return_dto = None
+        if return_dto and return_dto.is_supported_model_type_field(self.parsed_return_field):
+            return_dto.create_for_field_definition(
+                field_definition=self.parsed_return_field,
+                handler_id=self.handler_id,
+            )
+            resolved_return_dto = return_dto
+        else:
+            resolved_return_dto = None
 
-        return self._resolved_return_dto
+        return resolved_return_dto
 
     async def authorize_connection(self, connection: ASGIConnection) -> None:
         """Ensure the connection is authorized by running all the route guards in scope."""
-        for guard in self.resolve_guards():
-            await guard(connection, copy(self))  # type: ignore[misc]
+        for guard in self.guards:
+            await guard(connection, self)
 
-    @staticmethod
-    def _validate_dependency_is_unique(dependencies: dict[str, Provide], key: str, provider: Provide) -> None:
-        """Validate that a given provider has not been already defined under a different key."""
-        for dependency_key, value in dependencies.items():
-            if provider == value:
-                raise ImproperlyConfiguredException(
-                    f"Provider for key {key} is already defined under the different key {dependency_key}. "
-                    f"If you wish to override a provider, it must have the same key."
-                )
-
-    def on_registration(self, app: Litestar) -> None:
+    def on_registration(self, route: BaseRoute, app: Litestar) -> None:
         """Called once per handler when the app object is instantiated.
 
         Args:
-            app: The :class:`Litestar<.app.Litestar>` app object.
+            route: The route this handler is being registered on
+            app: The application instance
 
         Returns:
             None
         """
+
+        self._dto = self._resolve_data_dto(app=app)
+        self._return_dto = self._resolve_return_dto(app=app, data_dto=self._dto)
+
         self._validate_handler_function()
-        self.resolve_dependencies()
-        self.resolve_guards()
-        self.resolve_middleware()
-        self.resolve_opts()
-        self.resolve_data_dto()
-        self.resolve_return_dto()
+        self._finalize_dependencies(app=app)
 
     def _validate_handler_function(self) -> None:
         """Validate the route handler function once set by inspecting its return annotations."""
-        if (
-            self.parsed_data_field is not None
-            and self.parsed_data_field.is_subclass_of(DTOData)
-            and not self.resolve_data_dto()
-        ):
+        if self.parsed_data_field is not None and self.parsed_data_field.is_subclass_of(DTOData) and not self.data_dto:
             raise ImproperlyConfiguredException(
                 f"Handler function {self.handler_name} has a data parameter that is a subclass of DTOData but no "
                 "DTO has been registered for it."
@@ -567,9 +540,9 @@ class BaseRouteHandler:
             target = type(target)
         return f"{target.__module__}.{target.__qualname__}"
 
-    def create_kwargs_model(
+    def _create_kwargs_model(
         self,
-        path_parameters: dict[str, PathParameterDefinition],
+        path_parameters: Iterable[str],
     ) -> KwargsModel:
         """Create a `KwargsModel` for a given route handler."""
         from litestar._kwargs import KwargsModel
@@ -577,7 +550,7 @@ class BaseRouteHandler:
         return KwargsModel.create_for_signature_model(
             signature_model=self.signature_model,
             parsed_signature=self.parsed_fn_signature,
-            dependencies=self.resolve_dependencies(),
-            path_parameters=set(path_parameters.keys()),
-            layered_parameters=self.resolve_layered_parameters(),
+            dependencies=self.dependencies,
+            path_parameters=set(path_parameters),
+            layered_parameters=self.parameter_field_definitions,
         )

@@ -1,14 +1,14 @@
-from typing import Type, Union
+from typing import Union
 
 import pytest
 
 from litestar import Controller, Litestar, Router, WebSocket
 from litestar.handlers.websocket_handlers.listener import WebsocketListener, websocket_listener
 
-RouterWebSocket: Type[WebSocket] = type("RouterWebSocket", (WebSocket,), {})
-ControllerWebSocket: Type[WebSocket] = type("ControllerWebSocket", (WebSocket,), {})
-AppWebSocket: Type[WebSocket] = type("AppWebSocket", (WebSocket,), {})
-HandlerWebSocket: Type[WebSocket] = type("HandlerWebSocket", (WebSocket,), {})
+RouterWebSocket: type[WebSocket] = type("RouterWebSocket", (WebSocket,), {})
+ControllerWebSocket: type[WebSocket] = type("ControllerWebSocket", (WebSocket,), {})
+AppWebSocket: type[WebSocket] = type("AppWebSocket", (WebSocket,), {})
+HandlerWebSocket: type[WebSocket] = type("HandlerWebSocket", (WebSocket,), {})
 
 
 @pytest.mark.parametrize(
@@ -31,48 +31,41 @@ HandlerWebSocket: Type[WebSocket] = type("HandlerWebSocket", (WebSocket,), {})
     ),
 )
 def test_websocket_class_resolution_of_layers(
-    handler_websocket_class: Union[Type[WebSocket], None],
-    controller_websocket_class: Union[Type[WebSocket], None],
-    router_websocket_class: Union[Type[WebSocket], None],
-    app_websocket_class: Union[Type[WebSocket], None],
+    handler_websocket_class: Union[type[WebSocket], None],
+    controller_websocket_class: Union[type[WebSocket], None],
+    router_websocket_class: Union[type[WebSocket], None],
+    app_websocket_class: Union[type[WebSocket], None],
     has_default_app_class: bool,
-    expected: Type[WebSocket],
+    expected: type[WebSocket],
 ) -> None:
     class MyController(Controller):
-        @websocket_listener("/")
+        websocket_class = controller_websocket_class
+
+        @websocket_listener("/", websocket_class=handler_websocket_class)
         def handler(self, data: str) -> None:
             return
 
-    if controller_websocket_class:
-        MyController.websocket_class = ControllerWebSocket
+    router = Router(path="/", route_handlers=[MyController], websocket_class=router_websocket_class)
 
-    router = Router(path="/", route_handlers=[MyController])
-
-    if router_websocket_class:
-        router.websocket_class = router_websocket_class
-
-    app = Litestar(route_handlers=[router])
-
-    if app_websocket_class or not has_default_app_class:
-        app.websocket_class = app_websocket_class  # type: ignore[assignment]
+    app = Litestar(
+        route_handlers=[router],
+        websocket_class=app_websocket_class if app_websocket_class or not has_default_app_class else None,
+    )
 
     route_handler = app.routes[0].route_handler  # type: ignore[union-attr]
 
-    if handler_websocket_class:
-        route_handler.websocket_class = handler_websocket_class  # type: ignore[union-attr]
-
-    websocket_class = route_handler.resolve_websocket_class()  # type: ignore[union-attr]
+    websocket_class = route_handler.websocket_class  # type: ignore[union-attr]
     assert websocket_class is expected
 
 
 @pytest.mark.parametrize(
-    "handler_websocket_class, router_websocket_class, app_websocket_class, has_default_app_class, expected",
+    "handler_websocket_class, router_websocket_class, app_websocket_class, expected",
     (
-        (HandlerWebSocket, RouterWebSocket, AppWebSocket, True, HandlerWebSocket),
-        (None, RouterWebSocket, AppWebSocket, True, RouterWebSocket),
-        (None, None, AppWebSocket, True, AppWebSocket),
-        (None, None, None, True, WebSocket),
-        (None, None, None, False, WebSocket),
+        (HandlerWebSocket, RouterWebSocket, AppWebSocket, HandlerWebSocket),
+        (None, RouterWebSocket, AppWebSocket, RouterWebSocket),
+        (None, None, AppWebSocket, AppWebSocket),
+        (None, None, None, WebSocket),
+        (None, None, None, WebSocket),
     ),
     ids=(
         "Custom class for all layers",
@@ -83,11 +76,10 @@ def test_websocket_class_resolution_of_layers(
     ),
 )
 def test_listener_websocket_class_resolution_of_layers(
-    handler_websocket_class: Union[Type[WebSocket], None],
-    router_websocket_class: Union[Type[WebSocket], None],
-    app_websocket_class: Union[Type[WebSocket], None],
-    has_default_app_class: bool,
-    expected: Type[WebSocket],
+    handler_websocket_class: Union[type[WebSocket], None],
+    router_websocket_class: Union[type[WebSocket], None],
+    app_websocket_class: Union[type[WebSocket], None],
+    expected: type[WebSocket],
 ) -> None:
     class Handler(WebsocketListener):
         path = "/"
@@ -96,20 +88,10 @@ def test_listener_websocket_class_resolution_of_layers(
         def on_receive(self, data: str) -> str:  # pyright: ignore
             return data
 
-    router = Router(path="/", route_handlers=[Handler])
+    router = Router(path="/", route_handlers=[Handler], websocket_class=router_websocket_class)
 
-    if router_websocket_class:
-        router.websocket_class = router_websocket_class
-
-    app = Litestar(route_handlers=[router])
-
-    if app_websocket_class or not has_default_app_class:
-        app.websocket_class = app_websocket_class  # type: ignore[assignment]
-
+    app = Litestar(route_handlers=[router], websocket_class=app_websocket_class)
     route_handler = app.routes[0].route_handler  # type: ignore[union-attr]
 
-    if handler_websocket_class:
-        route_handler.websocket_class = handler_websocket_class  # type: ignore[union-attr]
-
-    websocket_class = route_handler.resolve_websocket_class()  # type: ignore[union-attr]
+    websocket_class = route_handler.websocket_class  # type: ignore[union-attr]
     assert websocket_class is expected

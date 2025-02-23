@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Pattern
+from re import Pattern
+from typing import TYPE_CHECKING
 
 from litestar.datastructures import URL, MutableScopeHeaders
 from litestar.middleware.base import AbstractMiddleware

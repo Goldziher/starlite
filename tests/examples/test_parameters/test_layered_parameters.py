@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 from docs.examples.parameters.layered_parameters import app
@@ -46,7 +46,7 @@ from litestar.testing import TestClient
         ),
     ],
 )
-def test_layered_parameters(params: Dict[str, Any], status_code: int, expected: Dict[str, Any]) -> None:
+def test_layered_parameters(params: dict[str, Any], status_code: int, expected: dict[str, Any]) -> None:
     with TestClient(app=app) as client:
         client.cookies = params.pop("cookies")
         response = client.get("/router/controller/11", **params)

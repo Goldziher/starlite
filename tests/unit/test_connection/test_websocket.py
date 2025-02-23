@@ -5,7 +5,8 @@ were meant to ensure our compatibility with their API.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Literal
+from collections.abc import AsyncGenerator
+from typing import TYPE_CHECKING, Any, Literal
 from unittest.mock import MagicMock
 
 import anyio
@@ -67,7 +68,7 @@ async def test_accept_set_headers(headers: Any) -> None:
         assert dict(ws.scope["headers"])[b"test"] == b"hello-world"
 
 
-async def test_custom_request_class() -> None:
+async def test_custom_websocket_class() -> None:
     value: Any = {}
 
     class MyWebSocket(WebSocket[Any, Any, State]):

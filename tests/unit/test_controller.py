@@ -1,4 +1,4 @@
-from typing import Any, Type, Union
+from typing import Any
 
 import msgspec
 import pytest
@@ -19,6 +19,7 @@ from litestar.connection import WebSocket
 from litestar.exceptions import ImproperlyConfiguredException
 from litestar.status_codes import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 from litestar.testing import create_test_client
+from litestar.types import HTTPHandlerDecorator
 from tests.models import DataclassPerson, DataclassPersonFactory
 
 
@@ -40,7 +41,7 @@ from tests.models import DataclassPerson, DataclassPersonFactory
     ],
 )
 async def test_controller_http_method(
-    decorator: Union[Type[get], Type[post], Type[put], Type[patch], Type[delete]],
+    decorator: HTTPHandlerDecorator,
     http_method: HttpMethod,
     expected_status_code: int,
     return_value: Any,
@@ -51,7 +52,7 @@ async def test_controller_http_method(
     class MyController(Controller):
         path = test_path
 
-        @decorator()  # type: ignore[misc]
+        @decorator()
         def test_method(self) -> return_annotation:
             return return_value
 

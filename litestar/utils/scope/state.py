@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Final
 
 from litestar.types import Empty, EmptyType
-from litestar.utils.empty import value_or_default
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -72,7 +71,6 @@ class ScopeState:
         self.response_started = False
         self.session_id = Empty
         self.url = Empty
-        self._compat_ns: dict[str, Any] = {}
 
     accept: Accept | EmptyType
     base_url: URL | EmptyType
@@ -95,7 +93,6 @@ class ScopeState:
     response_started: bool
     session_id: str | None | EmptyType
     url: URL | EmptyType
-    _compat_ns: dict[str, Any]
 
     @classmethod
     def from_scope(cls, scope: Scope) -> Self:
@@ -113,56 +110,3 @@ class ScopeState:
         if (state := base_scope_state.get(CONNECTION_STATE_KEY)) is None:
             state = base_scope_state[CONNECTION_STATE_KEY] = cls()
         return state
-
-
-def get_litestar_scope_state(scope: Scope, key: str, default: Any = None, pop: bool = False) -> Any:
-    """Get an internal value from connection scope state.
-
-    Args:
-        scope: The connection scope.
-        key: Key to get from internal namespace in scope state.
-        default: Default value to return.
-        pop: Boolean flag dictating whether the value should be deleted from the state.
-
-    Returns:
-        Value mapped to ``key`` in internal connection scope namespace.
-    """
-    scope_state = ScopeState.from_scope(scope)
-    try:
-        val = value_or_default(getattr(scope_state, key), default)
-        if pop:
-            setattr(scope_state, key, Empty)
-        return val
-    except AttributeError:
-        if pop:
-            return scope_state._compat_ns.pop(key, default)
-        return scope_state._compat_ns.get(key, default)
-
-
-def set_litestar_scope_state(scope: Scope, key: str, value: Any) -> None:
-    """Set an internal value in connection scope state.
-
-    Args:
-        scope: The connection scope.
-        key: Key to set under internal namespace in scope state.
-        value: Value for key.
-    """
-    scope_state = ScopeState.from_scope(scope)
-    if hasattr(scope_state, key):
-        setattr(scope_state, key, value)
-    else:
-        scope_state._compat_ns[key] = value
-
-
-def delete_litestar_scope_state(scope: Scope, key: str) -> None:
-    """Delete an internal value from connection scope state.
-
-    Args:
-        scope: The connection scope.
-        key: Key to set under internal namespace in scope state.
-    """
-    scope_state = ScopeState.from_scope(scope)
-    if hasattr(scope_state, key):
-        setattr(scope_state, key, Empty)
-    else:
-        del scope_state._compat_ns[key]

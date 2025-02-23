@@ -1,14 +1,14 @@
 # pyright: reportOptionalSubscript=false, reportGeneralTypeIssues=false
 from datetime import date, timedelta
 from decimal import Decimal
+from re import Pattern
 from types import ModuleType
-from typing import Any, Callable, Dict, List, Optional, Pattern, Type, Union, cast
+from typing import Annotated, Any, Callable, Optional, Union, cast
 
 import annotated_types
 import pydantic as pydantic_v2
 import pytest
 from pydantic import v1 as pydantic_v1
-from typing_extensions import Annotated
 
 from litestar import Litestar, get, post
 from litestar._openapi.schema_generation.schema import SchemaCreator
@@ -29,7 +29,7 @@ from tests.unit.test_plugins.test_pydantic.models import (
 
 from . import PydanticVersion
 
-AnyBaseModelType = Type[Union[pydantic_v1.BaseModel, pydantic_v2.BaseModel]]
+AnyBaseModelType = type[Union[pydantic_v1.BaseModel, pydantic_v2.BaseModel]]
 
 
 constrained_string_v1 = [
@@ -337,7 +337,7 @@ def test_create_numerical_constrained_field_schema_pydantic_v1(
 )
 def test_create_numerical_constrained_field_schema_pydantic_v2(
     make_constraint: Any,
-    constraint_kwargs: Dict[str, Any],
+    constraint_kwargs: dict[str, Any],
     schema_creator: SchemaCreator,
     plugin: PydanticSchemaPlugin,
 ) -> None:
@@ -389,7 +389,7 @@ def test_create_date_constrained_field_schema_pydantic_v1(
     ],
 )
 def test_create_date_constrained_field_schema_pydantic_v2(
-    constraints: Dict[str, Any],
+    constraints: dict[str, Any],
     schema_creator: SchemaCreator,
     plugin: PydanticSchemaPlugin,
 ) -> None:
@@ -540,7 +540,7 @@ def test_schema_generation_v2() -> None:
         # or as an extra
         with_extra_title: str = pydantic_v2.Field(json_schema_extra={"title": "WITH_extra"})
         # moreover, we allow json_schema_extra to use names that exactly match the JSONSchema spec
-        without_duplicates: List[str] = pydantic_v2.Field(json_schema_extra={"uniqueItems": True})
+        without_duplicates: list[str] = pydantic_v2.Field(json_schema_extra={"uniqueItems": True})
 
     @post("/example")
     async def example_route() -> Lookup:

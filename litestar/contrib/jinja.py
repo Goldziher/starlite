@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Mapping, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from typing_extensions import ParamSpec
 
@@ -10,7 +11,6 @@ from litestar.template.base import (
     TemplateEngineProtocol,
     csrf_token,
     url_for,
-    url_for_static_asset,
 )
 
 try:
@@ -52,7 +52,6 @@ class JinjaTemplateEngine(TemplateEngineProtocol["JinjaTemplate", Mapping[str, A
             self.engine = Environment(loader=loader, autoescape=True)
         elif engine_instance:
             self.engine = engine_instance
-        self.register_template_callable(key="url_for_static_asset", template_callable=url_for_static_asset)
         self.register_template_callable(key="csrf_token", template_callable=csrf_token)
         self.register_template_callable(key="url_for", template_callable=url_for)
 

@@ -242,7 +242,7 @@ class LoggingConfig(BaseLoggingConfig):
     """
     configure_root_logger: bool = field(default=True)
     """Should the root logger be configured, defaults to True for ease of configuration."""
-    log_exceptions: Literal["always", "debug", "never"] = field(default="debug")
+    log_exceptions: Literal["always", "debug", "never"] = field(default="always")
     """Should exceptions be logged, defaults to log exceptions when 'app.debug == True'"""
     traceback_line_limit: int = field(default=-1)
     """Max number of lines to print for exception traceback.
@@ -474,7 +474,7 @@ class StructLoggingConfig(BaseLoggingConfig):
     """Logger factory to use."""
     cache_logger_on_first_use: bool = field(default=True)
     """Whether to cache the logger configuration and reuse."""
-    log_exceptions: Literal["always", "debug", "never"] = field(default="debug")
+    log_exceptions: Literal["always", "debug", "never"] = field(default="always")
     """Should exceptions be logged, defaults to log exceptions when 'app.debug == True'"""
     traceback_line_limit: int = field(default=-1)
     """Max number of lines to print for exception traceback.

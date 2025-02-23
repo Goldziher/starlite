@@ -1,7 +1,6 @@
-from typing import Optional, Type
+from typing import Annotated, Optional
 
 import pytest
-from typing_extensions import Annotated
 
 from litestar import get, post
 from litestar.params import Parameter, ParameterKwarg
@@ -15,16 +14,21 @@ from litestar.testing import create_test_client
         (
             Optional[str],
             {},
-            Parameter(cookie="special-cookie", min_length=1, max_length=2, required=False),
+            Parameter(cookie="special-cookie", min_length=1, max_length=2, required=False, default=None),
             HTTP_200_OK,
         ),
         (int, {"special-cookie": "123"}, Parameter(cookie="special-cookie", ge=100, le=201), HTTP_200_OK),
         (int, {"special-cookie": "123"}, Parameter(cookie="special-cookie", ge=100, le=120), HTTP_400_BAD_REQUEST),
         (int, {}, Parameter(cookie="special-cookie", ge=100, le=120), HTTP_400_BAD_REQUEST),
-        (Optional[int], {}, Parameter(cookie="special-cookie", ge=100, le=120, required=False), HTTP_200_OK),
+        (
+            Optional[int],
+            {},
+            Parameter(cookie="special-cookie", ge=100, le=120, required=False, default=None),
+            HTTP_200_OK,
+        ),
     ],
 )
-def test_cookie_params(t_type: Type, param_dict: dict, param: ParameterKwarg, expected_code: int) -> None:
+def test_cookie_params(t_type: type, param_dict: dict, param: ParameterKwarg, expected_code: int) -> None:
     test_path = "/test"
 
     @get(path=test_path)

@@ -3,7 +3,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import TYPE_CHECKING, Literal, Pattern
+from re import Pattern
+from typing import TYPE_CHECKING, Literal
 
 from litestar.constants import DEFAULT_ALLOWED_CORS_HEADERS
 

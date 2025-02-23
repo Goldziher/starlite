@@ -2,7 +2,7 @@ import dataclasses
 import secrets
 import string
 from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Optional
 from uuid import uuid4
 
 import jwt
@@ -58,9 +58,9 @@ async def test_jwt_auth(
     token_issuer: Optional[str],
     token_audience: Optional[str],
     token_unique_jwt_id: Optional[str],
-    token_extras: Optional[Dict[str, Any]],
+    token_extras: Optional[dict[str, Any]],
 ) -> None:
-    mock_block_list: Dict[str, str] = {}
+    mock_block_list: dict[str, str] = {}
     user = UserFactory.build()
 
     await mock_db.set(str(user.id), user, 120)  # type: ignore[arg-type]
@@ -102,7 +102,7 @@ async def test_jwt_auth(
         )
 
     @get("/logout", middleware=[jwt_auth.middleware])
-    def logout_handler(request: Request["User", Token, Any]) -> Dict[str, str]:
+    def logout_handler(request: Request["User", Token, Any]) -> dict[str, str]:
         jti = request.auth.jti
         if jti:
             mock_block_list[jti] = "revoked"
@@ -181,7 +181,7 @@ async def test_jwt_auth_custom_token_cls(auth_cls: Any) -> None:
         )
 
     @get("/", middleware=[jwt_auth.middleware])
-    def handler(request: Request[Any, CustomToken, Any]) -> Dict[str, Any]:
+    def handler(request: Request[Any, CustomToken, Any]) -> dict[str, Any]:
         return {
             "is_token_cls": isinstance(request.auth, CustomToken),
             "token": dataclasses.asdict(request.auth),
@@ -237,9 +237,9 @@ async def test_jwt_cookie_auth(
     token_issuer: Optional[str],
     token_audience: Optional[str],
     token_unique_jwt_id: Optional[str],
-    token_extras: Optional[Dict[str, Any]],
+    token_extras: Optional[dict[str, Any]],
 ) -> None:
-    mock_block_list: Dict[str, str] = {}
+    mock_block_list: dict[str, str] = {}
     user = UserFactory.build()
 
     await mock_db.set(str(user.id), user, 120)  # type: ignore[arg-type]
@@ -283,7 +283,7 @@ async def test_jwt_cookie_auth(
         )
 
     @get("/logout", middleware=[jwt_auth.middleware])
-    def logout_handler(request: Request["User", Token, Any]) -> Dict[str, str]:
+    def logout_handler(request: Request["User", Token, Any]) -> dict[str, str]:
         jti = request.auth.jti
         if jti:
             mock_block_list[jti] = "revoked"
@@ -377,7 +377,7 @@ async def test_path_exclusion() -> None:
     )
 
     @get("/north/{value:int}")
-    def north_handler(value: int) -> Dict[str, int]:
+    def north_handler(value: int) -> dict[str, int]:
         return {"value": value}
 
     @get("/south")
@@ -645,7 +645,7 @@ async def test_jwt_auth_validation_error_returns_not_authorized() -> None:
 @pytest.mark.parametrize("auth_cls", [JWTAuth, JWTCookieAuth, OAuth2PasswordBearerAuth])
 async def test_jwt_auth_verify_issuer(
     auth_cls: Any,
-    accepted_issuers: List[str],
+    accepted_issuers: list[str],
     signing_issuer: str,
     expected_status_code: int,
 ) -> None:
@@ -696,7 +696,7 @@ async def test_jwt_auth_verify_issuer(
 @pytest.mark.parametrize("auth_cls", [JWTAuth, JWTCookieAuth, OAuth2PasswordBearerAuth])
 async def test_jwt_auth_verify_audience(
     auth_cls: Any,
-    accepted_audiences: List[str],
+    accepted_audiences: list[str],
     token_audience: str,
     expected_status_code: int,
 ) -> None:
@@ -735,12 +735,12 @@ async def test_jwt_auth_verify_audience(
         assert response.status_code == expected_status_code
 
 
-CreateJWTApp: TypeAlias = Callable[..., Tuple[JWTAuth, TestClient]]
+CreateJWTApp: TypeAlias = Callable[..., tuple[JWTAuth, TestClient]]
 
 
 @pytest.fixture()
 def create_jwt_app(auth_cls: Any, request: pytest.FixtureRequest) -> CreateJWTApp:
-    def create(**kwargs: Any) -> Tuple[JWTAuth, TestClient]:
+    def create(**kwargs: Any) -> tuple[JWTAuth, TestClient]:
         async def retrieve_user_handler(token: Token, _: "ASGIConnection") -> Any:
             return object()
 
@@ -783,7 +783,7 @@ def auth_cls(request: pytest.FixtureRequest) -> Any:
     ],
 )
 async def test_jwt_auth_strict_audience(
-    accepted_audiences: List[str],
+    accepted_audiences: list[str],
     token_audience: str,
     expected_status_code: int,
     create_jwt_app: CreateJWTApp,
@@ -810,8 +810,8 @@ async def test_jwt_auth_strict_audience(
     ],
 )
 async def test_jwt_auth_require_claims(
-    require_claims: List[str],
-    token_claims: Dict[str, str],
+    require_claims: list[str],
+    token_claims: dict[str, str],
     expected_status_code: int,
     create_jwt_app: CreateJWTApp,
 ) -> None:

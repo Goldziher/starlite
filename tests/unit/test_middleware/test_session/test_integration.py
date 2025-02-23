@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal, Optional
 from uuid import UUID
 
 from litestar import Request, get, post
@@ -28,12 +28,12 @@ class UserLoginPayload:
     password: str
 
 
-MOCK_DB: Dict[str, User] = {}
+MOCK_DB: dict[str, User] = {}
 memory_store = MemoryStore()
 
 
 async def retrieve_user_handler(
-    session: Dict[str, Any], connection: "ASGIConnection[Any, Any, Any, Any]"
+    session: dict[str, Any], connection: "ASGIConnection[Any, Any, Any, Any]"
 ) -> Optional[User]:
     return MOCK_DB.get(user_id) if (user_id := session.get("user_id")) else None
 
@@ -51,7 +51,7 @@ async def login(data: UserLoginPayload, request: "Request[Any, Any, Any]") -> Us
 
 
 @get("/user", sync_to_thread=False)
-def get_user(request: Request[User, Dict[Literal["user_id"], str], Any]) -> Any:
+def get_user(request: Request[User, dict[Literal["user_id"], str], Any]) -> Any:
     return request.user
 
 

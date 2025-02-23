@@ -1,5 +1,5 @@
 import string
-from typing import Any, List
+from typing import Any
 
 import pytest
 
@@ -87,7 +87,7 @@ def test_parse_schema_handle_object() -> None:
         ),
     ),
 )
-def test_parse_schema_handle_enum(schema_type: Any, enum: List[Any], expected: str) -> None:
+def test_parse_schema_handle_enum(schema_type: Any, enum: list[Any], expected: str) -> None:
     result = parse_schema(Schema(type=schema_type, enum=enum))
     assert result.write() == expected
 

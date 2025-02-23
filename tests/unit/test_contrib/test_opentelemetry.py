@@ -1,4 +1,4 @@
-from typing import Tuple, cast
+from typing import cast
 
 import pytest
 from _pytest.fixtures import FixtureRequest
@@ -77,7 +77,7 @@ def test_open_telemetry_middleware_with_http_route(
         assert response.status_code == HTTP_200_OK
         assert reader.get_metrics_data()
 
-        first_span, second_span, third_span = cast("Tuple[Span, Span, Span]", exporter.get_finished_spans())
+        first_span, second_span, third_span = cast("tuple[Span, Span, Span]", exporter.get_finished_spans())
         assert dict(first_span.attributes) == {"http.status_code": 200, "asgi.event.type": "http.response.start"}  # type: ignore[arg-type]
         assert dict(second_span.attributes) == {"asgi.event.type": "http.response.body"}  # type: ignore[arg-type]
         assert dict(third_span.attributes) == {  # type: ignore[arg-type]
@@ -128,7 +128,7 @@ def test_open_telemetry_middleware_with_websocket_route(
         assert data == {"hello": "world"}
 
         first_span, second_span, third_span, fourth_span, fifth_span = cast(
-            "Tuple[Span, Span, Span, Span, Span]", exporter.get_finished_spans()
+            "tuple[Span, Span, Span, Span, Span]", exporter.get_finished_spans()
         )
         assert dict(first_span.attributes) == {"asgi.event.type": "websocket.connect"}  # type: ignore[arg-type]
         assert dict(second_span.attributes) == {"asgi.event.type": "websocket.accept"}  # type: ignore[arg-type]
@@ -162,7 +162,7 @@ def test_open_telemetry_middleware_handles_route_not_found_under_span_http(
         response = client.get("/route_that_does_not_exist")
         assert response.status_code
 
-        first_span, second_span, third_span = cast("Tuple[Span, Span, Span]", exporter.get_finished_spans())
+        first_span, second_span, third_span = cast("tuple[Span, Span, Span]", exporter.get_finished_spans())
         assert dict(first_span.attributes) == {  # type: ignore[arg-type]
             "http.status_code": 404,
             "asgi.event.type": "http.response.start",
@@ -198,7 +198,7 @@ def test_open_telemetry_middleware_handles_method_not_allowed_under_span_http(
         response = client.post("/")
         assert response.status_code
 
-        first_span, second_span, third_span = cast("Tuple[Span, Span, Span]", exporter.get_finished_spans())
+        first_span, second_span, third_span = cast("tuple[Span, Span, Span]", exporter.get_finished_spans())
         assert dict(first_span.attributes) == {  # type: ignore[arg-type]
             "http.status_code": 405,
             "asgi.event.type": "http.response.start",
@@ -246,7 +246,7 @@ def test_open_telemetry_middleware_handles_errors_caused_on_middleware(
         response = client.get("/")
         assert response.status_code
 
-        first_span, second_span, third_span = cast("Tuple[Span, Span, Span]", exporter.get_finished_spans())
+        first_span, second_span, third_span = cast("tuple[Span, Span, Span]", exporter.get_finished_spans())
         assert dict(first_span.attributes) == {  # type: ignore[arg-type]
             "http.status_code": 401,
             "asgi.event.type": "http.response.start",

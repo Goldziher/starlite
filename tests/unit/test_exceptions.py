@@ -1,5 +1,3 @@
-from typing import Type
-
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
@@ -41,7 +39,7 @@ def test_custom_litestar_exception_detail(detail: str) -> None:
 
 @given(detail=st.text())
 @pytest.mark.parametrize("ex_type", [LitestarException, CustomLitestarException])
-def test_litestar_exception_repr(ex_type: Type[LitestarException], detail: str) -> None:
+def test_litestar_exception_repr(ex_type: type[LitestarException], detail: str) -> None:
     for result in ex_type(detail), ex_type(detail=detail):
         if result.detail:
             assert repr(result) == f"{result.__class__.__name__} - {result.detail}"
@@ -51,7 +49,7 @@ def test_litestar_exception_repr(ex_type: Type[LitestarException], detail: str) 
 
 @given(detail=st.text())
 @pytest.mark.parametrize("ex_type", [LitestarException, CustomLitestarException])
-def test_litestar_exception_str(ex_type: Type[LitestarException], detail: str) -> None:
+def test_litestar_exception_str(ex_type: type[LitestarException], detail: str) -> None:
     for result in ex_type(detail), ex_type(detail=detail):
         assert str(result) == result.detail.strip()
 
@@ -73,7 +71,7 @@ def test_custom_http_exception_detail(detail: str) -> None:
 
 @given(status_code=st.integers(min_value=400, max_value=404), detail=st.text())
 @pytest.mark.parametrize("ex_type", [HTTPException, CustomHTTPException])
-def test_http_exception(ex_type: Type[HTTPException], status_code: int, detail: str) -> None:
+def test_http_exception(ex_type: type[HTTPException], status_code: int, detail: str) -> None:
     assert ex_type().status_code == HTTP_500_INTERNAL_SERVER_ERROR
     for result in ex_type(detail, status_code=status_code), ex_type(detail=detail, status_code=status_code):
         assert isinstance(result, LitestarException)

@@ -10,9 +10,10 @@ from litestar.testing import TestClient
 
 @pytest.mark.usefixtures("reset_httpx_logging")
 def test_using_application_state(caplog: Any) -> None:
-    with caplog.at_level(INFO, "docs.examples.application_state.using_application_state"), TestClient(
-        app=app
-    ) as client:
+    with (
+        caplog.at_level(INFO, "docs.examples.application_state.using_application_state"),
+        TestClient(app=app) as client,
+    ):
         response = client.get("/")
         assert response.status_code == HTTP_200_OK
 

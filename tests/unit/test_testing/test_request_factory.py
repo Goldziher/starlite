@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass
-from typing import Callable, Dict
+from typing import Callable
 
 import msgspec
 import pytest
@@ -28,20 +28,20 @@ async def test_request_factory_empty_body() -> None:
 
 
 def test_request_factory_no_cookie_header() -> None:
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     RequestFactory._create_cookie_header(headers)
     assert not headers
 
 
 def test_request_factory_str_cookie_header() -> None:
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     cookie_as_str = "test=cookie; litestar=cookie"
     RequestFactory._create_cookie_header(headers, cookie_as_str)
     assert headers[ParamType.COOKIE] == cookie_as_str
 
 
 def test_request_factory_cookie_list_header() -> None:
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     cookie_list = [Cookie(key="test", value="cookie"), Cookie(key="litestar", value="cookie", path="/test")]
     RequestFactory._create_cookie_header(headers, cookie_list)
     assert headers[ParamType.COOKIE] == "test=cookie; Path=/; SameSite=lax; litestar=cookie; Path=/test; SameSite=lax"

@@ -1,340 +1,164 @@
-Litestar library documentation
-==============================
+:layout: landing
+:description: Litestar is a powerful, flexible, highly performant, and opinionated ASGI framework.
 
-Litestar is a powerful, flexible, highly performant, and opinionated ASGI framework.
+.. container::
+    :name: home-head
 
-The Litestar framework supports :doc:`/usage/plugins/index`, ships
-with :doc:`dependency injection </usage/dependency-injection>`, :doc:`security primitives </usage/security/index>`,
-:doc:`OpenAPI schema generation </usage/openapi/index>`, `MessagePack <https://msgpack.org/>`_,
-:doc:`middlewares </usage/middleware/index>`, a great :doc:`CLI </usage/cli>` experience, and much more.
+    .. image:: https://raw.githubusercontent.com/litestar-org/branding/main/assets/Branding%20-%20SVG%20-%20Transparent/Badge%20-%20Blue%20and%20Yellow.svg
+        :alt: Litestar Framework
+        :width: 400
+        :height: 400
 
-Installation
-------------
+    .. container::
 
-.. code-block:: shell
+        .. raw:: html
 
-   pip install litestar
+            <h1>Litestar</h1>
 
-.. tip:: ``litestar[standard]`` includes commonly used extras like ``uvicorn`` and ``jinja2`` (for templating).
+        .. container:: badges
+           :name: badges
 
-.. dropdown:: Extras
-    :icon: star
+            .. image:: https://img.shields.io/github/actions/workflow/status/litestar-org/litestar/publish.yml?labelColor=202235&logo=github&logoColor=edb641
+               :alt: GitHub Actions Latest Release Workflow Status
 
-    `Pydantic <https://docs.pydantic.dev/latest/>`_
-        :code:`pip install litestar[pydantic]`
+            .. image:: https://img.shields.io/github/actions/workflow/status/litestar-org/litestar/ci.yml?labelColor=202235&logo=github&logoColor=edb641
+               :alt: GitHub Actions CI Workflow Status
 
-    `Attrs <https://www.attrs.org>`_
-        :code:`pip install litestar[attrs]`
+            .. image:: https://img.shields.io/github/actions/workflow/status/litestar-org/litestar/docs.yml?labelColor=202235&logo=github&logoColor=edb641
+               :alt: GitHub Actions Docs Build Workflow Status
 
-    :ref:`Brotli Compression Middleware <usage/middleware/builtin-middleware:brotli>`:
-        :code:`pip install litestar[brotli]`
+            .. image:: https://img.shields.io/codecov/c/github/litestar-org/litestar?labelColor=202235&logo=codecov&logoColor=edb641
+               :alt: Coverage
 
-    :ref:`Cookie Based Sessions <usage/middleware/builtin-middleware:client-side sessions>`
-        :code:`pip install litestar[cryptography]`
+            .. image:: https://img.shields.io/pypi/v/litestar?labelColor=202235&color=edb641&logo=python&logoColor=edb641
+               :alt: PyPI Version
 
-    :doc:`JWT </usage/security/jwt>`
-        :code:`pip install litestar[jwt]`
+            .. image:: https://img.shields.io/github/all-contributors/litestar-org/litestar?labelColor=202235&color=edb641&logoColor=edb641
+               :alt: Contributor Count
 
-    :doc:`RedisStore </usage/stores>`
-        :code:`pip install litestar[redis]`
+            .. image:: https://img.shields.io/pypi/dm/litestar?logo=python&label=litestar%20downloads&labelColor=202235&color=edb641&logoColor=edb641
+               :alt: PyPI Downloads
 
-    :ref:`Picologging <usage/logging:using picologging>`
-        :code:`pip install litestar[picologging]`
+            .. image:: https://img.shields.io/pypi/pyversions/litestar?labelColor=202235&color=edb641&logo=python&logoColor=edb641
+               :alt: Supported Python Versions
 
-    :ref:`StructLog <usage/logging:using structlog>`
-        :code:`pip install litestar[structlog]`
+.. rst-class:: lead
 
-    :doc:`Prometheus Instrumentation </usage/metrics/prometheus>`
-        :code:`pip install litestar[prometheus]`
+   The Litestar framework supports :doc:`/usage/plugins/index`, ships with
+   :doc:`dependency injection </usage/dependency-injection>`, :doc:`security primitives </usage/security/index>`,
+   :doc:`OpenAPI schema generation </usage/openapi/index>`, `MessagePack <https://msgpack.org/>`_,
+   :doc:`middlewares </usage/middleware/index>`, a great :doc:`CLI </usage/cli>` experience, and much more.
 
-    :doc:`Open Telemetry Instrumentation </usage/metrics/open-telemetry>`
-        :code:`pip install litestar[opentelemetry]`
+.. container:: buttons
 
-    :doc:`SQLAlchemy </usage/databases/sqlalchemy/index>`
-        :code:`pip install litestar[sqlalchemy]`
+    :doc:`Get Started <getting-started>`
+    `Usage Docs <usage>`_
+    `API Docs <reference>`_
+    `Blog <https://blog.litestar.dev>`_
 
-    :doc:`CLI </usage/cli>`
-        .. deprecated:: 2.1.1
-           The ``litestar`` base installation now includes the CLI dependencies and this group is no longer required
-           to use the CLI.
-           If you need the optional CLI dependencies, install the ``standard`` group instead.
-           **Will be removed in 3.0**
+.. grid:: 1 1 2 3
+    :padding: 0
+    :gutter: 2
 
-        :code:`pip install litestar[cli]`
+    .. grid-item-card:: :octicon:`repo` Tutorials
+      :link: tutorials/index
+      :link-type: doc
 
-    :doc:`Jinja Templating </usage/templating>`
-        :code:`pip install litestar[jinja]`
+      Step-by-step guides addressing common use cases and scenarios for Litestar
 
-    :doc:`Mako Templating </usage/templating>`
-        :code:`pip install litestar[mako]`
+    .. grid-item-card:: :octicon:`light-bulb` Topics
+      :link: topics/index
+      :link-type: doc
 
-    Standard Installation (includes Uvicorn and Jinja2 templating):
-        :code:`pip install litestar[standard]`
+      Articles discussing technical concepts, design philosophy, and strategic decisions.
 
-    All Extras:
-        :code:`pip install litestar[full]`
+    .. grid-item-card:: :octicon:`versions` Changelog
+      :link: release-notes/changelog
+      :link-type: doc
 
-    .. note:: The full extras is not recommended because it will add a lot of unnecessary extras.
+      The latest updates and enhancements to the Litestar framework.
 
-.. _minimal_example:
+    .. grid-item-card:: :octicon:`comment-discussion` Discussions
+      :link: https://github.com/litestar-org/litestar/discussions
 
-Minimal Example
----------------
+      Join discussions, pose questions, or share insights.
 
-At a minimum, make sure you have installed ``litestar[standard]``, which includes uvicorn.
+    .. grid-item-card:: :octicon:`issue-opened` Issues
+      :link: https://github.com/litestar-org/litestar/issues
 
-First, create a file named ``app.py`` with the following contents:
+      Report issues or suggest new features.
 
-.. code-block:: python
+    .. grid-item-card:: :octicon:`beaker` Contributing
+      :link: contribution-guide
+      :link-type: doc
 
-   from litestar import Litestar, get
-
-
-   @get("/")
-   async def index() -> str:
-       return "Hello, world!"
-
-
-   @get("/books/{book_id:int}")
-   async def get_book(book_id: int) -> dict[str, int]:
-       return {"book_id": book_id}
-
-
-   app = Litestar([index, get_book])
-
-Then, run the following command:
-
-.. code-block:: shell
-
-    litestar run
-    # Or you can run Uvicorn directly:
-    uvicorn app:app --reload
-
-You can now visit ``http://localhost:8000/`` and ``http://localhost:8000/books/1`` in your browser and
-you should see the responses of your two endpoints:
-
-.. code-block:: text
-
-   "Hello, world!"
-
-and
-
-.. code-block:: json
-
-   {"book_id": 1}
-
-.. tip:: You can also check out the automatically generated OpenAPI-based documentation at:
-
-    * ``http://localhost:8000/schema`` (for `ReDoc <https://redocly.com/redoc>`_),
-    * ``http://localhost:8000/schema/swagger`` (for `Swagger UI <https://swagger.io/>`_),
-    * ``http://localhost:8000/schema/elements`` (for `Stoplight Elements <https://stoplight.io/open-source/elements/>`_)
-    * ``http://localhost:8000/schema/rapidoc`` (for `RapiDoc <https://rapidocweb.com/>`_)
-
-You can check out a more in-depth tutorial in the :doc:`/tutorials/todo-app/index` section!
+      Contribute to Litestar's growth with code, docs, and more.
 
 Sponsors
 --------
 
-Litestar is a community-driven open-source initiative that thrives on the generous contributions of our sponsors,
-enabling us to pursue innovative developments.
+.. rst-class:: lead
+
+   Litestar is a community-driven, open-source initiative that thrives on the generous contributions of our sponsors,
+   enabling us to pursue innovative developments and continue our mission to provide exceptional tools and resources
+   to our users.
+
 
 A huge thank you to our current sponsors:
 
-.. raw:: html
+.. container::
+   :name: sponsors-section
 
-    <div style="display: flex; justify-content: center; align-items: center; gap: 8px;">
-      <div>
-        <a href="https://github.com/scalar/scalar">
-          <img src="https://raw.githubusercontent.com/litestar-org/branding/main/assets/sponsors/scalar.svg" alt="Scalar.com" style="border-radius: 10px; width: auto; max-height: 150px;"/>
-        </a>
-        <p style="text-align: center;">Scalar.com</p>
-      </div>
-      <div>
-        <a href="https://telemetrysports.com/">
-          <img src="https://raw.githubusercontent.com/litestar-org/branding/main/assets/sponsors/telemetry-sports/unofficial-telemetry-whitebg.svg" alt="Telemetry Sports" style="border-radius: 10px; width: auto; max-height: 150px;"/>
-        </a>
-        <p style="text-align: center;">Telemetry Sports</p>
-      </div>
-    </div>
+   .. grid:: 3
+      :class-row: surface
+      :padding: 0
+      :gutter: 2
+
+      .. grid-item-card::
+         :link: https://github.com/scalar/scalar
+
+         .. image:: https://raw.githubusercontent.com/litestar-org/branding/main/assets/sponsors/scalar.svg
+            :alt: Scalar.com
+            :class: sponsor
+
+         `Scalar.com <https://github.com/scalar/scalar>`_
+
+      .. grid-item-card::
+         :link: https://telemetrysports.com/
+
+         .. image:: https://raw.githubusercontent.com/litestar-org/branding/main/assets/sponsors/telemetry-sports/unofficial-telemetry-whitebg.svg
+            :alt: Telemetry Sports
+            :class: sponsor
+
+         `Telemetry Sports <https://telemetrysports.com/>`_
+
+      .. grid-item-card::
+         :link: https://www.stok.kr/
+
+         .. image:: https://avatars.githubusercontent.com/u/144093421
+            :alt: Stok
+            :class: sponsor
+
+         `Stok <https://www.stok.kr/>`_
 
 We invite organizations and individuals to join our sponsorship program.
-By becoming a sponsor on `Polar <sponsor-polar_>`_ (preferred), or other platforms like `GitHub <sponsor-github_>`_
+By becoming a sponsor on platforms like `Polar <sponsor-polar_>`_, `GitHub <sponsor-github_>`_
 and `Open Collective <sponsor-oc_>`_, you can play a pivotal role in our project's growth.
 
-Also, exclusively with `Polar <sponsor-polar_>`_, you can engage in pledge-based sponsorships.
+On top of regular sponsorship, we engage in pledge-based sponsorship opportunities through `Polar <sponsor-polar_>`_,
+where you can pledge an amount towards an issue or feature you would like to see implemented.
+
 
 .. _sponsor-github: https://github.com/sponsors/litestar-org
 .. _sponsor-oc: https://opencollective.com/litestar
 .. _sponsor-polar: https://polar.sh/litestar-org
-
-Expanded Example
-----------------
-
-**Define your data model** using pydantic or any library based on it (for example ormar, beanie, SQLModel):
-
-.. code-block:: python
-
-    from pydantic import BaseModel, UUID4
-
-
-    class User(BaseModel):
-        first_name: str
-        last_name: str
-        id: UUID4
-
-
-
-
-You can also use dataclasses (standard library and Pydantic),
-:class:`typing.TypedDict`, or :class:`msgspec.Struct`.
-
-.. code-block:: python
-
-   from uuid import UUID
-
-   from dataclasses import dataclass
-   from litestar.dto import DTOConfig, DataclassDTO
-
-
-   @dataclass
-   class User:
-       first_name: str
-       last_name: str
-       id: UUID
-
-
-   class PartialUserDTO(DataclassDTO[User]):
-       config = DTOConfig(exclude={"id"}, partial=True)
-
-**Define a Controller for your data model:**
-
-.. code-block:: python
-
-    from typing import List
-
-    from litestar import Controller, get, post, put, patch, delete
-    from litestar.dto import DTOData
-    from pydantic import UUID4
-
-    from my_app.models import User, PartialUserDTO
-
-
-    class UserController(Controller):
-        path = "/users"
-
-        @post()
-        async def create_user(self, data: User) -> User: ...
-
-        @get()
-        async def list_users(self) -> List[User]: ...
-
-        @patch(path="/{user_id:uuid}", dto=PartialUserDTO)
-        async def partial_update_user(
-            self, user_id: UUID4, data: DTOData[User]
-        ) -> User: ...
-
-        @put(path="/{user_id:uuid}")
-        async def update_user(self, user_id: UUID4, data: User) -> User: ...
-
-        @get(path="/{user_id:uuid}")
-        async def get_user(self, user_id: UUID4) -> User: ...
-
-        @delete(path="/{user_id:uuid}")
-        async def delete_user(self, user_id: UUID4) -> None: ...
-
-
-When instantiating your app, import your *controller* into your application's
-entry-point and pass it to Litestar:
-
-.. code-block:: python
-
-   from litestar import Litestar
-
-   from my_app.controllers.user import UserController
-
-   app = Litestar(route_handlers=[UserController])
-
-To **run your application**, use an ASGI server such as `uvicorn <https://www.uvicorn.org/>`_ :
-
-.. code-block:: shell
-
-   uvicorn my_app.main:app --reload
-
-
-Philosophy
-----------
-
-- Litestar is a community-driven project. This means not a single author,
-  but rather a core team of maintainers is leading the project, supported by a community
-  of contributors. Litestar currently has 5 maintainers and is being very actively developed.
-- Litestar draws inspiration from `NestJS <https://nestjs.com/>`_ - a contemporary TypeScript framework - which places
-  opinions and patterns at its core.
-- While still allowing for **function-based endpoints**, Litestar seeks to build on Python's powerful and versatile
-  OOP, by placing **class-based controllers** at its core.
-- Litestar is **not** a microframework. Unlike frameworks such as FastAPI, Starlette, or Flask, Litestar includes a lot
-  of functionalities out of the box needed for a typical modern web application, such as ORM integration,
-  client- and server-side sessions, caching, OpenTelemetry integration, and many more. It's not aiming to be "the next
-  Django" (for example, it will never feature its own ORM), but its scope is not micro either.
-
-
-Feature comparison with similar frameworks
-------------------------------------------
-
-+-----------------------------+------------------------------------+---------------------+------------------+---------------------+---------------------+
-|                             | Litestar                           | FastAPI             | Starlette        | Sanic               | Quart               |
-+=============================+====================================+=====================+==================+=====================+=====================+
-| OpenAPI                     | :octicon:`check`                   | :octicon:`check`    | :octicon:`dash`  | :octicon:`dash`     | :octicon:`dash`     |
-+-----------------------------+------------------------------------+---------------------+------------------+---------------------+---------------------+
-| Automatic API documentation | Swagger, ReDoc, Stoplight Elements | Swagger, ReDoc      | :octicon:`dash`  | :octicon:`dash`     | :octicon:`dash`     |
-+-----------------------------+------------------------------------+---------------------+------------------+---------------------+---------------------+
-| Data validation             | :octicon:`check`                   | :octicon:`check`    | :octicon:`dash`  | :octicon:`dash`     | :octicon:`dash`     |
-+-----------------------------+------------------------------------+---------------------+------------------+---------------------+---------------------+
-| Dependency Injection        | :octicon:`check`                   | :octicon:`check`    | :octicon:`dash`  | :octicon:`check`    | :octicon:`dash`     |
-+-----------------------------+------------------------------------+---------------------+------------------+---------------------+---------------------+
-| Class based routing         | :octicon:`check`                   | (Through extension) | :octicon:`check` | :octicon:`check`    | :octicon:`check`    |
-+-----------------------------+------------------------------------+---------------------+------------------+---------------------+---------------------+
-| ORM integration             | SQLAlchemy, Tortoise, Piccolo      | :octicon:`dash`     | :octicon:`dash`  | :octicon:`dash`     | (Through extension) |
-+-----------------------------+------------------------------------+---------------------+------------------+---------------------+---------------------+
-| Templating                  | Jinja, Mako                        | Jinja               | Jinja            | Jinja               | Jinja               |
-+-----------------------------+------------------------------------+---------------------+------------------+---------------------+---------------------+
-| MessagePack                 | :octicon:`check`                   | :octicon:`dash`     | :octicon:`dash`  | :octicon:`dash`     | :octicon:`dash`     |
-+-----------------------------+------------------------------------+---------------------+------------------+---------------------+---------------------+
-| CORS                        | :octicon:`check`                   | :octicon:`check`    | :octicon:`check` | :octicon:`check`    | (Through extension) |
-+-----------------------------+------------------------------------+---------------------+------------------+---------------------+---------------------+
-| CSRF                        | :octicon:`check`                   | :octicon:`dash`     | :octicon:`dash`  | :octicon:`dash`     | :octicon:`dash`     |
-+-----------------------------+------------------------------------+---------------------+------------------+---------------------+---------------------+
-| Rate-limiting               | :octicon:`check`                   | :octicon:`dash`     | :octicon:`dash`  | (Through extension) | :octicon:`dash`     |
-+-----------------------------+------------------------------------+---------------------+------------------+---------------------+---------------------+
-| JWT                         | :octicon:`check`                   | :octicon:`dash`     | :octicon:`dash`  | :octicon:`dash`     | :octicon:`dash`     |
-+-----------------------------+------------------------------------+---------------------+------------------+---------------------+---------------------+
-| Sessions                    | :octicon:`check`                   | Client-side         | Client-side      | :octicon:`dash`     | Client-side         |
-+-----------------------------+------------------------------------+---------------------+------------------+---------------------+---------------------+
-| Authentication              | JWT / Session based                | :octicon:`dash`     | :octicon:`dash`  | :octicon:`dash`     | :octicon:`dash`     |
-+-----------------------------+------------------------------------+---------------------+------------------+---------------------+---------------------+
-| Caching                     | :octicon:`check`                   |  :octicon:`dash`    | :octicon:`dash`  | :octicon:`dash`     | :octicon:`dash`     |
-+-----------------------------+------------------------------------+---------------------+------------------+---------------------+---------------------+
-
-
-Example Applications
---------------------
-
-
-* `litestar-fullstack <https://github.com/litestar-org/litestar-fullstack>`_ : A fully-capable, production-ready fullstack
-  Litestar web application configured with best practices. It includes SQLAlchemy 2.0, VueJS, `Vite <https://vitejs.dev/>`_,
-  `SAQ job queue <https://saq-py.readthedocs.io/en/latest/>`_, ``Jinja`` templates and more.
-  `Read more <https://litestar-org.github.io/litestar-fullstack/latest/>`_. Like all
-  Litestar projects, this application is open to contributions, big and small.
-* `litestar-fullstack-inertia <https://github.com/litestar-org/litestar-fullstack-inertia>`_ : Similar to
-  `Litestar Fullstack <https://litestar-org.github.io/litestar-fullstack/latest/>`_ but uses `Inertia.js <https://inertiajs.com>`_.
-* `litestar-hello-world <https://github.com/litestar-org/litestar-hello-world>`_: A bare-minimum application setup.
-  Great for testing and POC work.
-
 
 .. toctree::
     :titlesonly:
     :caption: Documentation
     :hidden:
 
+    getting-started
     usage/index
     reference/index
     benchmarks
@@ -354,5 +178,5 @@ Example Applications
     :hidden:
 
     contribution-guide
-    Available Issues <https://github.com/search?q=user%3Alitestar-org+state%3Aopen+label%3A%22good+first+issue%22+++no%3Aassignee+&type=issues>
+    Available Issues <https://github.com/search?q=user%3Alitestar-org+state%3Aopen+label%3A%22good+first+issue%22+++no%3Aassignee+&type=issues=>
     Code of Conduct <https://github.com/litestar-org/.github?tab=coc-ov-file#readme>

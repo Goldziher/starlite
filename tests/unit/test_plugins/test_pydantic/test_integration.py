@@ -1,10 +1,9 @@
-from typing import Any, Dict, List
+from typing import Annotated, Any
 from unittest.mock import ANY
 
 import pydantic as pydantic_v2
 import pytest
 from pydantic import v1 as pydantic_v1
-from typing_extensions import Annotated
 
 from litestar import get, post
 from litestar.enums import RequestEncodingType
@@ -32,7 +31,7 @@ def test_pydantic_v1_validation_error_raises_400(meta: Any) -> None:
         return data
 
     model_json = {"foo": "too long"}
-    expected_errors: List[Dict[str, Any]]
+    expected_errors: list[dict[str, Any]]
 
     expected_errors = [
         {
@@ -67,7 +66,7 @@ def test_pydantic_v2_validation_error_raises_400(meta: Any) -> None:
         return data
 
     model_json = {"foo": "too long"}
-    expected_errors: List[Dict[str, Any]]
+    expected_errors: list[dict[str, Any]]
 
     expected_errors = [
         {
@@ -143,7 +142,7 @@ def test_serialize_raw_errors_v2() -> None:
 
 def test_signature_model_invalid_input(base_model: BaseModelType, pydantic_version: PydanticVersion) -> None:
     class OtherChild(base_model):  # type: ignore[misc, valid-type]
-        val: List[int]
+        val: list[int]
 
     class Child(base_model):  # type: ignore[misc, valid-type]
         val: int
@@ -396,7 +395,7 @@ def test_model_defaults(pydantic_version: PydanticVersion) -> None:
         c: int = lib.Field(default_factory=lambda: 3)
 
     @post("/")
-    async def handler(data: Model) -> Dict[str, int]:
+    async def handler(data: Model) -> dict[str, int]:
         return {"a": data.a, "b": data.b, "c": data.c}
 
     with create_test_client([handler]) as client:

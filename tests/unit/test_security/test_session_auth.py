@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from uuid import uuid4
 
 import msgspec
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 user_instance = UserFactory.build()
 
 
-def retrieve_user_handler(session_data: Dict[str, Any], _: "ASGIConnection") -> Optional[User]:
+def retrieve_user_handler(session_data: dict[str, Any], _: "ASGIConnection") -> Optional[User]:
     if session_data["id"] == str(user_instance.id):
         return User(**session_data)
     return None

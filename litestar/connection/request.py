@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import warnings
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Generic, cast
+from typing import TYPE_CHECKING, Any, Generic, cast
 
 from litestar._multipart import parse_content_header, parse_multipart_form
 from litestar._parsers import parse_url_encoded_form_data
@@ -31,6 +31,8 @@ __all__ = ("Request",)
 
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
     from litestar.handlers.http_handlers import HTTPRouteHandler  # noqa: F401
     from litestar.types.asgi_types import HTTPScope, Method, Receive, Scope, Send
     from litestar.types.empty import EmptyType
@@ -137,7 +139,7 @@ class Request(Generic[UserT, AuthT, StateT], ASGIConnection["HTTPRouteHandler", 
             else:
                 body = await self.body()
                 self._json = self._connection_state.json = decode_json(
-                    body or b"null", type_decoders=self.route_handler.resolve_type_decoders()
+                    body or b"null", type_decoders=self.route_handler.type_decoders
                 )
         return self._json
 
@@ -153,7 +155,7 @@ class Request(Generic[UserT, AuthT, StateT], ASGIConnection["HTTPRouteHandler", 
             else:
                 body = await self.body()
                 self._msgpack = self._connection_state.msgpack = decode_msgpack(
-                    body or b"\xc0", type_decoders=self.route_handler.resolve_type_decoders()
+                    body or b"\xc0", type_decoders=self.route_handler.type_decoders
                 )
         return self._msgpack
 
@@ -190,7 +192,7 @@ class Request(Generic[UserT, AuthT, StateT], ASGIConnection["HTTPRouteHandler", 
             # float is slightly faster than checking if a value is 'None' and then
             # comparing it to an int. since we expect a limit to be set most of the
             # time, this is a bit more efficient
-            max_content_length = self.route_handler.resolve_request_max_body_size() or math.inf
+            max_content_length = self.route_handler.request_max_body_size or math.inf
 
             # if the 'content-length' header is set, and exceeds the limit, we can bail
             # out early before reading anything

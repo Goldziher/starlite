@@ -1,5 +1,3 @@
-from typing import List
-
 from piccolo.columns import Boolean, Varchar
 from piccolo.table import Table, create_db_tables
 
@@ -32,7 +30,7 @@ class PatchDTO(PiccoloDTO[Task]):
     media_type=MediaType.JSON,
     tags=["Task"],
 )
-async def tasks() -> List[Task]:
+async def tasks() -> list[Task]:
     return await Task.select().order_by(Task.id, ascending=False)
 
 

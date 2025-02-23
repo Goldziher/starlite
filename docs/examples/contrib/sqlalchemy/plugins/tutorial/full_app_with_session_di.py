@@ -1,5 +1,6 @@
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator, Dict, List, Optional
+from typing import Any, Optional
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, NoResultFound
@@ -11,8 +12,8 @@ from litestar.datastructures import State
 from litestar.exceptions import ClientException, NotFoundException
 from litestar.status_codes import HTTP_409_CONFLICT
 
-TodoType = Dict[str, Any]
-TodoCollectionType = List[TodoType]
+TodoType = dict[str, Any]
+TodoCollectionType = list[TodoType]
 
 
 class Base(DeclarativeBase): ...
@@ -69,7 +70,7 @@ async def get_todo_by_title(todo_name, session: AsyncSession) -> TodoItem:
         raise NotFoundException(detail=f"TODO {todo_name!r} not found") from e
 
 
-async def get_todo_list(done: Optional[bool], session: AsyncSession) -> List[TodoItem]:
+async def get_todo_list(done: Optional[bool], session: AsyncSession) -> list[TodoItem]:
     query = select(TodoItem)
     if done is not None:
         query = query.where(TodoItem.done.is_(done))

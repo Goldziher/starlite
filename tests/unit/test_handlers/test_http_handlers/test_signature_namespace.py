@@ -1,22 +1,30 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any
 
 import pytest
 
 from litestar import Controller, Router, delete, get, patch, post, put
 from litestar.testing import create_test_client
+from litestar.types import HTTPHandlerDecorator
 
 
 @pytest.mark.parametrize(
-    ("method", "decorator"), [("GET", get), ("PUT", put), ("POST", post), ("PATCH", patch), ("DELETE", delete)]
+    ("method", "decorator"),
+    [
+        ("GET", get),
+        ("PUT", put),
+        ("POST", post),
+        ("PATCH", patch),
+        ("DELETE", delete),
+    ],
 )
-def test_websocket_signature_namespace(method: str, decorator: type[get | put | post | patch | delete]) -> None:
+def test_websocket_signature_namespace(method: str, decorator: HTTPHandlerDecorator) -> None:
     class MyController(Controller):
         path = "/"
         signature_namespace = {"c": float}
 
-        @decorator(path="/", signature_namespace={"d": List[str], "dict": Dict}, status_code=200)  # type:ignore[misc]
+        @decorator(path="/", signature_namespace={"d": list[str], "dict": dict}, status_code=200)
         async def simple_handler(
             self,
             a: a,  # type:ignore[name-defined]  # noqa: F821

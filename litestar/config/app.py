@@ -27,7 +27,6 @@ if TYPE_CHECKING:
     from litestar.openapi.config import OpenAPIConfig
     from litestar.openapi.spec import SecurityRequirement
     from litestar.plugins import PluginProtocol
-    from litestar.static_files.config import StaticFilesConfig
     from litestar.stores.base import Store
     from litestar.stores.registry import StoreRegistry
     from litestar.types import (
@@ -196,8 +195,6 @@ class AppConfig:
     """
     state: State = field(default_factory=State)
     """A :class:`State` <.datastructures.State>` instance holding application state."""
-    static_files_config: list[StaticFilesConfig] = field(default_factory=list)
-    """An instance or list of :class:`StaticFilesConfig <.static_files.StaticFilesConfig>`."""
     stores: StoreRegistry | dict[str, Store] | None = None
     """Central registry of :class:`Store <.stores.base.Store>` to be made available and be used throughout the
     application. Can be either a dictionary mapping strings to :class:`Store <.stores.base.Store>` instances, or an

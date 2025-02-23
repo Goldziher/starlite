@@ -1,16 +1,16 @@
 # ruff: noqa: UP007, UP006
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from types import ModuleType
-from typing import TYPE_CHECKING, Callable, Dict, Generic, List, Optional, Sequence, TypeVar, cast
+from typing import TYPE_CHECKING, Annotated, Callable, Generic, Optional, TypeVar, cast
 from unittest.mock import MagicMock
 from uuid import UUID
 
 import msgspec
 import pytest
 from msgspec import Struct
-from typing_extensions import Annotated
 
 from litestar import Controller, Response, get, patch, post
 from litestar.connection.request import Request
@@ -116,7 +116,7 @@ class Bar:
 class Foo:
     id: str
     bar: Bar
-    bars: List[Bar]
+    bars: list[Bar]
 """
     )
 
@@ -229,7 +229,7 @@ def test_dto_data_injection_with_nested_model(use_experimental_dto_backend: bool
         ],
         return_dto=None,
     )
-    def handler(data: DTOData[NestingBar]) -> Dict[str, Any]:
+    def handler(data: DTOData[NestingBar]) -> dict[str, Any]:
         assert isinstance(data, DTOData)
         return cast("dict[str, Any]", data.as_builtins())
 
@@ -426,7 +426,7 @@ def test_url_encoded_form_data_patch_request(use_experimental_dto_backend: bool)
     ]
 
     @post(dto=dto, return_dto=None, signature_types=[User])
-    def handler(data: DTOData[User] = Body(media_type=RequestEncodingType.URL_ENCODED)) -> Dict[str, Any]:
+    def handler(data: DTOData[User] = Body(media_type=RequestEncodingType.URL_ENCODED)) -> dict[str, Any]:
         return data.as_builtins()  # type:ignore[no-any-return]
 
     with create_test_client(route_handlers=[handler]) as client:
@@ -625,7 +625,7 @@ class Wrapped(Generic[T, V]):
 
 def test_dto_generic_dataclass_wrapped_list_response(use_experimental_dto_backend: bool) -> None:
     @get(dto=DataclassDTO[Annotated[PaginatedUser, DTOConfig(exclude={"age"})]])
-    def handler() -> Wrapped[List[PaginatedUser], int]:
+    def handler() -> Wrapped[list[PaginatedUser], int]:
         return Wrapped(
             data=[PaginatedUser(name="John", age=42), PaginatedUser(name="Jane", age=43)],
             other=2,
@@ -658,7 +658,7 @@ def test_dto_generic_dataclass_wrapped_scalar_response(use_experimental_dto_back
 @dataclass
 class WrappedWithDict(Generic[K, V, T]):
     data: T
-    other: Dict[K, V]
+    other: dict[K, V]
 
 
 def test_dto_generic_dataclass_wrapped_scalar_response_with_additional_mapping_data(
@@ -706,7 +706,7 @@ def test_dto_response_wrapped_collection_return_type(use_experimental_dto_backen
             ]
         ]
     )
-    def handler() -> Response[List[PaginatedUser]]:
+    def handler() -> Response[list[PaginatedUser]]:
         return Response(content=[PaginatedUser(name="John", age=42), PaginatedUser(name="Jane", age=43)])
 
     with create_test_client(handler) as client:
@@ -832,7 +832,7 @@ def test_dto_returning_mapping(use_experimental_dto_backend: bool) -> None:
         config = DTOConfig(exclude={"id"}, experimental_codegen_backend=use_experimental_dto_backend)
 
     @get(return_dto=LexemeDTO, signature_types=[Lexeme])
-    async def get_definition() -> Dict[str, Lexeme]:
+    async def get_definition() -> dict[str, Lexeme]:
         return {"hello": Lexeme(id=1, name="hello"), "world": Lexeme(id=2, name="world")}
 
     with create_test_client(route_handlers=[get_definition]) as client:
@@ -979,7 +979,7 @@ T = TypeVar("T")
 @dataclass
 class WithCount(Generic[T]):
     count: int
-    data: List[T]
+    data: list[T]
 
 class Base(DeclarativeBase): ...
 

@@ -4,6 +4,7 @@ import importlib.metadata
 import os
 import re
 import warnings
+from datetime import datetime
 from functools import partial
 from typing import Any
 
@@ -22,10 +23,16 @@ PY_ATTR = "py:attr"
 PY_OBJ = "py:obj"
 PY_FUNC = "py:func"
 
+current_year = datetime.now().year
 project = "Litestar"
-copyright = "2025, Litestar-Org"
-author = "Litestar-Org"
+copyright = f"{current_year}, Litestar Organization"
+author = "Litestar Organization"
 release = os.getenv("_LITESTAR_DOCS_BUILD_VERSION", importlib.metadata.version("litestar").rsplit(".")[0])
+environment = os.getenv("_LITESTAR_DOCS_BUILD_ENVIRONMENT", "local")
+
+rst_epilog = f"""
+.. |version| replace:: {release}
+"""
 
 extensions = [
     "sphinx.ext.intersphinx",
@@ -39,6 +46,7 @@ extensions = [
     "sphinxcontrib.mermaid",
     "sphinx_click",
     "sphinx_paramlinks",
+    "sphinx_togglebutton",
 ]
 
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
@@ -132,7 +140,6 @@ nitpick_ignore = [
     (PY_CLASS, "litestar.template.base.TemplateType_co"),
     (PY_CLASS, "litestar.template.base.ContextType_co"),
     (PY_CLASS, "litestar.template.base.R"),
-    (PY_ATTR, "litestar.openapi.controller.OpenAPIController.swagger_ui_init_oauth"),
     # intentionally undocumented
     (PY_CLASS, "BacklogStrategy"),
     (PY_CLASS, "ExceptionT"),
@@ -177,6 +184,8 @@ nitpick_ignore = [
     ("py:exc", "HTTPExceptions"),
     (PY_CLASS, "litestar.template.Template"),
     (PY_CLASS, "litestar.middleware.compression.gzip_facade.GzipCompression"),
+    (PY_CLASS, "litestar.openapi.OpenAPIController"),
+    (PY_CLASS, "openapi.controller.OpenAPIController"),
     (PY_CLASS, "litestar.handlers.http_handlers.decorators._subclass_warning"),
     (PY_CLASS, "litestar.background_tasks.P"),
     (PY_CLASS, "P.args"),
@@ -226,6 +235,7 @@ nitpick_ignore_regex = [
     (PY_RE, r"advanced_alchemy\.config.common\.EngineT"),
     (PY_RE, r"advanced_alchemy\.config.common\.SessionT"),
     (PY_RE, r".*R"),
+    (PY_RE, r".*ScopeT"),
     (PY_OBJ, r"litestar.security.jwt.auth.TokenT"),
     (PY_CLASS, "ExceptionToProblemDetailMapType"),
     (PY_CLASS, "litestar.security.jwt.token.JWTDecodeOptions"),
@@ -239,7 +249,6 @@ ignore_missing_refs = {
     # No idea what autodoc is doing here. Possibly unfixable on our end
     "litestar.template.base.TemplateEngineProtocol.get_template": {"litestar.template.base.T_co"},
     "litestar.template": {"litestar.template.base.T_co"},
-    "litestar.openapi.OpenAPIController.security": {"SecurityRequirement"},
     "litestar.response.file.async_file_iterator": {"FileSystemAdapter"},
     re.compile("litestar.response.redirect.*"): {"RedirectStatusType"},
     re.compile(r"litestar\.plugins.*"): re.compile(".*ModelT"),
@@ -263,7 +272,7 @@ linkcheck_ignore = [
 ]
 
 auto_pytabs_min_version = (3, 8)
-auto_pytabs_max_version = (3, 11)
+auto_pytabs_max_version = (3, 12)
 auto_pytabs_compat_mode = True
 
 autosectionlabel_prefix_document = True
@@ -273,77 +282,133 @@ suppress_warnings = [
     "ref.python",  # TODO: remove when https://github.com/sphinx-doc/sphinx/issues/4961 is fixed
 ]
 
+# -- Style configuration -----------------------------------------------------
 html_theme = "litestar_sphinx_theme"
+html_title = "Litestar Framework"
+pygments_style = "lightbulb"
+
 html_static_path = ["_static"]
+templates_path = ["_templates"]
 html_js_files = ["versioning.js"]
 html_css_files = ["style.css"]
-html_show_sourcelink = False
-html_title = "Litestar Framework"
+
+html_show_sourcelink = True  # TODO: this doesn't work :(
+html_copy_source = True
+
+html_context = {
+    "source_type": "github",
+    "source_user": "litestar-org",
+    "source_repo": "litestar",
+    # "source_version": "main",  # TODO: We should set this with an envvar depending on which branch we are building?
+    "current_version": "latest",  # TODO: Version dropdown only show caret and now text
+    "versions": [  # TODO(provinzkraut): this needs to use versions.json but im not 100% on how to do this yet
+        ("latest", "/latest"),
+        ("development", "/main"),
+        ("v3", "/3-dev"),
+        ("v2", "/2"),
+        ("v1", "/1"),
+    ],
+    "version": release,
+}
 
 html_theme_options = {
-    "use_page_nav": False,
+    "logo_target": "/",
     "github_repo_name": "litestar",
-    "logo": {
-        "link": "https://litestar.dev",
-    },
-    "pygment_light_style": "xcode",
-    "pygment_dark_style": "lightbulb",
     "navigation_with_keys": True,
-    "extra_navbar_items": {
-        "Documentation": "index",
-        "Community": {
-            "Contributing": {
-                "description": "Learn how to contribute to the Litestar project",
-                "link": "https://docs.litestar.dev/latest/contribution-guide.html",
-                "icon": "contributing",
-            },
-            "Code of Conduct": {
-                "description": "Review the etiquette for interacting with the Litestar community",
-                "link": "https://github.com/litestar-org/.github?tab=coc-ov-file",
-                "icon": "coc",
-            },
-            "Security": {
-                "description": "Overview of Litestar's security protocols",
-                "link": "https://github.com/litestar-org/.github?tab=coc-ov-file#security-ov-file",
-                "icon": "coc",
-            },
+    "nav_links": [  # TODO(provinzkraut): I need a guide on extra_navbar_items and its magic :P
+        {"title": "Home", "url": "index"},
+        {
+            "title": "Community",
+            "children": [
+                {
+                    "title": "Contributing",
+                    "summary": "Learn how to contribute to the Litestar project",
+                    "url": "contribution-guide",
+                    "icon": "contributing",
+                },
+                {
+                    "title": "Code of Conduct",
+                    "summary": "Review the etiquette for interacting with the Litestar community",
+                    "url": "https://github.com/litestar-org/.github?tab=coc-ov-file",
+                    "icon": "coc",
+                },
+                {
+                    "title": "Security",
+                    "summary": "Overview of Litestar's security protocols",
+                    "url": "https://github.com/litestar-org/.github?tab=coc-ov-file#security-ov-file",
+                    "icon": "coc",
+                },
+            ],
         },
-        "About": {
-            "Litestar Organization": {
-                "description": "Details about the Litestar organization",
-                "link": "https://litestar.dev/about/organization",
-                "icon": "org",
-            },
-            "Releases": {
-                "description": "Explore the release process, versioning, and deprecation policy for Litestar",
-                "link": "https://litestar.dev/about/litestar-releases",
-                "icon": "releases",
-            },
+        {
+            "title": "About",
+            "children": [
+                {
+                    "title": "Litestar Organization",
+                    "summary": "Details about the Litestar organization",
+                    "url": "https://litestar.dev/about/organization",
+                    "icon": "org",
+                },
+                {
+                    "title": "Releases",
+                    "summary": "Explore the release process, versioning, and deprecation policy for Litestar",
+                    "url": "https://litestar.dev/about/litestar-releases",
+                    "icon": "releases",
+                },
+            ],
         },
-        "Release notes": {
-            "What's new in 2.0": "release-notes/whats-new-2",
-            "2.x Changelog": "https://docs.litestar.dev/2/release-notes/changelog.html",
-            "1.x Changelog": "https://docs.litestar.dev/1/release-notes/changelog.html",
+        {
+            "title": "Release notes",
+            "children": [
+                {
+                    "title": "What's new in 3.0",
+                    "url": "release-notes/whats-new-3",
+                    "summary": "Explore the new features in Litestar 3.0",
+                },
+                {
+                    "title": "3.x Changelog",
+                    "url": "release-notes/changelog",
+                    "summary": "All changes in the 3.x series",
+                },
+                {
+                    "title": "2.x Changelog",
+                    "url": "https://docs.litestar.dev/2/release-notes/changelog.html",
+                    "summary": "All changes in the 2.x series",
+                },
+            ],
         },
-        "Help": {
-            "Discord Help Forum": {
-                "description": "Dedicated Discord help forum",
-                "link": "https://discord.gg/litestar",
-                "icon": "coc",
-            },
-            "GitHub Discussions": {
-                "description": "GitHub Discussions ",
-                "link": "https://github.com/orgs/litestar-org/discussions",
-                "icon": "coc",
-            },
-            "Stack Overflow": {
-                "description": "We monitor the <code><b>litestar</b></code> tag on Stack Overflow",
-                "link": "https://stackoverflow.com/questions/tagged/litestar",
-                "icon": "coc",
-            },
+        {
+            "title": "Help",
+            "children": [
+                {
+                    "title": "Discord Help Forum",
+                    "summary": "Dedicated Discord help forum",
+                    "url": "https://discord.gg/litestar",
+                    "icon": "coc",
+                },
+                {
+                    "title": "GitHub Discussions",
+                    "summary": "GitHub Discussions",
+                    "url": "https://github.com/orgs/litestar-org/discussions",
+                    "icon": "coc",
+                },
+                {
+                    "title": "Stack Overflow",
+                    "summary": "We monitor the <code><b>litestar</b></code> tag on Stack Overflow",
+                    "url": "https://stackoverflow.com/questions/tagged/litestar",
+                    "icon": "coc",
+                },
+            ],
         },
-    },
+        {"title": "Sponsor", "url": "https://github.com/sponsors/Litestar-Org", "icon": "heart"},
+    ],
 }
+
+if environment != "latest":  # TODO(provinzkraut): it'd be awesome to be able to use the builtin announcement banner
+    html_theme_options["announcement"] = (
+        f"You are viewing the <bold>{environment}</bold> version of the documentation. "
+        f"Click here to go to the latest version."
+    )
 
 
 def update_html_context(
@@ -354,20 +419,18 @@ def update_html_context(
 
 def delayed_setup(app: Sphinx) -> None:
     """
-    When running linkcheck pydata_sphinx_theme causes a build failure, and checking
+    When running linkcheck Shibuya causes a build failure, and checking
     the builder in the initial `setup` function call is not possible, so the check
     and extension setup has to be delayed until the builder is initialized.
     """
     if app.builder.name == "linkcheck":
         return
 
-    app.setup_extension("pydata_sphinx_theme")
-    app.connect("html-page-context", update_html_context)  # type: ignore
+    app.setup_extension("shibuya")
+    # app.connect("html-page-context", update_html_context)  # TODO(provinkraut): fix
 
 
 def setup(app: Sphinx) -> dict[str, bool]:
     app.connect("builder-inited", delayed_setup, priority=0)  # type: ignore
-
     app.setup_extension("litestar_sphinx_theme")
-
     return {"parallel_read_safe": True, "parallel_write_safe": True}

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import abc
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Iterator, Protocol, TypeVar, Union, cast, runtime_checkable
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar, Union, cast, runtime_checkable
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
     from inspect import Signature
 
     from click import Group

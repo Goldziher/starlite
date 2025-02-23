@@ -2,8 +2,9 @@ import io
 import os
 import re
 import sys
+from collections.abc import Generator
 from pathlib import Path
-from typing import Callable, Generator, List, Literal, Optional, Tuple, Union
+from typing import Callable, Literal, Optional, Union
 from unittest.mock import MagicMock
 
 import pytest
@@ -72,9 +73,9 @@ def test_run_command(
     uds: Optional[str],
     web_concurrency: Optional[int],
     app_dir: Optional[str],
-    reload_dir: Optional[List[str]],
-    reload_include: Optional[List[str]],
-    reload_exclude: Optional[List[str]],
+    reload_dir: Optional[list[str]],
+    reload_include: Optional[list[str]],
+    reload_exclude: Optional[list[str]],
     custom_app_file: Optional[Path],
     create_app_file: CreateAppFileFixture,
     set_in_env: bool,
@@ -228,7 +229,7 @@ def test_run_command_with_autodiscover_app_factory(
     file_name: str,
     file_content: str,
     factory_name: str,
-    patch_autodiscovery_paths: Callable[[List[str]], None],
+    patch_autodiscovery_paths: Callable[[list[str]], None],
     tty_enabled: bool,
     quiet_console: bool,
     create_app_file: CreateAppFileFixture,
@@ -352,8 +353,8 @@ def test_run_command_with_app_factory(
     ),
 )
 def test_run_command_arguments_precedence(
-    cli: Tuple[str, Union[Literal[True], List[str], str]],
-    env: Tuple[str, Union[Literal[True], List[str], str]],
+    cli: tuple[str, Union[Literal[True], list[str], str]],
+    env: tuple[str, Union[Literal[True], list[str], str]],
     expected: str,
     runner: CliRunner,
     monkeypatch: MonkeyPatch,
@@ -578,12 +579,12 @@ def test_run_command_with_server_lifespan_plugin(
             2,
             id="schema-disabled_exclude",
         ),
-        pytest.param(APP_FILE_CONTENT_ROUTES_EXAMPLE, True, (), 13, id="schema-enabled_no-exclude"),
+        pytest.param(APP_FILE_CONTENT_ROUTES_EXAMPLE, True, (), 7, id="schema-enabled_no-exclude"),
         pytest.param(
             APP_FILE_CONTENT_ROUTES_EXAMPLE,
             True,
             ("/foo", "/destroy/.*", "/java", "/haskell"),
-            12,
+            6,
             id="schema-enabled_exclude",
         ),
     ],
@@ -593,7 +594,7 @@ def test_routes_command_options(
     runner: CliRunner,
     app_content: str,
     schema_enabled: bool,
-    exclude_pattern_list: Tuple[str, ...],
+    exclude_pattern_list: tuple[str, ...],
     create_app_file: CreateAppFileFixture,
     expected_result_routes_count: int,
 ) -> None:
@@ -643,7 +644,7 @@ def test_remove_default_schema_routes() -> None:
         http_routes.append(http_route)
 
     api_config = MagicMock()
-    api_config.openapi_controller.path = "/schema"
+    api_config.openapi_router.path = "/schema"
 
     results = _utils.remove_default_schema_routes(http_routes, api_config)  # type: ignore[arg-type]
     assert len(results) == 3

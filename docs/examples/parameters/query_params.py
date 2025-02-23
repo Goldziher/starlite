@@ -1,10 +1,8 @@
-from typing import Dict
-
 from litestar import Litestar, get
 
 
 @get("/", sync_to_thread=False)
-def index(param: str) -> Dict[str, str]:
+def index(param: str) -> dict[str, str]:
     return {"param": param}
 
 

@@ -37,7 +37,6 @@ def create_parameter_definition(
     Returns:
         A ParameterDefinition tuple.
     """
-    default = field_definition.default if field_definition.has_default else None
     kwarg_definition = (
         field_definition.kwarg_definition if isinstance(field_definition.kwarg_definition, ParameterKwarg) else None
     )
@@ -59,11 +58,8 @@ def create_parameter_definition(
         param_type=param_type,
         field_name=field_name,
         field_alias=field_alias,
-        default=default,
-        is_required=field_definition.is_required
-        and default is None
-        and not field_definition.is_optional
-        and not field_definition.is_any,
+        default=field_definition.default,
+        is_required=field_definition.is_required and not field_definition.is_optional and not field_definition.is_any,
         is_sequence=field_definition.is_non_string_sequence,
     )
 

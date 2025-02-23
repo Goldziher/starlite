@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List
 
 from litestar import Litestar, post
 
@@ -10,11 +9,11 @@ class TodoItem:
     done: bool
 
 
-TODO_LIST: List[TodoItem] = []
+TODO_LIST: list[TodoItem] = []
 
 
 @post("/")
-async def add_item(data: TodoItem) -> List[TodoItem]:
+async def add_item(data: TodoItem) -> list[TodoItem]:
     TODO_LIST.append(data)
     return TODO_LIST
 

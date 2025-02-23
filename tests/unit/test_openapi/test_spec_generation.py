@@ -100,39 +100,6 @@ def test_msgspec_schema() -> None:
 
 
 @pytest.fixture()
-def py_38_module_content() -> str:
-    return """
-from __future__ import annotations
-
-from typing import List, Optional
-
-from msgspec import Struct
-
-from litestar import Litestar, get
-
-class A(Struct):
-    a: A
-    b: B
-    opt_a: Optional[A] = None
-    opt_b: Optional[B] = None
-    list_a: List[A] = []
-    list_b: List[B] = []
-
-class B(Struct):
-    a: A
-    b: B
-    opt_a: Optional[A] = None
-    opt_b: Optional[B] = None
-    list_a: List[A] = []
-    list_b: List[B] = []
-
-@get("/")
-async def test() -> A:
-    return A()
-"""
-
-
-@pytest.fixture()
 def py_310_module_content() -> str:
     return """
 from __future__ import annotations
@@ -166,7 +133,6 @@ async def test() -> A:
 @pytest.mark.parametrize(
     ("fixture_name",),
     [
-        ("py_38_module_content",),
         pytest.param(
             "py_310_module_content",
             marks=pytest.mark.skipif(

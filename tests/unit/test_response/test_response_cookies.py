@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from litestar import Controller, HttpMethod, Litestar, Response, Router, get
+from litestar import Controller, Litestar, Response, Router, get
 from litestar.datastructures import Cookie
 from litestar.status_codes import HTTP_200_OK
 from litestar.testing import create_test_client
@@ -37,8 +37,8 @@ def test_response_cookies() -> None:
         response_cookies=[app_first, app_second],
         route_handlers=[first_router, second_router],
     )
-    route_handler, _ = app.routes[0].route_handler_map[HttpMethod.GET]  # type: ignore[union-attr]
-    response_cookies = {cookie.key: cookie.value for cookie in route_handler.resolve_response_cookies()}
+    route_handler = app.routes[0].route_handler_map["GET"]  # type: ignore[union-attr]
+    response_cookies = {cookie.key: cookie.value for cookie in route_handler.response_cookies}
     assert response_cookies["first"] == local_first.value
     assert response_cookies["second"] == controller_second.value
     assert response_cookies["third"] == router_second.value
@@ -55,20 +55,7 @@ def test_response_cookies_mapping() -> None:
     def handler_two() -> None:
         pass
 
-    assert handler_one.resolve_response_cookies() == handler_two.resolve_response_cookies()
-
-
-def test_response_cookies_mapping_unresolved() -> None:
-    # this should never happen, as there's no way to create this situation which type-checks.
-    # we test for it nevertheless
-
-    @get()
-    def handler_one() -> None:
-        pass
-
-    handler_one.response_cookies = {"foo": "bar"}  # type: ignore[assignment]
-
-    assert handler_one.resolve_response_cookies() == frozenset([Cookie(key="foo", value="bar")])
+    assert handler_one.resolve_response_cookies() == handler_two.response_cookies
 
 
 def test_response_cookie_rendering() -> None:

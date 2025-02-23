@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import dataclasses
-from typing import AsyncGenerator, Dict, Generator
+from collections.abc import AsyncGenerator, Generator
 from unittest.mock import MagicMock
 
 import pytest
@@ -111,7 +111,7 @@ def test_websocket_stream_handle_disconnect() -> None:
 
 def test_websocket_stream_send_json() -> None:
     @websocket_stream("/")
-    async def handler() -> AsyncGenerator[Dict[str, str], None]:  # noqa: UP006
+    async def handler() -> AsyncGenerator[dict[str, str], None]:
         yield {"hello": "there"}
         yield {"and": "goodbye"}
 

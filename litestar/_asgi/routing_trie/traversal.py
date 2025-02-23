@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Pattern
+from typing import TYPE_CHECKING, Any
 
 from litestar._asgi.routing_trie.types import PathParameterSentinel
 from litestar.exceptions import MethodNotAllowedException, NotFoundException
@@ -11,6 +11,8 @@ __all__ = ("parse_node_handlers", "parse_path_params", "parse_path_to_route", "t
 
 
 if TYPE_CHECKING:
+    from re import Pattern
+
     from litestar._asgi.routing_trie.types import ASGIHandlerTuple, RouteTrieNode
     from litestar.types import ASGIApp, Method, RouteHandlerType
     from litestar.types.internal_types import PathParameterDefinition
@@ -150,8 +152,7 @@ def parse_path_to_route(
             if not any(remaining_path.startswith(f"{sub_route}/") for sub_route in children):
                 asgi_app, handler = parse_node_handlers(node=mount_node, method=method)
                 remaining_path = remaining_path or "/"
-                if not mount_node.is_static:
-                    remaining_path = remaining_path if remaining_path.endswith("/") else f"{remaining_path}/"
+                remaining_path = remaining_path if remaining_path.endswith("/") else f"{remaining_path}/"
                 return asgi_app, handler, remaining_path, {}, root_node.path_template
 
         node, path_parameters, path = traverse_route_map(

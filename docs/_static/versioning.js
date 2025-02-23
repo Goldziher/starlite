@@ -21,13 +21,15 @@ const addVersionWarning = (currentVersion, latestVersion) => {
   const container = document.createElement("div");
   container.id = "version-warning";
 
-  const warningText = document.createElement("span");
-  warningText.textContent = `You are viewing the documentation for ${
-    currentVersion === "dev" ||
-    parseInt(currentVersion) > parseInt(latestVersion)
-      ? "a preview"
-      : "an outdated"
-  } version of Litestar.`;
+  const isPreviewVersion = (version) => {
+        const previewVersions = ['dev', 'develop', 'main', '3-dev'];
+        return previewVersions.includes(version) || parseInt(version) > parseInt(latestVersion);
+    };
+
+    const warningText = document.createElement("span");
+    warningText.textContent = `You are viewing the documentation for ${
+        isPreviewVersion(currentVersion) ? "a preview" : "an outdated"
+    } version of Litestar.`;
   container.appendChild(warningText);
 
   const latestLink = document.createElement("a");

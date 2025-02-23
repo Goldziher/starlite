@@ -1,21 +1,15 @@
 import re
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Iterator, Mapping, MutableMapping
 from contextlib import suppress
 from copy import copy
 from dataclasses import dataclass, fields
+from re import Pattern
 from typing import (
     TYPE_CHECKING,
     Any,
     ClassVar,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Mapping,
-    MutableMapping,
     Optional,
-    Pattern,
-    Tuple,
     Union,
     cast,
 )
@@ -45,7 +39,7 @@ ETAG_RE = re.compile(r'([Ww]/)?"(.+)"')
 PRINTABLE_ASCII_RE: Pattern[str] = re.compile(r"^[ -~]+$")
 
 
-def _encode_headers(headers: Iterable[Tuple[str, str]]) -> "RawHeadersList":
+def _encode_headers(headers: Iterable[tuple[str, str]]) -> "RawHeadersList":
     return [(key.lower().encode("latin-1"), value.encode("latin-1")) for key, value in headers]
 
 
@@ -59,7 +53,7 @@ class Headers(CIMultiDictProxy[str], MultiMixin[str]):
             headers: Initial value.
         """
         if not isinstance(headers, MultiMapping):
-            headers_: Union[Mapping[str, str], List[Tuple[str, str]]] = {}
+            headers_: Union[Mapping[str, str], list[tuple[str, str]]] = {}
             if headers:
                 if isinstance(headers, Mapping):
                     headers_ = headers  # pyright: ignore
@@ -154,7 +148,7 @@ class MutableScopeHeaders(MutableMapping):
         """
         self.headers.append((key.lower().encode("latin-1"), value.encode("latin-1")))
 
-    def getall(self, key: str, default: Optional[List[str]] = None) -> List[str]:
+    def getall(self, key: str, default: Optional[list[str]] = None) -> list[str]:
         """Get all values of a header.
 
         Args:
@@ -206,7 +200,7 @@ class MutableScopeHeaders(MutableMapping):
                 return header[1].decode("latin-1")
         raise KeyError
 
-    def _find_indices(self, key: str) -> List[int]:
+    def _find_indices(self, key: str) -> list[int]:
         name = key.lower()
         return [i for i, (name_, _) in enumerate(self.headers) if name_.decode("latin-1").lower() == name]
 
@@ -321,7 +315,7 @@ class CacheControlHeader(Header):
             An instance of ``CacheControlHeader``
         """
 
-        kwargs: Dict[str, Any] = {}
+        kwargs: dict[str, Any] = {}
         field_names = {f.name for f in fields(cls)}
         for cc_item in (stripped for v in header_value.split(",") if (stripped := v.strip())):
             key, *value = cc_item.split("=", maxsplit=1)
@@ -399,7 +393,7 @@ class MediaTypeHeader:
         return f"{self.maintype}/{self.subtype}{self._params_str}"
 
     @property
-    def priority(self) -> Tuple[int, int]:
+    def priority(self) -> tuple[int, int]:
         # Use fixed point values with two decimals to avoid problems
         # when comparing float values
         quality = 100
@@ -446,7 +440,7 @@ class Accept:
     def __iter__(self) -> Iterator[str]:
         return map(str, self._accepted_types)
 
-    def best_match(self, provided_types: List[str], default: Optional[str] = None) -> Optional[str]:
+    def best_match(self, provided_types: list[str], default: Optional[str] = None) -> Optional[str]:
         """Find the best matching media type for the request.
 
         Args:

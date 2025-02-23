@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import collections
 import inspect
+import itertools
 import logging
 import os
 import warnings
+from collections import defaultdict
 from contextlib import (
     AbstractAsyncContextManager,
     AsyncExitStack,
@@ -14,7 +17,7 @@ from datetime import date, datetime, time, timedelta
 from functools import partial
 from itertools import chain
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Iterable, Mapping, Sequence, TypedDict, cast
+from typing import TYPE_CHECKING, Any, Callable, TypedDict, cast
 from uuid import UUID
 
 from litestar._asgi import ASGIRouter
@@ -28,10 +31,13 @@ from litestar.connection import Request, WebSocket
 from litestar.datastructures.state import State
 from litestar.events.emitter import BaseEventEmitterBackend, SimpleEventEmitter
 from litestar.exceptions import (
+    ImproperlyConfiguredException,
     LitestarWarning,
     MissingDependencyException,
     NoRouteMatchFoundException,
 )
+from litestar.handlers import ASGIRouteHandler, BaseRouteHandler, HTTPRouteHandler, WebsocketRouteHandler
+from litestar.handlers.http_handlers._options import create_options_handler
 from litestar.logging.config import LoggingConfig, get_logger_placeholder
 from litestar.middleware._internal.cors import CORSMiddleware
 from litestar.openapi.config import OpenAPIConfig
@@ -46,16 +52,17 @@ from litestar.plugins import (
 from litestar.plugins.base import CLIPlugin
 from litestar.router import Router
 from litestar.routes import ASGIRoute, HTTPRoute, WebSocketRoute
-from litestar.static_files.base import StaticFiles
 from litestar.stores.registry import StoreRegistry
 from litestar.types import Empty, TypeDecodersSequence
-from litestar.types.internal_types import PathParameterDefinition, TemplateConfigType
+from litestar.types.internal_types import PathParameterDefinition, RouteHandlerMapItem, TemplateConfigType
 from litestar.utils import deprecated, ensure_async_callable, join_paths, unique
 from litestar.utils.dataclass import extract_dataclass_items
-from litestar.utils.predicates import is_async_callable
+from litestar.utils.predicates import is_async_callable, is_class_and_subclass
 from litestar.utils.warnings import warn_pdb_on_exception
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator, Generator, Iterable, Mapping, Sequence
+
     from typing_extensions import Self
 
     from litestar.config.compression import CompressionConfig
@@ -69,13 +76,11 @@ if TYPE_CHECKING:
     from litestar.openapi.spec import SecurityRequirement
     from litestar.openapi.spec.open_api import OpenAPI
     from litestar.response import Response
-    from litestar.static_files.config import StaticFilesConfig
     from litestar.stores.base import Store
     from litestar.types import (
         AfterExceptionHookHandler,
         AfterRequestHookHandler,
         AfterResponseHookHandler,
-        AnyCallable,
         ASGIApp,
         BeforeMessageSendHookHandler,
         BeforeRequestHookHandler,
@@ -125,7 +130,7 @@ class HandlerIndex(TypedDict):
     identifier: str
     """Unique identifier of the handler.
 
-    Either equal to :attr`__name__ <obj.__name__>` attribute or ``__str__`` value of the handler.
+    Either equal to ``__name__`` attribute or ``__str__`` value of the handler.
     """
 
 
@@ -141,7 +146,6 @@ class Litestar(Router):
         "_lifespan_managers",
         "_openapi_schema",
         "_server_lifespan_managers",
-        "_static_files_config",
         "after_exception",
         "allowed_hosts",
         "asgi_handler",
@@ -162,7 +166,9 @@ class Litestar(Router):
         "pdb_on_exception",
         "plugins",
         "response_cache_config",
+        "route_handler_method_map",
         "route_map",
+        "routes",
         "state",
         "stores",
         "template_engine",
@@ -213,7 +219,6 @@ class Litestar(Router):
         signature_namespace: Mapping[str, Any] | None = None,
         signature_types: Sequence[Any] | None = None,
         state: State | None = None,
-        static_files_config: Sequence[StaticFilesConfig] | None = None,
         stores: StoreRegistry | dict[str, Store] | None = None,
         tags: Sequence[str] | None = None,
         template_config: TemplateConfigType | None = None,
@@ -307,7 +312,6 @@ class Litestar(Router):
             signature_types: A sequence of types for use in forward reference resolution during signature modeling.
                 These types will be added to the signature namespace using their ``__name__`` attribute.
             state: An optional :class:`State <.datastructures.State>` for application state.
-            static_files_config: A sequence of :class:`StaticFilesConfig <.static_files.StaticFilesConfig>`
             stores: Central registry of :class:`Store <.stores.base.Store>` that will be available throughout the
                 application. If this is a dictionary to it will be passed to a
                 :class:`StoreRegistry <.stores.registry.StoreRegistry>`. If it is a
@@ -376,7 +380,6 @@ class Litestar(Router):
             signature_namespace=dict(signature_namespace or {}),
             signature_types=list(signature_types or []),
             state=state or State(),
-            static_files_config=list(static_files_config or []),
             stores=stores,
             tags=list(tags or []),
             template_config=template_config,
@@ -419,7 +422,6 @@ class Litestar(Router):
 
         self.get_logger: GetLogger = get_logger_placeholder
         self.logger: Logger | None = None
-        self.routes: list[HTTPRoute | ASGIRoute | WebSocketRoute] = []
 
         self.after_exception = [ensure_async_callable(h) for h in config.after_exception]
         self.allowed_hosts = cast("AllowedHostsConfig | None", config.allowed_hosts)
@@ -436,7 +438,6 @@ class Litestar(Router):
         self.request_class: type[Request] = config.request_class or Request
         self.response_cache_config = config.response_cache_config
         self.state = config.state
-        self._static_files_config = config.static_files_config
         self.template_engine = config.template_config.engine_instance if config.template_config else None
         self.websocket_class: type[WebSocket] = config.websocket_class or WebSocket
         self.debug = config.debug
@@ -474,8 +475,7 @@ class Litestar(Router):
             response_cookies=config.response_cookies,
             response_headers=config.response_headers,
             return_dto=config.return_dto,
-            # route handlers are registered below
-            route_handlers=[],
+            route_handlers=config.route_handlers,
             security=config.security,
             signature_namespace=config.signature_namespace,
             signature_types=config.signature_types,
@@ -488,15 +488,20 @@ class Litestar(Router):
 
         self.asgi_router = ASGIRouter(app=self)
 
-        for route_handler in config.route_handlers:
-            self.register(route_handler)
+        self.routes: list[HTTPRoute | ASGIRoute | WebSocketRoute] = self._build_routes(
+            self._reduce_handlers(self.route_handlers)
+        )
+        self.route_handler_method_map = self._create_route_handler_method_map(self.routes)
+
+        # we have merged everything registered initially, so let's ensure we don't keep
+        # unnecessary references to temporary objects around and let them be gc'ed
+        self.route_handlers = ()
+
+        self.asgi_router.construct_routing_trie()
 
         if self.logging_config:
             self.get_logger = self.logging_config.configure()
             self.logger = self.get_logger("litestar")
-
-        for static_config in self._static_files_config:
-            self.register(static_config.to_static_files_app())
 
         self.asgi_handler = self._create_asgi_handler()
 
@@ -516,11 +521,6 @@ class Litestar(Router):
         except ImportError:
             pass
         return config
-
-    @property
-    @deprecated(version="2.6.0", kind="property", info="Use create_static_files router instead")
-    def static_files_config(self) -> list[StaticFilesConfig]:
-        return self._static_files_config
 
     @property
     @deprecated(version="2.0", alternative="Litestar.plugins.cli", kind="property")
@@ -677,35 +677,181 @@ class Litestar(Router):
         """
         return cls(**dict(extract_dataclass_items(config)))
 
-    def register(self, value: ControllerRouterHandler) -> None:  # type: ignore[override]
-        """Register a route handler on the app.
-
-        This method can be used to dynamically add endpoints to an application.
-
-        Args:
-            value: An instance of :class:`Router <.router.Router>`, a subclass of
-                :class:`Controller <.controller.Controller>` or any function decorated by the route handler decorators.
+    @staticmethod
+    def _create_route_handler_method_map(
+        routes: Sequence[HTTPRoute | ASGIRoute | WebSocketRoute],
+    ) -> dict[str, RouteHandlerMapItem]:
+        """Map route paths to :class:`~litestar.types.internal_types.RouteHandlerMapItem`
 
         Returns:
-            None
+             A dictionary mapping paths to route handlers
         """
-        routes = super().register(value=value)
-
+        route_map: defaultdict[str, RouteHandlerMapItem] = defaultdict(dict)
         for route in routes:
-            route_handlers = get_route_handlers(route)
+            if isinstance(route, HTTPRoute):
+                route_map[route.path] = route.route_handler_map  # type: ignore[assignment]
+            else:
+                route_map[route.path]["websocket" if isinstance(route, WebSocketRoute) else "asgi"] = (
+                    route.route_handler
+                )
+
+        return route_map
+
+    def _build_routes(self, route_handlers: Iterable[BaseRouteHandler]) -> list[HTTPRoute | ASGIRoute | WebSocketRoute]:
+        """Create routes for all the handlers"""
+        routes: list[HTTPRoute | ASGIRoute | WebSocketRoute] = []
+
+        # since http routes can have multiple handlers (the case when one path handles
+        # multiple methods - we do the last mile of the routing outside the trie and on
+        # the route itself), we first group them by path and then create one route for
+        # each path
+        http_path_groups: dict[str, list[HTTPRouteHandler]] = collections.defaultdict(list)
+
+        for handler in route_handlers:
+            if isinstance(handler, HTTPRouteHandler):
+                for path in handler.paths:
+                    http_path_groups[path].append(handler)
+            elif isinstance(handler, WebsocketRouteHandler):
+                for path in handler.paths:
+                    routes.append(WebSocketRoute(path=path, route_handler=handler))
+            elif isinstance(handler, ASGIRouteHandler):
+                for path in handler.paths:
+                    routes.append(ASGIRoute(path=path, route_handler=handler))
+
+        for path, http_handlers in http_path_groups.items():
+            routes.append(
+                HTTPRoute(path=path, route_handlers=_maybe_add_options_handler(path, http_handlers, root=self))
+            )
+
+        for finalized_route in routes:
+            route_handlers = get_route_handlers(finalized_route)
 
             for route_handler in route_handlers:
-                route_handler.on_registration(self)
-
-            if isinstance(route, HTTPRoute):
-                route.create_handler_map()
-
-            elif isinstance(route, WebSocketRoute):
-                handler = route.route_handler
-                route.handler_parameter_model = handler.create_kwargs_model(path_parameters=route.path_parameters)
+                route_handler.on_registration(route=finalized_route, app=self)
 
             for plugin in self.plugins.receive_route:
-                plugin.receive_route(route)
+                plugin.receive_route(finalized_route)
+
+        return routes
+
+    def _iter_handlers(
+        self, handlers: Iterable[ControllerRouterHandler], bases: list[Router]
+    ) -> Generator[tuple[BaseRouteHandler, list[Router]], None, None]:
+        """Recursively iterate over 'handlers', returning tuples of all sub-handlers
+        (i.e. handlers included in a Router / Controller) and their preceding layers.
+
+        handlers = [
+            Router(
+                path="/one",
+                route_handlers=[
+                    Router(path="/two", route_handlers=[handler_one]),
+                    handler_two,
+                ],
+            )
+        ]
+
+        would return:
+
+        [
+            (handler_one, [<router path="/two">, <router path="/one">]),
+            (handler_two, [<router path="/one">]),
+        ]
+
+        """
+        for handler in handlers:
+            handler = self._validate_registration_value(handler)
+            if isinstance(handler, Router):
+                yield from self._iter_handlers(handler.route_handlers, bases=[handler, *bases])
+            else:
+                yield handler, bases
+
+    def _reduce_handlers(self, handlers: Iterable[ControllerRouterHandler]) -> Generator[BaseRouteHandler, None, None]:
+        """Reduce possibly nested 'handlers' by recursively iterating over them and their
+        sub-handlers (e.g. handlers inside a router), and merging all the options of all
+        the layers above into one new handler. This allows us to eliminate all the
+        intermediate layers and keep the configuration only on the handlers.
+
+        Using path merging as an example:
+
+        .. code-block:: python
+
+            @get("/handler-one")
+            async def handler_one() -> None:
+                pass
+
+
+            @get("/handler-two")
+            async def handler_two() -> None:
+                pass
+
+
+            router = Router(
+                path="/router-one",
+                route_handlers=[
+                    handler_one,
+                    Router(path="/router-two", route_handlers=[handler_two]),
+                ],
+            )
+
+        would be the equivalent of writing:
+
+        .. code-block:: python
+
+           @get("/router-one/handler-one")
+            async def handler_one() -> None:
+                pass
+
+            @get("/router-one/router-two/handler-two")
+            async def handler_two() -> None:
+                pass
+        """
+        for handler, bases in self._iter_handlers(handlers, bases=[self]):
+            yield handler.merge(*bases)
+
+    def _validate_registration_value(self, value: ControllerRouterHandler) -> RouteHandlerType | Router:
+        """Ensure values passed to the register method are supported."""
+        from litestar.controller import Controller
+        from litestar.handlers import ASGIRouteHandler, WebsocketListener
+
+        if is_class_and_subclass(value, Controller):
+            return value().as_router()
+
+        # this narrows down to an ABC, but we assume a non-abstract subclass of the ABC superclass
+        if is_class_and_subclass(value, WebsocketListener):
+            return value().to_handler()  # pyright: ignore
+
+        if isinstance(value, Router):
+            if value is self:
+                raise ImproperlyConfiguredException("Cannot register a router on itself")
+
+            return value
+
+        if isinstance(value, (ASGIRouteHandler, HTTPRouteHandler, WebsocketRouteHandler)):
+            return value
+
+        raise ImproperlyConfiguredException(
+            "Unsupported value passed to `Router.register`. "
+            "If you passed in a function or method, "
+            "make sure to decorate it first with one of the routing decorators"
+        )
+
+    def register(self, value: ControllerRouterHandler) -> None:
+        warnings.warn(
+            "Registering routes after the application instance has been "
+            "created is discouraged, as it might lead to unexpected behaviour "
+            "and is a costly operation. To register routes dynamically, a "
+            "plugin should be used where routes can be added to the "
+            "application via 'AppConfig' 'route_handlers' property",
+            category=LitestarWarning,
+            stacklevel=2,
+        )
+        self.routes = []
+        self.routes = self._build_routes(
+            itertools.chain(
+                self._reduce_handlers([value]), (h for route in self.routes for h in get_route_handlers(route))
+            )
+        )
+        self.route_handler_method_map = self._create_route_handler_method_map(self.routes)
 
         self.asgi_router.construct_routing_trie()
 
@@ -812,61 +958,6 @@ class Litestar(Router):
 
         return join_paths(output)
 
-    @deprecated(
-        "2.6.0", info="Use create_static_files router instead of StaticFilesConfig, which works with route_reverse"
-    )
-    def url_for_static_asset(self, name: str, file_path: str) -> str:
-        """Receives a static files handler name, an asset file path and returns resolved url path to the asset.
-
-        Examples:
-            .. code-block:: python
-
-                from litestar import Litestar
-                from litestar.static_files.config import StaticFilesConfig
-
-                app = Litestar(
-                    static_files_config=[
-                        StaticFilesConfig(directories=["css"], path="/static/css", name="css")
-                    ]
-                )
-
-                path = app.url_for_static_asset("css", "main.css")
-
-                # /static/css/main.css
-
-        Args:
-            name: A static handler unique name.
-            file_path: a string containing path to an asset.
-
-        Raises:
-            NoRouteMatchFoundException: If static files handler with ``name`` does not exist.
-
-        Returns:
-            A url path to the asset.
-        """
-
-        handler_index = self.get_handler_index_by_name(name)
-        if handler_index is None:
-            raise NoRouteMatchFoundException(f"Static handler {name} can not be found")
-
-        handler_fn = cast("AnyCallable", handler_index["handler"].fn)
-        if not isinstance(handler_fn, StaticFiles):
-            raise NoRouteMatchFoundException(f"Handler with name {name} is not a static files handler")
-
-        return join_paths([handler_index["paths"][0], file_path])
-
-    @property
-    def route_handler_method_view(self) -> dict[str, list[str]]:
-        """Map route handlers to paths.
-
-        Returns:
-            A dictionary of router handlers and lists of paths as strings
-        """
-        route_map: dict[str, list[str]] = {
-            handler: [route.path for route in routes] for handler, routes in self.asgi_router.route_mapping.items()
-        }
-        return route_map
-
     def _create_asgi_handler(self) -> ASGIApp:
         """Create an ASGIApp that wraps the ASGI router inside an exception handler.
 
@@ -925,3 +1016,14 @@ class Litestar(Router):
             None
         """
         self.event_emitter.emit(event_id, *args, **kwargs)
+
+
+def _maybe_add_options_handler(
+    path: str, http_handlers: list[HTTPRouteHandler], root: Router
+) -> list[HTTPRouteHandler]:
+    handler_methods = {method for handler in http_handlers for method in handler.http_methods}
+    if "OPTIONS" not in handler_methods:
+        options_handler = create_options_handler(path=path, allow_methods={*handler_methods, "OPTIONS"})  # pyright: ignore
+        options_handler = options_handler.merge(root)
+        return [*http_handlers, options_handler]
+    return http_handlers

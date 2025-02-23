@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any
 
 import msgspec
 import yaml
@@ -12,6 +12,8 @@ from litestar.handlers import get
 from litestar.serialization import encode_json, get_serializer
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from litestar.config.csrf import CSRFConfig
     from litestar.connection import Request
     from litestar.router import Router
@@ -73,7 +75,7 @@ class OpenAPIRenderPlugin(ABC):
         Returns:
             The rendered JSON.
         """
-        return encode_json(openapi_schema, serializer=get_serializer(request.route_handler.resolve_type_encoders()))
+        return encode_json(openapi_schema, serializer=get_serializer(request.route_handler.type_encoders))
 
     @abstractmethod
     def render(self, request: Request, openapi_schema: dict[str, Any]) -> bytes:
@@ -186,7 +188,7 @@ class YamlRenderPlugin(OpenAPIRenderPlugin):
         # UNSET value (possible if the examples are being generated for a partial DTO model which makes
         # every type a union with UNSET) are stripped out.
         openapi_schema = msgspec.to_builtins(
-            openapi_schema, enc_hook=get_serializer(request.route_handler.resolve_type_encoders())
+            openapi_schema, enc_hook=get_serializer(request.route_handler.type_encoders)
         )
         return yaml.dump(openapi_schema, default_flow_style=False).encode("utf-8")
 

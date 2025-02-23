@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, Union
 from warnings import catch_warnings
 
 import pytest
@@ -125,7 +125,7 @@ def test_exclude_by_pattern_list() -> None:
 
 
 @pytest.mark.parametrize("excludes", ["/", ["/", "/foo"], "/*", "/.*"])
-def test_exclude_by_pattern_warns_if_exclude_all(excludes: Union[str, List[str]]) -> None:
+def test_exclude_by_pattern_warns_if_exclude_all(excludes: Union[str, list[str]]) -> None:
     class SubclassMiddleware(AbstractMiddleware):
         exclude = excludes
 

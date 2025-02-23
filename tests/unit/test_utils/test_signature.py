@@ -6,16 +6,15 @@ import inspect
 import warnings
 from inspect import Parameter
 from types import ModuleType
-from typing import Any, Callable, Generic, List, Optional, TypeVar, Union
+from typing import Annotated, Any, Callable, Generic, Optional, TypeVar, Union, get_type_hints
 
 import pytest
-from typing_extensions import Annotated, NotRequired, Required, TypedDict, get_args, get_type_hints
+from typing_extensions import NotRequired, Required, TypedDict, get_args
 
-from litestar import Controller, Router, post
+from litestar import Controller, post
 from litestar.exceptions import ImproperlyConfiguredException
 from litestar.exceptions.base_exceptions import LitestarWarning
-from litestar.file_system import BaseLocalFileSystem
-from litestar.static_files import StaticFiles
+from litestar.response.base import ASGIResponse
 from litestar.types.asgi_types import Receive, Scope, Send
 from litestar.types.builtin_types import NoneType
 from litestar.types.empty import Empty
@@ -30,8 +29,8 @@ class ConcreteT: ...
 
 
 def test_get_fn_type_hints_asgi_app() -> None:
-    app = StaticFiles(is_html_mode=False, directories=[], file_system=BaseLocalFileSystem())
-    assert get_fn_type_hints(app) == {"scope": Scope, "receive": Receive, "send": Send, "return": NoneType}
+    app = ASGIResponse()
+    assert get_fn_type_hints(app.__call__) == {"scope": Scope, "receive": Receive, "send": Send, "return": NoneType}
 
 
 def func(a: int, b: str, c: float) -> None: ...
@@ -87,11 +86,11 @@ def fn(plain: {hint} = None, annotated: Annotated[{hint}, ...] = None) -> None: 
 
 class _TD(TypedDict):
     req_int: Required[int]
-    req_list_int: Required[List[int]]
+    req_list_int: Required[list[int]]
     not_req_int: NotRequired[int]
-    not_req_list_int: NotRequired[List[int]]
+    not_req_list_int: NotRequired[list[int]]
     ann_req_int: Required[Annotated[int, "foo"]]
-    ann_req_list_int: Required[Annotated[List[int], "foo"]]
+    ann_req_list_int: Required[Annotated[list[int], "foo"]]
 
 
 test_type_hints = get_type_hints(_TD, include_extras=True)
@@ -141,13 +140,13 @@ def test_field_definition_from_parameter_annotation_property() -> None:
 def test_parsed_signature() -> None:
     """Test ParsedSignature."""
 
-    def fn(foo: int, bar: Optional[List[int]] = None) -> None: ...
+    def fn(foo: int, bar: Optional[list[int]] = None) -> None: ...
 
     parsed_sig = ParsedSignature.from_fn(fn, get_fn_type_hints(fn))
     assert parsed_sig.return_type.annotation is NoneType
     assert parsed_sig.parameters["foo"].annotation is int
-    assert parsed_sig.parameters["bar"].args == (List[int], NoneType)
-    assert parsed_sig.parameters["bar"].annotation == Union[List[int], NoneType]
+    assert parsed_sig.parameters["bar"].args == (list[int], NoneType)
+    assert parsed_sig.parameters["bar"].annotation == Union[list[int], NoneType]
     assert parsed_sig.parameters["bar"].default is None
     assert parsed_sig.original_signature == inspect.signature(fn)
 
@@ -206,8 +205,8 @@ class GenericController(Controller, Generic[T]):
         cls_dict = {"model_class": model_class}
         return type(f"GenericController[{model_class.__name__}", (cls,), cls_dict)
 
-    def __init__(self, owner: Router) -> None:
-        super().__init__(owner)
+    def __init__(self) -> None:
+        super().__init__()
         self.signature_namespace[T] = self.model_class  # type: ignore[misc]
 
 
@@ -229,8 +228,8 @@ def test_using_generics_in_controller_annotations(annotation_type: type, expecte
     class ConcreteController(BaseController[annotation_type]):  # type: ignore[valid-type]
         path = "/"
 
-    controller_object = ConcreteController(owner=None)  # type: ignore[arg-type]
+    controller_object = ConcreteController()
 
-    signature = controller_object.get_route_handlers()[0].parsed_fn_signature
+    signature = (controller_object.get_route_handlers()[0]).merge(controller_object.as_router()).parsed_fn_signature
     actual = {"data": signature.parameters["data"].annotation, "return": signature.return_type.annotation}
     assert actual == expected

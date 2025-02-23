@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import wraps
 from inspect import Parameter, Signature
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict
+from typing import TYPE_CHECKING, Any, Callable
 
 from msgspec.json import Encoder as JsonEncoder
 
@@ -13,6 +13,8 @@ from litestar.utils import ensure_async_callable
 from litestar.utils.helpers import unwrap_partial
 
 if TYPE_CHECKING:
+    from collections.abc import Coroutine
+
     from litestar import WebSocket
     from litestar.handlers.websocket_handlers.listener import WebsocketListenerRouteHandler
     from litestar.types import AnyCallable
@@ -20,7 +22,7 @@ if TYPE_CHECKING:
 
 
 def create_handle_receive(listener: WebsocketListenerRouteHandler) -> Callable[[WebSocket], Coroutine[Any, None, None]]:
-    if data_dto := listener.resolve_data_dto():
+    if data_dto := listener.data_dto:
 
         async def handle_receive(socket: WebSocket) -> Any:
             received_data = await socket.receive_data(mode=listener._receive_mode)
@@ -44,7 +46,7 @@ def create_handle_receive(listener: WebsocketListenerRouteHandler) -> Callable[[
 
         async def handle_receive(socket: WebSocket) -> Any:
             received_data = await socket.receive_data(mode=listener._receive_mode)
-            return decode_json(value=received_data, type_decoders=socket.route_handler.resolve_type_decoders())
+            return decode_json(value=received_data, type_decoders=socket.route_handler.type_decoders)
 
     return handle_receive
 
@@ -54,7 +56,7 @@ def create_handle_send(
 ) -> Callable[[WebSocket, Any], Coroutine[None, None, None]]:
     json_encoder = JsonEncoder(enc_hook=listener.default_serializer)
 
-    if return_dto := listener.resolve_return_dto():
+    if return_dto := listener.return_dto:
 
         async def handle_send(socket: WebSocket, data: Any) -> None:
             encoded_data = return_dto(socket).data_to_encodable_type(data)
@@ -78,7 +80,7 @@ def create_handle_send(
 
 
 class ListenerHandler:
-    __slots__ = ("_can_send_data", "_fn", "_listener", "_pass_socket")
+    __slots__ = ("_can_send_data", "_fn", "_listener", "_pass_socket", "_wrapped_fn")
 
     def __init__(
         self,
@@ -88,6 +90,7 @@ class ListenerHandler:
         namespace: dict[str, Any],
     ) -> None:
         self._can_send_data = not parsed_signature.return_type.is_subclass_of(NoneType)
+        self._wrapped_fn = fn
         self._fn = ensure_async_callable(fn)
         self._listener = listener
         self._pass_socket = "socket" in parsed_signature.parameters
@@ -96,7 +99,7 @@ class ListenerHandler:
         self,
         *args: Any,
         socket: WebSocket,
-        connection_lifespan_dependencies: Dict[str, Any],  # noqa: UP006
+        connection_lifespan_dependencies: dict[str, Any],
         **kwargs: Any,
     ) -> None:
         lifespan_mananger = self._listener._connection_lifespan or self._listener.default_connection_lifespan
@@ -148,7 +151,7 @@ def create_stub_dependency(src: AnyCallable) -> Provide:
     src = unwrap_partial(src)
 
     @wraps(src)
-    async def stub(**kwargs: Any) -> Dict[str, Any]:  # noqa: UP006
+    async def stub(**kwargs: Any) -> dict[str, Any]:
         return kwargs
 
     return Provide(stub)

@@ -1,5 +1,6 @@
+from collections.abc import AsyncGenerator, Sequence
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator, Dict, List, Optional, Sequence
+from typing import Any, Optional
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, NoResultFound
@@ -11,8 +12,8 @@ from litestar.datastructures import State
 from litestar.exceptions import ClientException, NotFoundException
 from litestar.status_codes import HTTP_409_CONFLICT
 
-TodoType = Dict[str, Any]
-TodoCollectionType = List[TodoType]
+TodoType = dict[str, Any]
+TodoCollectionType = list[TodoType]
 
 
 class Base(DeclarativeBase): ...

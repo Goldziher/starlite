@@ -13,7 +13,7 @@ from importlib.util import find_spec
 from itertools import chain
 from os import getenv
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Generator, Iterable, Sequence, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Callable, TypeVar, cast
 
 try:
     from rich_click import RichCommand as Command
@@ -21,10 +21,12 @@ try:
 except ImportError:
     from click import Command, Group  # type: ignore[assignment]
 
+from typing import get_type_hints
+
 from click import ClickException, Context, pass_context
 from rich import get_console
 from rich.table import Table
-from typing_extensions import ParamSpec, get_type_hints
+from typing_extensions import ParamSpec
 
 from litestar import Litestar, __version__
 from litestar.middleware import DefineMiddleware
@@ -37,6 +39,7 @@ else:
 
 
 if TYPE_CHECKING:
+    from collections.abc import Generator, Iterable, Sequence
     from types import ModuleType
 
     from litestar.openapi import OpenAPIConfig
@@ -392,11 +395,7 @@ def show_app_info(app: Litestar) -> None:  # pragma: no cover
 
     openapi_enabled = _format_is_enabled(app.openapi_config)
     if app.openapi_config:
-        path = (
-            app.openapi_config.openapi_controller.path
-            if app.openapi_config.openapi_controller
-            else app.openapi_config.path or "/schema"
-        )
+        path = app.openapi_config.get_path()
         openapi_enabled += f" path=[yellow]{path}"
     table.add_row("OpenAPI", openapi_enabled)
 
@@ -404,15 +403,6 @@ def show_app_info(app: Litestar) -> None:  # pragma: no cover
 
     if app.template_engine:
         table.add_row("Template engine", type(app.template_engine).__name__)
-
-    if app.static_files_config:
-        static_files_configs = app.static_files_config
-        static_files_info = [
-            f"path=[yellow]{static_files.path}[/] dirs=[yellow]{', '.join(map(str, static_files.directories))}[/] "
-            f"html_mode={_format_is_enabled(static_files.html_mode)}"
-            for static_files in static_files_configs
-        ]
-        table.add_row("Static files", "\n".join(static_files_info))
 
     middlewares = []
     for middleware in app.middleware:
@@ -566,11 +556,7 @@ def remove_routes_with_patterns(
 def remove_default_schema_routes(
     routes: list[HTTPRoute | ASGIRoute | WebSocketRoute], openapi_config: OpenAPIConfig
 ) -> list[HTTPRoute | ASGIRoute | WebSocketRoute]:
-    schema_path = (
-        (openapi_config.path or "/schema")
-        if openapi_config.openapi_controller is None
-        else openapi_config.openapi_controller.path
-    )
+    schema_path = openapi_config.path if openapi_config.openapi_router is None else openapi_config.openapi_router.path
     return remove_routes_with_patterns(routes, (schema_path,))
 
 

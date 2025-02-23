@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from http import HTTPStatus
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Callable, Dict, TypedDict, TypeVar
+from typing import Any, Callable, TypedDict, TypeVar
 from unittest.mock import MagicMock
 
 import pytest
@@ -73,8 +73,8 @@ def test_create_responses(
 ) -> None:
     for route in Litestar(route_handlers=[person_controller]).routes:
         assert isinstance(route, HTTPRoute)
-        for route_handler, _ in route.route_handler_map.values():
-            if route_handler.resolve_include_in_schema():
+        for route_handler in route.route_handler_map.values():
+            if route_handler.include_in_schema:
                 responses = create_factory(route_handler).create_responses(True)
                 assert responses
                 assert str(route_handler.status_code) in responses
@@ -517,16 +517,17 @@ def test_response_generation_with_dto(create_factory: CreateFactoryFixture) -> N
     mock_dto.create_openapi_schema.return_value = Schema()
 
     @post(path="/form-upload", return_dto=mock_dto)  # pyright: ignore
-    async def handler(data: Dict[str, Any]) -> Dict[str, Any]:
+    async def handler(data: dict[str, Any]) -> dict[str, Any]:
         return data
 
-    Litestar(route_handlers=[handler])
+    app = Litestar(route_handlers=[handler])
+    resolved_handler = app.route_handler_method_map["/form-upload"]["POST"]
 
-    factory = create_factory(handler)
-    field_definition = FieldDefinition.from_annotation(Dict[str, Any])
+    factory = create_factory(resolved_handler)
+    field_definition = FieldDefinition.from_annotation(dict[str, Any])
     factory.create_success_response()
     mock_dto.create_openapi_schema.assert_called_once_with(
-        field_definition=field_definition, handler_id=handler.handler_id, schema_creator=factory.schema_creator
+        field_definition=field_definition, handler_id=resolved_handler.handler_id, schema_creator=factory.schema_creator
     )
 
 

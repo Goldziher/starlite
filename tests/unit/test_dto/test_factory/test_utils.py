@@ -1,4 +1,4 @@
-from typing import Generic, List, Optional, TypeVar
+from typing import Generic, Optional, TypeVar
 
 from litestar.dto import DataclassDTO
 from litestar.typing import FieldDefinition
@@ -18,7 +18,7 @@ def test_resolve_generic_wrapper_type_no_origin() -> None:
 
 
 def test_resolve_generic_wrapper_type_origin_no_parameters() -> None:
-    field_definition = FieldDefinition.from_annotation(List[int])
+    field_definition = FieldDefinition.from_annotation(list[int])
     assert DataclassDTO[DataclassPerson].resolve_generic_wrapper_type(field_definition) is None
 
 

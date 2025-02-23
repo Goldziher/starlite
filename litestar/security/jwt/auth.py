@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, Literal, Sequence, cast
+from typing import TYPE_CHECKING, Any, Callable, Generic, Literal, cast
 
 from typing_extensions import TypeVar
 
@@ -20,6 +20,8 @@ __all__ = ("BaseJWTAuth", "JWTAuth", "JWTCookieAuth", "OAuth2Login", "OAuth2Pass
 
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
+
     from litestar import Response
     from litestar.connection import ASGIConnection
     from litestar.di import Provide

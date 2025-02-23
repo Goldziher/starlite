@@ -37,7 +37,7 @@ def get_name(value: object) -> str:
     if name is not None:
         return cast("str", name)
 
-    # On Python 3.8 and 3.9, Foo[int] does not have the __name__ attribute.
+    # On Python 3.9, Foo[int] does not have the __name__ attribute.
     if origin := get_origin_or_inner_type(value):
         return cast("str", origin.__name__)
 

@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import itertools
 from dataclasses import replace
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 from unittest.mock import ANY
 
 import pytest
 from msgspec import Meta, Struct, field
-from typing_extensions import Annotated
 
 from litestar import Litestar, post
 from litestar.dto import DTOField, Mark, MsgspecDTO, dto_field

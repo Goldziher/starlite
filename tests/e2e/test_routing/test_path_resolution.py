@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Type
+from typing import Any, Callable, Optional
 
 import httpx
 import pytest
@@ -75,29 +75,27 @@ def test_path_parsing_with_ambiguous_paths() -> None:
 
 
 @pytest.mark.parametrize(
-    "decorator, test_path, decorator_path, delete_handler",
+    "test_path, decorator_path, delete_handler",
     [
-        (get, "", "/something", None),
-        (get, "/", "/something", None),
-        (get, "", "/", None),
-        (get, "/", "/", None),
-        (get, "", "", None),
-        (get, "/", "", None),
-        (get, "", "/something", root_delete_handler),
-        (get, "/", "/something", root_delete_handler),
-        (get, "", "/", root_delete_handler),
-        (get, "/", "/", root_delete_handler),
-        (get, "", "", root_delete_handler),
-        (get, "/", "", root_delete_handler),
+        ("", "/something", None),
+        ("/", "/something", None),
+        ("", "/", None),
+        ("/", "/", None),
+        ("", "", None),
+        ("/", "", None),
+        ("", "/something", root_delete_handler),
+        ("/", "/something", root_delete_handler),
+        ("", "/", root_delete_handler),
+        ("/", "/", root_delete_handler),
+        ("", "", root_delete_handler),
+        ("/", "", root_delete_handler),
     ],
 )
-def test_root_route_handler(
-    decorator: Type[get], test_path: str, decorator_path: str, delete_handler: Optional[Callable]
-) -> None:
+def test_root_route_handler(test_path: str, decorator_path: str, delete_handler: Optional[Callable]) -> None:
     class MyController(Controller):
         path = test_path
 
-        @decorator(path=decorator_path)
+        @get(path=decorator_path)
         def test_method(self) -> str:
             return "hello"
 
@@ -207,7 +205,7 @@ def test_no_404_where_list_route_has_handlers_and_child_route_has_path_param() -
 
     # the error condition requires the path to not be a plain route, hence the prefixed path parameters
     @get("/{a:str}/b")
-    def get_list() -> List[str]:
+    def get_list() -> list[str]:
         return ["ok"]
 
     @get("/{a:str}/b/{c:int}")
@@ -309,7 +307,7 @@ def test_base_path_param_resolution_2() -> None:
 @pytest.mark.xdist_group("live_server_test")
 @pytest.mark.server_integration
 def test_server_root_path_handling(
-    tmp_path: Path, monkeypatch: MonkeyPatch, server_command: List[str], run_server: Callable[[str, List[str]], None]
+    tmp_path: Path, monkeypatch: MonkeyPatch, server_command: list[str], run_server: Callable[[str, list[str]], None]
 ) -> None:
     # https://github.com/litestar-org/litestar/issues/2998
     app = """
@@ -339,7 +337,7 @@ app = Litestar(route_handlers=[handler])
 @pytest.mark.xdist_group("live_server_test")
 @pytest.mark.server_integration
 def test_server_root_path_handling_empty_path(
-    tmp_path: Path, monkeypatch: MonkeyPatch, server_command: List[str], run_server: Callable[[str, List[str]], None]
+    tmp_path: Path, monkeypatch: MonkeyPatch, server_command: list[str], run_server: Callable[[str, list[str]], None]
 ) -> None:
     # https://github.com/litestar-org/litestar/issues/3041
     app = """
@@ -350,7 +348,7 @@ from litestar.handlers import get
 from typing import Optional
 
 @get(path=["/", "/{path:path}"])
-async def pathfinder(path: Optional[Path]) -> str:
+async def pathfinder(path: Optional[Path] = None) -> str:
     return str(path)
 
 app = Litestar(route_handlers=[pathfinder], debug=True)
@@ -373,7 +371,7 @@ app = Litestar(route_handlers=[pathfinder], debug=True)
 @pytest.mark.xdist_group("live_server_test")
 @pytest.mark.server_integration
 def test_no_path_traversal_from_static_directory(
-    tmp_path: Path, monkeypatch: MonkeyPatch, server_command: List[str], run_server: Callable[[str, List[str]], None]
+    tmp_path: Path, monkeypatch: MonkeyPatch, server_command: list[str], run_server: Callable[[str, list[str]], None]
 ) -> None:
     import http.client
 

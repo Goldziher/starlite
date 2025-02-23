@@ -1,6 +1,6 @@
 import time
 from pathlib import Path
-from typing import Callable, List
+from typing import Callable
 
 import httpx
 import psutil
@@ -10,8 +10,8 @@ from _pytest.monkeypatch import MonkeyPatch
 
 
 @pytest.fixture()
-def run_server(tmp_path: Path, request: FixtureRequest, monkeypatch: MonkeyPatch) -> Callable[[str, List[str]], None]:
-    def runner(app: str, server_command: List[str]) -> None:
+def run_server(tmp_path: Path, request: FixtureRequest, monkeypatch: MonkeyPatch) -> Callable[[str, list[str]], None]:
+    def runner(app: str, server_command: list[str]) -> None:
         tmp_path.joinpath("app.py").write_text(app)
         monkeypatch.chdir(tmp_path)
 

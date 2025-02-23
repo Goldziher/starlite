@@ -1,9 +1,8 @@
 from collections import defaultdict
-from typing import Dict
 
 from litestar import Litestar, Request, get
 
-COUNTER: Dict[str, int] = defaultdict(int)
+COUNTER: dict[str, int] = defaultdict(int)
 
 
 async def after_response(request: Request) -> None:
@@ -11,7 +10,7 @@ async def after_response(request: Request) -> None:
 
 
 @get("/hello")
-async def hello() -> Dict[str, int]:
+async def hello() -> dict[str, int]:
     return COUNTER
 
 

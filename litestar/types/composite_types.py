@@ -4,14 +4,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Dict,
-    Iterator,
     Literal,
-    Mapping,
-    MutableMapping,
-    Sequence,
-    Tuple,
-    Type,
     Union,
 )
 
@@ -29,6 +22,7 @@ __all__ = (
 
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator, Mapping, MutableMapping, Sequence
     from os import PathLike
     from pathlib import Path
 
@@ -45,8 +39,8 @@ if TYPE_CHECKING:
     from .callable_types import AnyCallable, ExceptionHandler
 
 Dependencies: TypeAlias = "Mapping[str, Union[Provide, AnyCallable]]"
-ExceptionHandlersMap: TypeAlias = "MutableMapping[Union[int, Type[Exception]], ExceptionHandler]"
-Middleware: TypeAlias = "Union[Callable[..., ASGIApp], DefineMiddleware, Iterator[Tuple[ASGIApp, Dict[str, Any]]], Type[MiddlewareProtocol]]"
+ExceptionHandlersMap: TypeAlias = "MutableMapping[Union[int, type[Exception]], ExceptionHandler]"
+Middleware: TypeAlias = "Union[Callable[..., ASGIApp], DefineMiddleware, Iterator[tuple[ASGIApp, dict[str, Any]]], type[MiddlewareProtocol]]"
 ParametersMap: TypeAlias = "Mapping[str, ParameterKwarg]"
 PathType: TypeAlias = "Union[Path, PathLike, str]"
 ResponseCookies: TypeAlias = "Union[Sequence[Cookie], Mapping[str, str]]"

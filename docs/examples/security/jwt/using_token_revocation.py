@@ -1,5 +1,5 @@
 from os import environ
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
@@ -19,8 +19,8 @@ class User(BaseModel):
     email: EmailStr
 
 
-MOCK_DB: Dict[str, User] = {}
-BLOCKLIST: Dict[str, str] = {}
+MOCK_DB: dict[str, User] = {}
+BLOCKLIST: dict[str, str] = {}
 
 
 # JWTAuth requires a retrieve handler callable that receives the JWT token model and the ASGI connection
@@ -67,7 +67,7 @@ async def login_handler(data: User) -> Response[User]:
 
 # Also we can create a logout
 @post("/logout")
-async def logout_handler(request: Request["User", Token, Any]) -> Dict[str, str]:
+async def logout_handler(request: Request["User", Token, Any]) -> dict[str, str]:
     # Your custom logic here
     # For example
     jti = request.auth.jti

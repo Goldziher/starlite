@@ -3,17 +3,17 @@ from __future__ import annotations
 import dataclasses
 from dataclasses import dataclass
 from types import ModuleType
-from typing import Callable, Generic, Optional, TypeVar, cast
+from typing import Annotated, Callable, Generic, Optional, TypeVar, cast
 
 import msgspec
 import pytest
 import yaml
-from typing_extensions import Annotated
 
-from litestar import Controller, Litestar, Router, delete, get, patch, post
+from litestar import Controller, Litestar, delete, get, patch, post
 from litestar._openapi.plugin import OpenAPIPlugin
 from litestar.enums import MediaType, OpenAPIMediaType, ParamType
-from litestar.openapi import OpenAPIConfig, OpenAPIController
+from litestar.openapi import OpenAPIConfig
+from litestar.openapi.plugins import YamlRenderPlugin
 from litestar.openapi.spec import Parameter as OpenAPIParameter
 from litestar.params import Parameter
 from litestar.serialization.msgspec_hooks import decode_json, encode_json, get_serializer
@@ -34,10 +34,9 @@ def test_openapi(
     pet_controller: type[Controller],
     create_examples: bool,
     schema_path: str,
-    openapi_controller: type[OpenAPIController] | None,
 ) -> None:
     openapi_config = OpenAPIConfig(
-        "Example API", "1.0.0", create_examples=create_examples, openapi_controller=openapi_controller
+        "Example API", "1.0.0", create_examples=create_examples, render_plugins=[YamlRenderPlugin()]
     )
     with create_test_client([person_controller, pet_controller], openapi_config=openapi_config) as client:
         assert client.app.openapi_schema
@@ -53,14 +52,9 @@ def test_openapi(
 
 
 def test_openapi_json(
-    person_controller: type[Controller],
-    pet_controller: type[Controller],
-    create_examples: bool,
-    openapi_controller: type[OpenAPIController] | None,
+    person_controller: type[Controller], pet_controller: type[Controller], create_examples: bool
 ) -> None:
-    openapi_config = OpenAPIConfig(
-        "Example API", "1.0.0", create_examples=create_examples, openapi_controller=openapi_controller
-    )
+    openapi_config = OpenAPIConfig("Example API", "1.0.0", create_examples=create_examples)
     with create_test_client([person_controller, pet_controller], openapi_config=openapi_config) as client:
         assert client.app.openapi_schema
         openapi_schema = client.app.openapi_schema
@@ -77,38 +71,16 @@ def test_openapi_json(
     "endpoint, schema_path", [("openapi.yaml", "/schema/openapi.yaml"), ("openapi.yml", "/schema/openapi.yml")]
 )
 def test_openapi_yaml_not_allowed(
-    endpoint: str,
-    schema_path: str,
-    person_controller: type[Controller],
-    pet_controller: type[Controller],
-    openapi_controller: type[OpenAPIController] | None,
+    endpoint: str, schema_path: str, person_controller: type[Controller], pet_controller: type[Controller]
 ) -> None:
-    openapi_config = OpenAPIConfig(
-        "Example API", "1.0.0", enabled_endpoints=set(), openapi_controller=openapi_controller
-    )
+    openapi_config = OpenAPIConfig("Example API", "1.0.0")
+    assert not any(isinstance(plugin, YamlRenderPlugin) for plugin in openapi_config.render_plugins)
 
     with create_test_client([person_controller, pet_controller], openapi_config=openapi_config) as client:
         assert client.app.openapi_schema
         openapi_schema = client.app.openapi_schema
         assert openapi_schema.paths
         response = client.get(schema_path)
-        assert response.status_code == HTTP_404_NOT_FOUND
-
-
-def test_openapi_json_not_allowed(person_controller: type[Controller], pet_controller: type[Controller]) -> None:
-    # only tested with the OpenAPIController, b/c new router based approach always serves `openapi.json`.
-    openapi_config = OpenAPIConfig(
-        "Example API",
-        "1.0.0",
-        enabled_endpoints=set(),
-        openapi_controller=OpenAPIController,
-    )
-
-    with create_test_client([person_controller, pet_controller], openapi_config=openapi_config) as client:
-        assert client.app.openapi_schema
-        openapi_schema = client.app.openapi_schema
-        assert openapi_schema.paths
-        response = client.get("/schema/openapi.json")
         assert response.status_code == HTTP_404_NOT_FOUND
 
 
@@ -120,7 +92,7 @@ def test_openapi_json_not_allowed(person_controller: type[Controller], pet_contr
     ],
 )
 def test_openapi_controller_internal_schema_conversion(schema_paths: list[str]) -> None:
-    openapi_config = OpenAPIConfig("Example API", "1.0.0", openapi_controller=OpenAPIController)
+    openapi_config = OpenAPIConfig("Example API", "1.0.0", render_plugins=(YamlRenderPlugin(),))
 
     with create_test_client([], openapi_config=openapi_config) as client:
         for schema_path in schema_paths:
@@ -129,10 +101,8 @@ def test_openapi_controller_internal_schema_conversion(schema_paths: list[str]) 
             assert "Example API" in response.text
 
 
-def test_openapi_custom_path(openapi_controller: type[OpenAPIController] | None) -> None:
-    openapi_config = OpenAPIConfig(
-        title="my title", version="1.0.0", path="/custom_schema_path", openapi_controller=openapi_controller
-    )
+def test_openapi_custom_path() -> None:
+    openapi_config = OpenAPIConfig(title="my title", version="1.0.0", path="/custom_schema_path")
     with create_test_client([], openapi_config=openapi_config) as client:
         response = client.get("/schema")
         assert response.status_code == HTTP_404_NOT_FOUND
@@ -144,10 +114,8 @@ def test_openapi_custom_path(openapi_controller: type[OpenAPIController] | None)
         assert response.status_code == HTTP_200_OK
 
 
-def test_openapi_normalizes_custom_path(openapi_controller: type[OpenAPIController] | None) -> None:
-    openapi_config = OpenAPIConfig(
-        title="my title", version="1.0.0", path="custom_schema_path", openapi_controller=openapi_controller
-    )
+def test_openapi_normalizes_custom_path() -> None:
+    openapi_config = OpenAPIConfig(title="my title", version="1.0.0", path="custom_schema_path")
     with create_test_client([], openapi_config=openapi_config) as client:
         response = client.get("/custom_schema_path/openapi.json")
         assert response.status_code == HTTP_200_OK
@@ -156,41 +124,7 @@ def test_openapi_normalizes_custom_path(openapi_controller: type[OpenAPIControll
         assert response.status_code == HTTP_200_OK
 
 
-def test_openapi_custom_path_avoids_override() -> None:
-    class CustomOpenAPIController(OpenAPIController):
-        path = "/custom_docs"
-
-    openapi_config = OpenAPIConfig(title="my title", version="1.0.0", openapi_controller=CustomOpenAPIController)
-    with create_test_client([], openapi_config=openapi_config) as client:
-        response = client.get("/schema")
-        assert response.status_code == HTTP_404_NOT_FOUND
-
-        response = client.get("/custom_docs/openapi.json")
-        assert response.status_code == HTTP_200_OK
-
-        response = client.get("/custom_docs/openapi.json")
-        assert response.status_code == HTTP_200_OK
-
-
-def test_openapi_custom_path_overrides_custom_controller_path() -> None:
-    class CustomOpenAPIController(OpenAPIController):
-        path = "/custom_docs"
-
-    openapi_config = OpenAPIConfig(
-        title="my title", version="1.0.0", openapi_controller=CustomOpenAPIController, path="/override_docs_path"
-    )
-    with create_test_client([], openapi_config=openapi_config) as client:
-        response = client.get("/custom_docs")
-        assert response.status_code == HTTP_404_NOT_FOUND
-
-        response = client.get("/override_docs_path/openapi.json")
-        assert response.status_code == HTTP_200_OK
-
-        response = client.get("/override_docs_path/openapi.json")
-        assert response.status_code == HTTP_200_OK
-
-
-def test_msgspec_schema_generation(create_examples: bool, openapi_controller: type[OpenAPIController] | None) -> None:
+def test_msgspec_schema_generation(create_examples: bool) -> None:
     class Lookup(msgspec.Struct):
         id: Annotated[
             str,
@@ -208,12 +142,7 @@ def test_msgspec_schema_generation(create_examples: bool, openapi_controller: ty
 
     with create_test_client(
         route_handlers=[example_route],
-        openapi_config=OpenAPIConfig(
-            title="Example API",
-            version="1.0.0",
-            create_examples=create_examples,
-            openapi_controller=openapi_controller,
-        ),
+        openapi_config=OpenAPIConfig(title="Example API", version="1.0.0", create_examples=create_examples),
         signature_types=[Lookup],
     ) as client:
         response = client.get("/schema/openapi.json")
@@ -268,19 +197,14 @@ def test_struct_field_default() -> None:
     assert schema.properties["field_c"].default is None  # type: ignore[union-attr, index]
 
 
-def test_schema_for_optional_path_parameter(openapi_controller: type[OpenAPIController] | None) -> None:
+def test_schema_for_optional_path_parameter() -> None:
     @get(path=["/", "/{test_message:str}"], media_type=MediaType.TEXT, sync_to_thread=False)
     def handler(test_message: Optional[str]) -> str:  # noqa: UP007
         return test_message or "no message"
 
     with create_test_client(
         route_handlers=[handler],
-        openapi_config=OpenAPIConfig(
-            title="Example API",
-            version="1.0.0",
-            create_examples=True,
-            openapi_controller=openapi_controller,
-        ),
+        openapi_config=OpenAPIConfig(title="Example API", version="1.0.0", create_examples=True),
     ) as client:
         response = client.get("/schema/openapi.json")
         assert response.status_code == HTTP_200_OK
@@ -299,7 +223,7 @@ class Foo(Generic[T]):
     foo: T
 
 
-def test_with_generic_class(openapi_controller: type[OpenAPIController] | None) -> None:
+def test_with_generic_class() -> None:
     @get("/foo-str", sync_to_thread=False)
     def handler_foo_str() -> Foo[str]:
         return Foo("")
@@ -310,11 +234,7 @@ def test_with_generic_class(openapi_controller: type[OpenAPIController] | None) 
 
     with create_test_client(
         route_handlers=[handler_foo_str, handler_foo_int],
-        openapi_config=OpenAPIConfig(
-            title="Example API",
-            version="1.0.0",
-            openapi_controller=openapi_controller,
-        ),
+        openapi_config=OpenAPIConfig(title="Example API", version="1.0.0"),
     ) as client:
         response = client.get("/schema/openapi.json")
         assert response.status_code == HTTP_200_OK
@@ -520,40 +440,3 @@ def test_components_schemas_in_alphabetical_order() -> None:
         "test_components_schemas_in_alphabetical_order.C",
     ]
     assert list(openapi.components.schemas.keys()) == expected_keys
-
-
-def test_openapi_controller_and_openapi_router_on_same_app() -> None:
-    """Test that OpenAPIController and OpenAPIRouter can coexist on the same app.
-
-    As part of backward compatibility with new plugin-based OpenAPI router approach, we did not consider
-    the case where an OpenAPIController is registered on the application by means other than via the
-    OpenAPIConfig object. This is an approach that has been used to serve the openapi both under the
-    `/schema` and `/some-prefix/schema` paths. This test ensures that the OpenAPIController and OpenAPIRouter
-    can coexist on the same app.
-
-    See: https://github.com/litestar-org/litestar/issues/3337
-    """
-    router = Router(path="/abc", route_handlers=[OpenAPIController])
-    openapi_config = OpenAPIConfig("Litestar", "v0.0.1")  # no openapi_controller specified means we use the router
-    app = Litestar([router], openapi_config=openapi_config)
-    assert sorted(r.path for r in app.routes) == [
-        "/abc/schema",
-        "/abc/schema/elements",
-        "/abc/schema/oauth2-redirect.html",
-        "/abc/schema/openapi.json",
-        "/abc/schema/openapi.yaml",
-        "/abc/schema/openapi.yml",
-        "/abc/schema/rapidoc",
-        "/abc/schema/redoc",
-        "/abc/schema/swagger",
-        "/schema",
-        "/schema/elements",
-        "/schema/oauth2-redirect.html",
-        "/schema/openapi.json",
-        "/schema/openapi.yaml",
-        "/schema/openapi.yml",
-        "/schema/rapidoc",
-        "/schema/redoc",
-        "/schema/swagger",
-        "/schema/{path:str}",
-    ]

@@ -6,7 +6,7 @@ import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from dataclasses import fields
-from typing import TYPE_CHECKING, Any, Callable, List, Tuple
+from typing import TYPE_CHECKING, Any, Callable
 from unittest.mock import MagicMock, Mock, PropertyMock
 
 import pytest
@@ -14,7 +14,6 @@ from click import Group
 from pytest import MonkeyPatch
 
 from litestar import Litestar, MediaType, Request, Response, get
-from litestar._asgi.asgi_router import ASGIRouter
 from litestar.config.app import AppConfig, ExperimentalFeatures
 from litestar.config.response_cache import ResponseCacheConfig
 from litestar.contrib.sqlalchemy.plugins import SQLAlchemySerializationPlugin
@@ -28,13 +27,10 @@ from litestar.exceptions import (
 )
 from litestar.logging.config import LoggingConfig
 from litestar.plugins import CLIPluginProtocol
-from litestar.router import Router
 from litestar.status_codes import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
 from litestar.testing import TestClient, create_test_client
 
 if TYPE_CHECKING:
-    from typing import Dict
-
     from litestar.types import Message, Scope
 
 
@@ -74,7 +70,6 @@ def app_config_object() -> AppConfig:
         response_headers=[],
         route_handlers=[],
         security=[],
-        static_files_config=[],
         tags=[],
         template_config=None,
         websocket_class=None,
@@ -163,7 +158,7 @@ def test_app_config_object_used(app_config_object: AppConfig, monkeypatch: pytes
 
     # replace each field on the `AppConfig` object with a `PropertyMock`, this allows us to assert that the properties
     # have been accessed during app instantiation.
-    property_mocks: List[Tuple[str, Mock]] = []
+    property_mocks: list[tuple[str, Mock]] = []
     for field in fields(AppConfig):
         property_mock = PropertyMock()
         property_mocks.append((field.name, property_mock))
@@ -172,8 +167,6 @@ def test_app_config_object_used(app_config_object: AppConfig, monkeypatch: pytes
     # Things that we don't actually need to call for this test
     monkeypatch.setattr(Litestar, "register", MagicMock())
     monkeypatch.setattr(Litestar, "_create_asgi_handler", MagicMock())
-    monkeypatch.setattr(Router, "__init__", MagicMock())
-    monkeypatch.setattr(ASGIRouter, "__init__", MagicMock(return_value=None))
 
     # instantiates the app with an `on_app_config` that returns our patched `AppConfig` object.
     Litestar(on_app_init=[MagicMock(return_value=app_config_object)])
@@ -237,7 +230,7 @@ def test_app_from_config(app_config_object: AppConfig) -> None:
 
 def test_before_send() -> None:
     @get("/test")
-    def handler() -> Dict[str, str]:
+    def handler() -> dict[str, str]:
         return {"key": "value"}
 
     async def before_send_hook_handler(message: Message, scope: Scope) -> None:

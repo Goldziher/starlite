@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Type
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
@@ -15,16 +15,15 @@ from litestar import (
     websocket,
 )
 from litestar.exceptions import ImproperlyConfiguredException
-from litestar.handlers.http_handlers import HTTPRouteHandler
-from litestar.static_files.config import StaticFilesConfig
+from litestar.types import HTTPHandlerDecorator
 
 if TYPE_CHECKING:
     from pathlib import Path
 
 
 @pytest.mark.parametrize("decorator", [get, post, patch, put, delete])
-def test_indexes_handlers(decorator: Type[HTTPRouteHandler]) -> None:
-    @decorator("/path-one/{param:str}", name="handler-name")  # type: ignore[call-arg]
+def test_indexes_handlers(decorator: HTTPHandlerDecorator) -> None:
+    @decorator("/path-one/{param:str}", name="handler-name")
     def handler() -> None:
         return None
 
@@ -58,19 +57,19 @@ def test_indexes_handlers(decorator: Type[HTTPRouteHandler]) -> None:
 
 
 @pytest.mark.parametrize("decorator", [get, post, patch, put, delete])
-def test_default_indexes_handlers(decorator: Type[HTTPRouteHandler]) -> None:
-    @decorator("/handler")  # type: ignore[call-arg]
+def test_default_indexes_handlers(decorator: HTTPHandlerDecorator) -> None:
+    @decorator("/handler")
     def handler() -> None:
         pass
 
-    @decorator("/named_handler", name="named_handler")  # type: ignore[call-arg]
+    @decorator("/named_handler", name="named_handler")
     def named_handler() -> None:
         pass
 
     class MyController(Controller):
         path = "/test"
 
-        @decorator()  # type: ignore[call-arg]
+        @decorator()
         def handler(self) -> None:
             pass
 
@@ -94,12 +93,12 @@ def test_default_indexes_handlers(decorator: Type[HTTPRouteHandler]) -> None:
 
 
 @pytest.mark.parametrize("decorator", [get, post, patch, put, delete])
-def test_indexes_handlers_with_multiple_paths(decorator: Type[HTTPRouteHandler]) -> None:
-    @decorator(["/path-one", "/path-one/{param:str}"], name="handler")  # type: ignore[call-arg]
+def test_indexes_handlers_with_multiple_paths(decorator: HTTPHandlerDecorator) -> None:
+    @decorator(["/path-one", "/path-one/{param:str}"], name="handler")
     def handler() -> None:
         return None
 
-    @decorator(["/path-two"], name="handler-two")  # type: ignore[call-arg]
+    @decorator(["/path-two"], name="handler-two")
     def handler_two() -> None:
         return None
 
@@ -130,9 +129,3 @@ def test_indexing_validation(tmp_path: "Path") -> None:
 
     with pytest.raises(ImproperlyConfiguredException):
         Litestar(route_handlers=[handler_one, handler_two])
-
-    with pytest.raises(ImproperlyConfiguredException):
-        Litestar(
-            route_handlers=[handler_one],
-            static_files_config=[StaticFilesConfig(path="/static", directories=[tmp_path], name="same-name")],
-        )

@@ -1,31 +1,18 @@
 from __future__ import annotations
 
-from collections import deque
+from collections import OrderedDict, defaultdict, deque
+from collections.abc import Hashable, Iterable, Mapping, MutableMapping, MutableSequence, Sequence
 from copy import copy
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from enum import Enum
 from ipaddress import IPv4Address, IPv4Interface, IPv4Network, IPv6Address, IPv6Interface, IPv6Network
 from pathlib import Path
+from re import Pattern
 from typing import (
     TYPE_CHECKING,
     Any,
-    DefaultDict,
-    Deque,
-    Dict,
-    FrozenSet,
-    Hashable,
-    Iterable,
-    List,
     Literal,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    OrderedDict,
-    Pattern,
-    Sequence,
-    Set,
-    Tuple,
     Union,
     cast,
 )
@@ -92,10 +79,10 @@ KWARG_DEFINITION_ATTRIBUTE_TO_OPENAPI_PROPERTY_MAP: dict[str, str] = {
 
 TYPE_MAP: dict[type[Any] | None | Any, Schema] = {
     Decimal: Schema(type=OpenAPIType.NUMBER),
-    DefaultDict: Schema(type=OpenAPIType.OBJECT),
-    Deque: Schema(type=OpenAPIType.ARRAY),
-    Dict: Schema(type=OpenAPIType.OBJECT),
-    FrozenSet: Schema(type=OpenAPIType.ARRAY),
+    defaultdict: Schema(type=OpenAPIType.OBJECT),
+    deque: Schema(type=OpenAPIType.ARRAY),
+    dict: Schema(type=OpenAPIType.OBJECT),
+    frozenset: Schema(type=OpenAPIType.ARRAY),
     IPv4Address: Schema(type=OpenAPIType.STRING, format=OpenAPIFormat.IPV4),
     IPv4Interface: Schema(type=OpenAPIType.STRING, format=OpenAPIFormat.IPV4),
     IPv4Network: Schema(type=OpenAPIType.STRING, format=OpenAPIFormat.IPV4),
@@ -103,7 +90,7 @@ TYPE_MAP: dict[type[Any] | None | Any, Schema] = {
     IPv6Interface: Schema(type=OpenAPIType.STRING, format=OpenAPIFormat.IPV6),
     IPv6Network: Schema(type=OpenAPIType.STRING, format=OpenAPIFormat.IPV6),
     Iterable: Schema(type=OpenAPIType.ARRAY),
-    List: Schema(type=OpenAPIType.ARRAY),
+    list: Schema(type=OpenAPIType.ARRAY),
     Mapping: Schema(type=OpenAPIType.OBJECT),
     MutableMapping: Schema(type=OpenAPIType.OBJECT),
     MutableSequence: Schema(type=OpenAPIType.ARRAY),
@@ -115,25 +102,19 @@ TYPE_MAP: dict[type[Any] | None | Any, Schema] = {
     SecretBytes: Schema(type=OpenAPIType.STRING),
     SecretString: Schema(type=OpenAPIType.STRING),
     Sequence: Schema(type=OpenAPIType.ARRAY),
-    Set: Schema(type=OpenAPIType.ARRAY),
-    Tuple: Schema(type=OpenAPIType.ARRAY),
+    set: Schema(type=OpenAPIType.ARRAY),
+    tuple: Schema(type=OpenAPIType.ARRAY),
     UUID: Schema(type=OpenAPIType.STRING, format=OpenAPIFormat.UUID),
     bool: Schema(type=OpenAPIType.BOOLEAN),
     bytearray: Schema(type=OpenAPIType.STRING),
     bytes: Schema(type=OpenAPIType.STRING),
     date: Schema(type=OpenAPIType.STRING, format=OpenAPIFormat.DATE),
     datetime: Schema(type=OpenAPIType.STRING, format=OpenAPIFormat.DATE_TIME),
-    deque: Schema(type=OpenAPIType.ARRAY),
-    dict: Schema(type=OpenAPIType.OBJECT),
     float: Schema(type=OpenAPIType.NUMBER),
-    frozenset: Schema(type=OpenAPIType.ARRAY),
     int: Schema(type=OpenAPIType.INTEGER),
-    list: Schema(type=OpenAPIType.ARRAY),
-    set: Schema(type=OpenAPIType.ARRAY),
     str: Schema(type=OpenAPIType.STRING),
     time: Schema(type=OpenAPIType.STRING, format=OpenAPIFormat.DURATION),
     timedelta: Schema(type=OpenAPIType.STRING, format=OpenAPIFormat.DURATION),
-    tuple: Schema(type=OpenAPIType.ARRAY),
 }
 
 

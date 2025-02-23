@@ -1,12 +1,11 @@
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Optional, Union
 
 import pytest
 
 from litestar import Controller, MediaType, delete, get, patch, post, put
 from litestar.datastructures import ResponseHeader, State
 from litestar.dto import DataclassDTO, DTOConfig, DTOData
-from litestar.openapi.controller import OpenAPIController
 from litestar.openapi.spec.example import Example
 from litestar.params import Parameter
 from tests.models import DataclassPerson, DataclassPersonFactory, DataclassPet
@@ -17,22 +16,22 @@ class PartialDataclassPersonDTO(DataclassDTO[DataclassPerson]):
     config = DTOConfig(partial=True)
 
 
-def create_person_controller() -> Type[Controller]:
+def create_person_controller() -> type[Controller]:
     class PersonController(Controller):
         path = "/{service_id:int}/person"
 
-        @get(sync_to_thread=False)
+        @get("/", sync_to_thread=False)
         def get_persons(
             self,
             # expected to be ignored
             headers: Any,
             request: Any,
             state: State,
-            query: Dict[str, Any],
-            cookies: Dict[str, Any],
+            query: dict[str, Any],
+            cookies: dict[str, Any],
             # required query parameters below
             page: int,
-            name: Optional[Union[str, List[str]]],  # intentionally without default
+            name: Optional[Union[str, list[str]]],  # intentionally without default
             service_id: int,
             page_size: int = Parameter(
                 query="pageSize",
@@ -44,7 +43,7 @@ def create_person_controller() -> Type[Controller]:
             # non-required query parameters below
             from_date: Optional[Union[int, datetime, date]] = None,
             to_date: Optional[Union[int, datetime, date]] = None,
-            gender: Optional[Union[Gender, List[Gender]]] = Parameter(
+            gender: Optional[Union[Gender, list[Gender]]] = Parameter(
                 examples=[Example(value=Gender.MALE), Example(value=[Gender.MALE, Gender.OTHER])]
             ),
             lucky_number: Optional[LuckyNumber] = Parameter(examples=[Example(value=LuckyNumber.SEVEN)]),
@@ -52,10 +51,10 @@ def create_person_controller() -> Type[Controller]:
             secret_header: str = Parameter(header="secret"),
             # cookie parameter
             cookie_value: int = Parameter(cookie="value"),
-        ) -> List[DataclassPerson]:
+        ) -> list[DataclassPerson]:
             return []
 
-        @post(media_type=MediaType.TEXT, sync_to_thread=False)
+        @post("/", media_type=MediaType.TEXT, sync_to_thread=False)
         def create_person(
             self, data: DataclassPerson, secret_header: str = Parameter(header="secret")
         ) -> DataclassPerson:
@@ -63,20 +62,20 @@ def create_person_controller() -> Type[Controller]:
 
         @post(path="/bulk", dto=PartialDataclassPersonDTO, sync_to_thread=False)
         def bulk_create_person(
-            self, data: DTOData[List[DataclassPerson]], secret_header: str = Parameter(header="secret")
-        ) -> List[DataclassPerson]:
+            self, data: DTOData[list[DataclassPerson]], secret_header: str = Parameter(header="secret")
+        ) -> list[DataclassPerson]:
             return []
 
         @put(path="/bulk", sync_to_thread=False)
         def bulk_update_person(
-            self, data: List[DataclassPerson], secret_header: str = Parameter(header="secret")
-        ) -> List[DataclassPerson]:
+            self, data: list[DataclassPerson], secret_header: str = Parameter(header="secret")
+        ) -> list[DataclassPerson]:
             return []
 
         @patch(path="/bulk", dto=PartialDataclassPersonDTO, sync_to_thread=False)
         def bulk_partial_update_person(
-            self, data: DTOData[List[DataclassPerson]], secret_header: str = Parameter(header="secret")
-        ) -> List[DataclassPerson]:
+            self, data: DTOData[list[DataclassPerson]], secret_header: str = Parameter(header="secret")
+        ) -> list[DataclassPerson]:
             return []
 
         @get(path="/{person_id:str}", sync_to_thread=False)
@@ -115,12 +114,12 @@ def create_person_controller() -> Type[Controller]:
     return PersonController
 
 
-def create_pet_controller() -> Type[Controller]:
+def create_pet_controller() -> type[Controller]:
     class PetController(Controller):
         path = "/pet"
 
         @get(sync_to_thread=False)
-        def pets(self) -> List[DataclassPet]:
+        def pets(self) -> list[DataclassPet]:
             return []
 
         @get(
@@ -129,24 +128,19 @@ def create_pet_controller() -> Type[Controller]:
             raises=[PetException],
             sync_to_thread=False,
         )
-        def get_pets_or_owners(self) -> List[Union[DataclassPerson, DataclassPet]]:
+        def get_pets_or_owners(self) -> list[Union[DataclassPerson, DataclassPet]]:
             return []
 
     return PetController
 
 
 @pytest.fixture
-def person_controller(disable_warn_implicit_sync_to_thread: None) -> Type[Controller]:
+def person_controller(disable_warn_implicit_sync_to_thread: None) -> type[Controller]:
     """Fixture without a top-level mark."""
     return create_person_controller()
 
 
 @pytest.fixture
-def pet_controller(disable_warn_implicit_sync_to_thread: None) -> Type[Controller]:
+def pet_controller(disable_warn_implicit_sync_to_thread: None) -> type[Controller]:
     """Fixture without a top-level mark."""
     return create_pet_controller()
-
-
-@pytest.fixture(params=[OpenAPIController, None])
-def openapi_controller(request: pytest.FixtureRequest) -> Optional[Type[OpenAPIController]]:
-    return request.param  # type: ignore[no-any-return]

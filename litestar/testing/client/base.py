@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from http.cookiejar import CookieJar
-from typing import TYPE_CHECKING, Any, Generator, Generic, Mapping, Sequence, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 from warnings import warn
 
 import httpx
@@ -21,6 +21,8 @@ from litestar.types import AnyIOBackend, ASGIApp, HTTPResponseStartEvent
 from litestar.utils.scope.state import ScopeState
 
 if TYPE_CHECKING:
+    from collections.abc import Generator, Mapping, Sequence
+
     from httpx._types import (
         CookieTypes,
         HeaderTypes,

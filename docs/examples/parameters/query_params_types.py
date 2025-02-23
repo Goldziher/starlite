@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
+from typing import Any
 
 from litestar import Litestar, get
 
 
 @get("/", sync_to_thread=False)
-def index(date: datetime, number: int, floating_number: float, strings: List[str]) -> Dict[str, Any]:
+def index(date: datetime, number: int, floating_number: float, strings: list[str]) -> dict[str, Any]:
     return {
         "datetime": date + timedelta(days=1),
         "int": number,

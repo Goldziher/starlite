@@ -1,9 +1,9 @@
+from collections.abc import Generator
 from logging import INFO
-from typing import TYPE_CHECKING, Any, Dict, Generator
+from typing import TYPE_CHECKING, Annotated, Any
 
 import pytest
 from structlog.testing import capture_logs
-from typing_extensions import Annotated
 
 from litestar import Response, get, post
 from litestar.config.compression import CompressionConfig
@@ -61,9 +61,10 @@ def test_logging_middleware_config_validation() -> None:
 def test_logging_middleware_regular_logger(
     get_logger: "GetLogger", caplog: "LogCaptureFixture", handler: HTTPRouteHandler
 ) -> None:
-    with create_test_client(
-        route_handlers=[handler], middleware=[LoggingMiddlewareConfig().middleware]
-    ) as client, caplog.at_level(INFO):
+    with (
+        create_test_client(route_handlers=[handler], middleware=[LoggingMiddlewareConfig().middleware]) as client,
+        caplog.at_level(INFO),
+    ):
         # Set cookies on the client to avoid warnings about per-request cookies.
         client.app.get_logger = get_logger
         client.cookies = {"request-cookie": "abc"}  # type: ignore[assignment]
@@ -81,11 +82,14 @@ def test_logging_middleware_regular_logger(
 
 
 def test_logging_middleware_struct_logger(handler: HTTPRouteHandler) -> None:
-    with create_test_client(
-        route_handlers=[handler],
-        middleware=[LoggingMiddlewareConfig().middleware],
-        logging_config=StructLoggingConfig(),
-    ) as client, capture_logs() as cap_logs:
+    with (
+        create_test_client(
+            route_handlers=[handler],
+            middleware=[LoggingMiddlewareConfig().middleware],
+            logging_config=StructLoggingConfig(),
+        ) as client,
+        capture_logs() as cap_logs,
+    ):
         # Set cookies on the client to avoid warnings about per-request cookies.
         client.cookies = {"request-cookie": "abc"}  # type: ignore[assignment]
         response = client.get("/", headers={"request-header": "1"})
@@ -129,9 +133,10 @@ def test_logging_middleware_exclude_pattern(
         return None
 
     config = LoggingMiddlewareConfig(exclude=["^/exclude"])
-    with create_test_client(
-        route_handlers=[handler, handler2], middleware=[config.middleware]
-    ) as client, caplog.at_level(INFO):
+    with (
+        create_test_client(route_handlers=[handler, handler2], middleware=[config.middleware]) as client,
+        caplog.at_level(INFO),
+    ):
         # Set cookies on the client to avoid warnings about per-request cookies.
         client.cookies = {"request-cookie": "abc"}  # type: ignore[assignment]
         client.app.get_logger = get_logger
@@ -153,9 +158,10 @@ def test_logging_middleware_exclude_opt_key(
         return None
 
     config = LoggingMiddlewareConfig(exclude_opt_key="skip_logging")
-    with create_test_client(
-        route_handlers=[handler, handler2], middleware=[config.middleware]
-    ) as client, caplog.at_level(INFO):
+    with (
+        create_test_client(route_handlers=[handler, handler2], middleware=[config.middleware]) as client,
+        caplog.at_level(INFO),
+    ):
         # Set cookies on the client to avoid warnings about per-request cookies.
         client.cookies = {"request-cookie": "abc"}  # type: ignore[assignment]
         client.app.get_logger = get_logger
@@ -173,11 +179,14 @@ def test_logging_middleware_exclude_opt_key(
 def test_logging_middleware_compressed_response_body(
     get_logger: "GetLogger", include: bool, caplog: "LogCaptureFixture", handler: HTTPRouteHandler
 ) -> None:
-    with create_test_client(
-        route_handlers=[handler],
-        compression_config=CompressionConfig(backend="gzip", minimum_size=1),
-        middleware=[LoggingMiddlewareConfig(include_compressed_body=include).middleware],
-    ) as client, caplog.at_level(INFO):
+    with (
+        create_test_client(
+            route_handlers=[handler],
+            compression_config=CompressionConfig(backend="gzip", minimum_size=1),
+            middleware=[LoggingMiddlewareConfig(include_compressed_body=include).middleware],
+        ) as client,
+        caplog.at_level(INFO),
+    ):
         # Set cookies on the client to avoid warnings about per-request cookies.
         client.cookies = {"request-cookie": "abc"}  # type: ignore[assignment]
         client.app.get_logger = get_logger
@@ -192,7 +201,7 @@ def test_logging_middleware_compressed_response_body(
 
 def test_logging_middleware_post_body() -> None:
     @post("/")
-    def post_handler(data: Dict[str, str]) -> Dict[str, str]:
+    def post_handler(data: dict[str, str]) -> dict[str, str]:
         return data
 
     with create_test_client(
@@ -229,16 +238,19 @@ def test_logging_messages_are_not_doubled(
     # https://github.com/litestar-org/litestar/issues/896
 
     @get("/")
-    async def hello_world_handler() -> Dict[str, str]:
+    async def hello_world_handler() -> dict[str, str]:
         return {"hello": "world"}
 
     logging_middleware_config = LoggingMiddlewareConfig(logger_name=logger_name)
 
-    with create_test_client(
-        hello_world_handler,
-        logging_config=LoggingConfig(),
-        middleware=[logging_middleware_config.middleware],
-    ) as client, caplog.at_level(INFO):
+    with (
+        create_test_client(
+            hello_world_handler,
+            logging_config=LoggingConfig(),
+            middleware=[logging_middleware_config.middleware],
+        ) as client,
+        caplog.at_level(INFO),
+    ):
         client.app.get_logger = get_logger
         response = client.get("/")
         assert response.status_code == HTTP_200_OK
@@ -248,12 +260,15 @@ def test_logging_messages_are_not_doubled(
 def test_logging_middleware_log_fields(
     get_logger: "GetLogger", caplog: "LogCaptureFixture", handler: HTTPRouteHandler
 ) -> None:
-    with create_test_client(
-        route_handlers=[handler],
-        middleware=[
-            LoggingMiddlewareConfig(response_log_fields=["status_code"], request_log_fields=["path"]).middleware
-        ],
-    ) as client, caplog.at_level(INFO):
+    with (
+        create_test_client(
+            route_handlers=[handler],
+            middleware=[
+                LoggingMiddlewareConfig(response_log_fields=["status_code"], request_log_fields=["path"]).middleware
+            ],
+        ) as client,
+        caplog.at_level(INFO),
+    ):
         # Set cookies on the client to avoid warnings about per-request cookies.
         client.app.get_logger = get_logger
         client.cookies = {"request-cookie": "abc"}  # type: ignore[assignment]
@@ -298,7 +313,7 @@ def test_logging_middleware_with_session_middleware(session_backend_config_memor
 def test_structlog_invalid_request_body_handled() -> None:
     # https://github.com/litestar-org/litestar/issues/3063
     @post("/")
-    async def hello_world(data: Dict[str, Any]) -> Dict[str, Any]:
+    async def hello_world(data: dict[str, Any]) -> dict[str, Any]:
         return data
 
     with create_test_client(

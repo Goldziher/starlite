@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from typing import (
     TYPE_CHECKING,
     Any,
-    Awaitable,
     Callable,
     Generic,
     Literal,
@@ -22,6 +21,8 @@ __all__ = ("BaseBackendConfig", "BaseSessionBackend", "SessionMiddleware")
 
 
 if TYPE_CHECKING:
+    from collections.abc import Awaitable
+
     from litestar.types import ASGIApp, Message, Receive, Scope, Scopes, ScopeSession, Send
 
 ONE_DAY_IN_SECONDS = 60 * 60 * 24

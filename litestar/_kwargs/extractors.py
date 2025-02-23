@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from functools import lru_cache, partial
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Mapping, NamedTuple, cast
+from typing import TYPE_CHECKING, Any, Callable, NamedTuple, cast
 
 from litestar._multipart import parse_multipart_form
 from litestar._parsers import (
@@ -21,6 +21,8 @@ from litestar.utils.predicates import is_non_string_sequence, is_optional_union
 from litestar.utils.scope.state import ScopeState
 
 if TYPE_CHECKING:
+    from collections.abc import Coroutine, Mapping
+
     from litestar._kwargs import KwargsModel
     from litestar._kwargs.parameter_definition import ParameterDefinition
     from litestar._kwargs.types import Extractor
@@ -343,7 +345,7 @@ async def _extract_multipart(
             stream=connection.stream(),
             boundary=connection.content_type[-1].get("boundary", "").encode(),
             multipart_form_part_limit=multipart_form_part_limit,
-            type_decoders=connection.route_handler.resolve_type_decoders(),
+            type_decoders=connection.route_handler.type_decoders,
         )
     else:
         form_values = scope_state.form

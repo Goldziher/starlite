@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from inspect import Traceback, isasyncgen
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, Generator
+from typing import TYPE_CHECKING, Any, Callable
 
 from anyio import create_task_group
 
@@ -12,6 +12,8 @@ __all__ = ("DependencyCleanupGroup",)
 
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator, Awaitable, Generator
+
     from litestar.types import AnyGenerator
 
 

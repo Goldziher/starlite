@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, TypedDict
+from typing import TYPE_CHECKING, Any, Optional, TypedDict
 
 import jwt
 import msgspec
@@ -11,6 +11,8 @@ import msgspec
 from litestar.exceptions import ImproperlyConfiguredException, NotAuthorizedException
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from typing_extensions import Self
 
 __all__ = (
@@ -61,7 +63,7 @@ class Token:
     """Audience - intended audience."""
     jti: Optional[str] = field(default=None)  # noqa: UP007
     """JWT ID - a unique identifier of the JWT between different issuers."""
-    extras: Dict[str, Any] = field(default_factory=dict)  # noqa: UP006
+    extras: dict[str, Any] = field(default_factory=dict)
     """Extra fields that were found on the JWT token."""
 
     def __post_init__(self) -> None:

@@ -2,9 +2,8 @@ from typing import Any
 
 import pytest
 
-from litestar import Controller, Litestar, WebSocket, get, post, websocket
+from litestar import Controller, Litestar, WebSocket, get, websocket
 from litestar.exceptions import ImproperlyConfiguredException
-from litestar.static_files import StaticFilesConfig
 from litestar.status_codes import HTTP_200_OK
 from litestar.testing import create_test_client
 
@@ -67,19 +66,3 @@ def test_controller_supports_websocket_and_http_handlers() -> None:
         with client.websocket_connect("/") as ws:
             ws_response = ws.receive_json()
             assert ws_response == {"hello": "world"}
-
-
-def test_validate_static_files_with_same_path_in_handler() -> None:
-    # make sure this works and does not lead to a recursion error
-    # https://github.com/litestar-org/litestar/issues/2629
-
-    @post("/uploads")
-    async def handler() -> None:
-        pass
-
-    Litestar(
-        [handler],
-        static_files_config=[
-            StaticFilesConfig(directories=["uploads"], path="/uploads"),
-        ],
-    )

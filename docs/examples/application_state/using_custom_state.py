@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from litestar import Litestar, get
 from litestar.datastructures import State
@@ -12,7 +12,7 @@ class MyState(State):
 
 
 @get("/", sync_to_thread=False)
-def handler(state: MyState) -> Dict[str, Any]:
+def handler(state: MyState) -> dict[str, Any]:
     state.increment()
     return state.dict()
 

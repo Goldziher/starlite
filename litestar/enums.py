@@ -28,7 +28,7 @@ class MediaType(str, Enum):
     """An Enum for ``Content-Type`` header values."""
 
     JSON = "application/json"
-    MESSAGEPACK = "application/x-msgpack"
+    MESSAGEPACK = "application/vnd.msgpack"
     HTML = "text/html"
     TEXT = "text/plain"
     CSS = "text/css"
@@ -46,7 +46,7 @@ class RequestEncodingType(str, Enum):
     """An Enum for request ``Content-Type`` header values designating encoding formats."""
 
     JSON = "application/json"
-    MESSAGEPACK = "application/x-msgpack"
+    MESSAGEPACK = "application/vnd.msgpack"
     MULTI_PART = "multipart/form-data"
     URL_ENCODED = "application/x-www-form-urlencoded"
 

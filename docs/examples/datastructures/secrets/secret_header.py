@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from secrets import compare_digest
-
-from typing_extensions import Annotated
+from typing import Annotated
 
 from litestar import get
 from litestar.datastructures.secret_values import SecretString

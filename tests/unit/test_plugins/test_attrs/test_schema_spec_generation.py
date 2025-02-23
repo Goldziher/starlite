@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Optional
 
 import attrs
 
@@ -14,8 +14,8 @@ def test_spec_generation() -> None:
         last_name: str
         id: str
         optional: Optional[str]
-        complex: Dict[str, List[Dict[str, str]]]
-        pets: Optional[List[DataclassPet]]
+        complex: dict[str, list[dict[str, str]]]
+        pets: Optional[list[DataclassPet]]
 
     @post("/")
     def handler(data: Person) -> Person:

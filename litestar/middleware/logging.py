@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Collection, Iterable
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Collection, Iterable
+from typing import TYPE_CHECKING, Any
 
 from litestar.constants import (
     HTTP_RESPONSE_BODY,

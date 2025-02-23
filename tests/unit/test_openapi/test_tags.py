@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Type
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
@@ -18,7 +18,7 @@ def handler() -> HTTPRouteHandler:
 
 
 @pytest.fixture()
-def controller() -> Type[Controller]:
+def controller() -> type[Controller]:
     class _Controller(Controller):
         path = "/controller"
         tags = ["controller"]
@@ -30,12 +30,12 @@ def controller() -> Type[Controller]:
 
 
 @pytest.fixture()
-def router(controller: Type[Controller]) -> Router:
+def router(controller: type[Controller]) -> Router:
     return Router(path="/router", route_handlers=[controller], tags=["router"])
 
 
 @pytest.fixture()
-def app(handler: HTTPRouteHandler, controller: Type[Controller], router: Router) -> Litestar:
+def app(handler: HTTPRouteHandler, controller: type[Controller], router: Router) -> Litestar:
     return Litestar(route_handlers=[handler, controller, router])
 
 

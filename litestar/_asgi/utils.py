@@ -21,7 +21,7 @@ def wrap_in_exception_handler(app: ASGIApp) -> ASGIApp:
     """
     from litestar.middleware._internal.exceptions import ExceptionHandlerMiddleware
 
-    return ExceptionHandlerMiddleware(app=app, debug=None)
+    return ExceptionHandlerMiddleware(app=app)
 
 
 def get_route_handlers(route: BaseRoute) -> list[RouteHandlerType]:

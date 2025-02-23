@@ -2,7 +2,7 @@ import os
 import secrets
 import time
 from base64 import b64decode, b64encode
-from typing import Any, Dict
+from typing import Any
 from unittest import mock
 
 import pytest
@@ -21,18 +21,18 @@ from litestar.middleware.session.client_side import (
 from litestar.serialization import encode_json
 from litestar.testing import RequestFactory, create_test_client
 from litestar.types.asgi_types import HTTPResponseStartEvent
-from tests.helpers import randbytes
+from tests.helpers import RANDOM
 
 
 @pytest.mark.parametrize(
     "secret, should_raise",
     [
-        [randbytes(16), False],
-        [randbytes(24), False],
-        [randbytes(32), False],
-        [randbytes(17), True],
-        [randbytes(4), True],
-        [randbytes(100), True],
+        [RANDOM.randbytes(16), False],
+        [RANDOM.randbytes(24), False],
+        [RANDOM.randbytes(32), False],
+        [RANDOM.randbytes(17), True],
+        [RANDOM.randbytes(4), True],
+        [RANDOM.randbytes(100), True],
         [b"", True],
     ],
 )
@@ -78,7 +78,7 @@ def test_max_age_validation(max_age: int, should_raise: bool) -> None:
         CookieBackendConfig(secret=os.urandom(16), key="a", max_age=max_age)
 
 
-def create_session(size: int = 16) -> Dict[str, str]:
+def create_session(size: int = 16) -> dict[str, str]:
     return {"key": secrets.token_hex(size)}
 
 
@@ -143,7 +143,7 @@ def test_session_cookie_name_matching(cookie_session_backend_config: "CookieBack
     session_data = {"foo": "bar"}
 
     @get("/")
-    def handler(request: Request) -> Dict[str, Any]:
+    def handler(request: Request) -> dict[str, Any]:
         return request.session
 
     @post("/")

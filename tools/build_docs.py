@@ -27,6 +27,7 @@ REDIRECT_TEMPLATE = """
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--version", required=False)
+parser.add_argument("--environment", required=False)
 parser.add_argument("output")
 
 
@@ -49,11 +50,14 @@ def load_version_spec() -> VersionSpec:
     return {"versions": [], "latest": ""}
 
 
-def build(output_dir: str, version: str | None) -> None:
+def build(output_dir: str, version: str | None, environment: str = "local") -> None:
     if version is None:
         version = importlib.metadata.version("litestar").rsplit(".")[0]
     else:
         os.environ["_LITESTAR_DOCS_BUILD_VERSION"] = version
+
+    if environment is not None:
+        os.environ["_LITESTAR_DOCS_BUILD_ENVIRONMENT"] = environment
 
     subprocess.run(["make", "docs"], check=True)  # noqa: S603 S607
 
@@ -83,7 +87,7 @@ def build(output_dir: str, version: str | None) -> None:
 
 def main() -> None:
     args = parser.parse_args()
-    build(output_dir=args.output, version=args.version)
+    build(output_dir=args.output, version=args.version, environment=args.environment)
 
 
 if __name__ == "__main__":

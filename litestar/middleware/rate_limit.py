@@ -15,7 +15,7 @@ __all__ = ("CacheObject", "RateLimitConfig", "RateLimitMiddleware")
 
 
 if TYPE_CHECKING:
-    from typing import Awaitable
+    from collections.abc import Awaitable
 
     from litestar import Litestar
     from litestar.connection import Request
@@ -128,9 +128,6 @@ class RateLimitMiddleware(AbstractMiddleware):
         route_handler = request.scope["route_handler"]
         if getattr(route_handler, "is_mount", False):
             identifier += "::mount"
-
-        if getattr(route_handler, "is_static", False):
-            identifier += "::static"
 
         return f"{type(self).__name__}::{identifier}"
 

@@ -14,7 +14,8 @@ from litestar.plugins.core._msgspec import kwarg_definition_from_field
 from litestar.types.empty import Empty
 
 if TYPE_CHECKING:
-    from typing import Any, Collection, Generator
+    from collections.abc import Collection, Generator
+    from typing import Any
 
     from litestar.typing import FieldDefinition
 

@@ -3,9 +3,10 @@ from __future__ import annotations
 import dataclasses
 import secrets
 import sys
+from collections.abc import Sequence
 from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
-from typing import Any, Sequence
+from typing import Any
 from uuid import uuid4
 
 import jwt

@@ -9,7 +9,6 @@ from litestar.contrib.jinja import JinjaTemplateEngine
 from litestar.contrib.mako import MakoTemplateEngine
 from litestar.contrib.minijinja import MiniJinjaTemplateEngine
 from litestar.response.template import Template
-from litestar.static_files.config import StaticFilesConfig
 from litestar.status_codes import HTTP_200_OK, HTTP_500_INTERNAL_SERVER_ERROR
 from litestar.template.config import TemplateConfig
 from litestar.testing import create_test_client
@@ -73,77 +72,6 @@ def test_jinja_url_for(tmp_path: Path) -> None:
 
         response = client.get("/")
         assert response.status_code == 500
-
-
-# TODO: use some other flaky test technique, probably re-running flaky tests?
-@pytest.mark.xfail(sys.platform == "win32", reason="For some reason this is flaky on windows", strict=False)
-def test_jinja_url_for_static_asset(tmp_path: Path) -> None:
-    template_config = TemplateConfig(engine=JinjaTemplateEngine, directory=tmp_path)
-
-    @get(path="/", name="tpl_renderer")
-    def tpl_renderer() -> Template:
-        return Template(template_name="tpl.html")
-
-    with create_test_client(
-        route_handlers=[tpl_renderer],
-        template_config=template_config,
-        static_files_config=[StaticFilesConfig(path="/static/css", directories=[tmp_path], name="css")],
-    ) as client:
-        Path(tmp_path / "tpl.html").write_text("{{ url_for_static_asset('css', 'main/main.css') }}")
-
-        response = client.get("/")
-        assert response.status_code == 200
-        assert response.text == "/static/css/main/main.css"
-
-    with create_test_client(
-        route_handlers=[tpl_renderer],
-        template_config=template_config,
-        static_files_config=[StaticFilesConfig(path="/static/css", directories=[tmp_path], name="css")],
-    ) as client:
-        Path(tmp_path / "tpl.html").write_text("{{ url_for_static_asset('non-existent', 'main.css') }}")
-
-        response = client.get("/")
-        assert response.status_code == 500
-
-    with create_test_client(
-        route_handlers=[tpl_renderer],
-        template_config=template_config,
-        static_files_config=[StaticFilesConfig(path="/static/css", directories=[tmp_path], name="css")],
-    ) as client:
-        Path(tmp_path / "tpl.html").write_text("{{ url_for_static_asset('tpl_renderer', 'main.css') }}")
-
-        response = client.get("/")
-        assert response.status_code == 500
-
-
-@pytest.mark.parametrize(
-    "builtin, expected_status, expected_text",
-    (
-        ("${url_for_static_asset('css', 'main/main.css')}", HTTP_200_OK, "/static/css/main/main.css"),
-        ("${url_for_static_asset('non-existent', 'main.css')}", HTTP_500_INTERNAL_SERVER_ERROR, None),
-        ("${url_for_static_asset('tpl_renderer', 'main.css')}", HTTP_500_INTERNAL_SERVER_ERROR, None),
-    ),
-)
-def test_mako_url_for_static_asset(
-    tmp_path: Path, builtin: str, expected_status: int, expected_text: Optional[str]
-) -> None:
-    template_config = TemplateConfig(engine=MakoTemplateEngine, directory=tmp_path)
-
-    @get(path="/", name="tpl_renderer")
-    def tpl_renderer() -> Template:
-        return Template(template_name="tpl.html")
-
-    with create_test_client(
-        route_handlers=[tpl_renderer],
-        template_config=template_config,
-        static_files_config=[StaticFilesConfig(path="/static/css", directories=[tmp_path], name="css")],
-    ) as client:
-        Path(tmp_path / "tpl.html").write_text(builtin)
-
-        response = client.get("/")
-        assert response.status_code == expected_status
-        if expected_text:
-            assert response.text == expected_text
 
 
 @pytest.mark.parametrize(
@@ -242,44 +170,4 @@ def test_minijinja_url_for(tmp_path: Path) -> None:
         Path(tmp_path / "non_existent.html").write_text("{{ url_for('non-existent-route') }}")
 
         response = client.get("/non_existent.html")
-        assert response.status_code == 500
-
-
-@pytest.mark.xfail(sys.platform == "win32", reason="For some reason this is flaky on windows", strict=False)
-def test_minijinja_url_for_static_asset(tmp_path: Path) -> None:
-    template_config = TemplateConfig(engine=MiniJinjaTemplateEngine, directory=tmp_path)
-
-    @get(path="/{path:path}", name="tpl_renderer")
-    def tpl_renderer(path: Path) -> Template:
-        return Template(template_name=path.name)
-
-    with create_test_client(
-        route_handlers=[tpl_renderer],
-        template_config=template_config,
-        static_files_config=[StaticFilesConfig(path="/static/css", directories=[tmp_path], name="css")],
-    ) as client:
-        Path(tmp_path / "working.html").write_text("{{ url_for_static_asset('css', 'main/main.css') }}")
-
-        response = client.get("/working.html")
-        assert response.status_code == 200
-        assert response.text == "&#x2f;static&#x2f;css&#x2f;main&#x2f;main.css"
-
-    with create_test_client(
-        route_handlers=[tpl_renderer],
-        template_config=template_config,
-        static_files_config=[StaticFilesConfig(path="/static/css", directories=[tmp_path], name="css")],
-    ) as client:
-        Path(tmp_path / "non_existent.html").write_text("{{ url_for_static_asset('non-existent', 'main.css') }}")
-
-        response = client.get("/non_existent.html")
-        assert response.status_code == 500
-
-    with create_test_client(
-        route_handlers=[tpl_renderer],
-        template_config=template_config,
-        static_files_config=[StaticFilesConfig(path="/static/css", directories=[tmp_path], name="css")],
-    ) as client:
-        Path(tmp_path / "self.html").write_text("{{ url_for_static_asset('tpl_renderer', 'main.css') }}")
-
-        response = client.get("/self.html")
         assert response.status_code == 500

@@ -1,5 +1,6 @@
+from collections.abc import AsyncGenerator, Generator
 from functools import partial
-from typing import Any, AsyncGenerator, Generator
+from typing import Any
 
 import pytest
 
@@ -165,3 +166,16 @@ def test_raises_when_dependency_is_not_callable() -> None:
 def test_raises_when_generator_dependency_is_cached(dep: Any) -> None:
     with pytest.raises(ImproperlyConfiguredException):
         Provide(dep, use_cache=True)
+
+
+def test_provide_raises_on_unsafe_signature_access() -> None:
+    async def foo() -> None:
+        pass
+
+    provide = Provide(foo)
+
+    with pytest.raises(ValueError):
+        provide.signature_model
+
+    with pytest.raises(ValueError):
+        provide.parsed_fn_signature

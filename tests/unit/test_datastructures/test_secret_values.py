@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from typing import Annotated
+
 import msgspec
 import pytest
-from typing_extensions import Annotated
 
 from litestar import Litestar, get, post
 from litestar.datastructures.secret_values import SecretBytes, SecretString

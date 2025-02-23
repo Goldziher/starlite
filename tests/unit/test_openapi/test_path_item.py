@@ -8,12 +8,11 @@ from unittest.mock import MagicMock
 import pytest
 from typing_extensions import TypeAlias
 
-from litestar import Controller, HttpMethod, Litestar, Request, Router, delete, get
+from litestar import Controller, HttpMethod, Litestar, Request, Router, delete, get, route
 from litestar._openapi.datastructures import OpenAPIContext
 from litestar._openapi.path_item import PathItemFactory, merge_path_item_operations
 from litestar._openapi.utils import default_operation_id_creator
 from litestar.exceptions import ImproperlyConfiguredException
-from litestar.handlers.http_handlers import HTTPRouteHandler
 from litestar.openapi.config import OpenAPIConfig
 from litestar.openapi.spec import Operation, PathItem
 from litestar.utils import find_index
@@ -23,7 +22,7 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture()
-def route(person_controller: type[Controller]) -> HTTPRoute:
+def http_route(person_controller: type[Controller]) -> HTTPRoute:
     app = Litestar(route_handlers=[person_controller], openapi_config=None)
     index = find_index(app.routes, lambda x: x.path_format == "/{service_id}/person/{person_id}")
     return cast("HTTPRoute", app.routes[index])
@@ -59,8 +58,8 @@ def create_factory() -> CreateFactoryFixture:
     return factory
 
 
-def test_create_path_item(route: HTTPRoute, create_factory: CreateFactoryFixture) -> None:
-    schema = create_factory(route).create_path_item()
+def test_create_path_item(http_route: HTTPRoute, create_factory: CreateFactoryFixture) -> None:
+    schema = create_factory(http_route).create_path_item()
     assert schema.delete
     assert schema.delete.operation_id == "ServiceIdPersonPersonIdDeletePerson"
     assert schema.delete.summary == "DeletePerson"
@@ -79,7 +78,7 @@ def test_unique_operation_ids_for_multiple_http_methods(create_factory: CreateFa
     class MultipleMethodsRouteController(Controller):
         path = "/"
 
-        @HTTPRouteHandler("/", http_method=["GET", "HEAD"])
+        @route("/", http_method=["GET", "HEAD"])
         async def root(self, *, request: Request[str, str, Any]) -> None:
             pass
 
@@ -100,7 +99,7 @@ def test_unique_operation_ids_for_multiple_http_methods_with_handler_level_opera
     class MultipleMethodsRouteController(Controller):
         path = "/"
 
-        @HTTPRouteHandler("/", http_method=["GET", "HEAD"], operation_id=default_operation_id_creator)
+        @route("/", http_method=["GET", "HEAD"], operation_id=default_operation_id_creator)
         async def root(self, *, request: Request[str, str, Any]) -> None:
             pass
 
@@ -128,8 +127,10 @@ def test_routes_with_different_paths_should_generate_unique_operation_ids(
     assert schema_v1.get.operation_id != schema_v2.get.operation_id
 
 
-def test_create_path_item_use_handler_docstring_false(route: HTTPRoute, create_factory: CreateFactoryFixture) -> None:
-    factory = create_factory(route)
+def test_create_path_item_use_handler_docstring_false(
+    http_route: HTTPRoute, create_factory: CreateFactoryFixture
+) -> None:
+    factory = create_factory(http_route)
     assert not factory.context.openapi_config.use_handler_docstrings
     schema = factory.create_path_item()
     assert schema.get
@@ -138,8 +139,10 @@ def test_create_path_item_use_handler_docstring_false(route: HTTPRoute, create_f
     assert schema.patch.description == "Description in decorator"
 
 
-def test_create_path_item_use_handler_docstring_true(route: HTTPRoute, create_factory: CreateFactoryFixture) -> None:
-    factory = create_factory(route)
+def test_create_path_item_use_handler_docstring_true(
+    http_route: HTTPRoute, create_factory: CreateFactoryFixture
+) -> None:
+    factory = create_factory(http_route)
     factory.context.openapi_config.use_handler_docstrings = True
     schema = factory.create_path_item()
     assert schema.get

@@ -7,7 +7,7 @@ import time
 from base64 import b64decode, b64encode
 from dataclasses import dataclass, field, fields
 from os import urandom
-from typing import TYPE_CHECKING, Any, Final, Literal, Mapping
+from typing import TYPE_CHECKING, Any, Final, Literal
 
 from litestar.datastructures import MutableScopeHeaders
 from litestar.datastructures.cookie import Cookie
@@ -32,6 +32,8 @@ except ImportError as e:
     raise MissingDependencyException("cryptography") from e
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from litestar.connection import ASGIConnection
     from litestar.types import Message, Scope, ScopeSession
 

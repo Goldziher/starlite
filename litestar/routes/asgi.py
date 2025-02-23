@@ -4,16 +4,16 @@ import warnings
 from typing import TYPE_CHECKING, Any
 
 from litestar.connection import ASGIConnection
-from litestar.enums import ScopeType
 from litestar.exceptions import LitestarWarning
 from litestar.routes.base import BaseRoute
+from litestar.types import Scope
 
 if TYPE_CHECKING:
     from litestar.handlers.asgi_handlers import ASGIRouteHandler
-    from litestar.types import Receive, Scope, Send
+    from litestar.types import Receive, Send
 
 
-class ASGIRoute(BaseRoute):
+class ASGIRoute(BaseRoute[Scope]):
     """An ASGI route, handling a single ``ASGIRouteHandler``"""
 
     __slots__ = ("route_handler",)
@@ -31,11 +31,7 @@ class ASGIRoute(BaseRoute):
             route_handler: An instance of :class:`~.handlers.ASGIRouteHandler`.
         """
         self.route_handler = route_handler
-        super().__init__(
-            path=path,
-            scope_type=ScopeType.ASGI,
-            handler_names=[route_handler.handler_name],
-        )
+        super().__init__(path=path)
 
     async def handle(self, scope: Scope, receive: Receive, send: Send) -> None:
         """ASGI app that authorizes the connection and then awaits the handler function.
@@ -49,18 +45,15 @@ class ASGIRoute(BaseRoute):
             None
         """
 
-        if self.route_handler.resolve_guards():
-            connection = ASGIConnection["ASGIRouteHandler", Any, Any, Any](scope=scope, receive=receive)
-            await self.route_handler.authorize_connection(connection=connection)
-
         handler_scope = scope.copy()
         copy_scope = self.route_handler.copy_scope
 
-        await self.route_handler.fn(
+        connection = ASGIConnection["ASGIRouteHandler", Any, Any, Any](
             scope=handler_scope if copy_scope is True else scope,
             receive=receive,
             send=send,
         )
+        await self.route_handler.handle(connection=connection)
 
         if copy_scope is None and handler_scope != scope:
             warnings.warn(

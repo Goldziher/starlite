@@ -325,21 +325,3 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
         url_path = litestar_instance.route_reverse(name, **path_parameters)
 
         return make_absolute_url(url_path, self.base_url)
-
-    def url_for_static_asset(self, name: str, file_path: str) -> str:
-        """Receives a static files handler name, an asset file path and returns resolved absolute url to the asset.
-
-        Args:
-            name: A static handler unique name.
-            file_path: a string containing path to an asset.
-
-        Raises:
-            NoRouteMatchFoundException: If static files handler with ``name`` does not exist.
-
-        Returns:
-            A string representing absolute url to the asset.
-        """
-        litestar_instance = self.scope["litestar_app"]
-        url_path = litestar_instance.url_for_static_asset(name, file_path)
-
-        return make_absolute_url(url_path, self.base_url)

@@ -1,5 +1,4 @@
 from os import urandom
-from typing import Dict
 
 from litestar import Litestar, Request, delete, get, post
 from litestar.middleware.session.client_side import CookieBackendConfig
@@ -10,7 +9,7 @@ session_config = CookieBackendConfig(secret=urandom(16))  # type: ignore[arg-typ
 
 
 @get("/session", sync_to_thread=False)
-def check_session_handler(request: Request) -> Dict[str, bool]:
+def check_session_handler(request: Request) -> dict[str, bool]:
     """Handler function that accesses request.session."""
     return {"has_session": request.session != {}}
 

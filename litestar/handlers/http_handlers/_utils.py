@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from functools import lru_cache
 from inspect import isawaitable
-from typing import TYPE_CHECKING, Any, Sequence, cast
+from typing import TYPE_CHECKING, Any, cast
 
+from litestar.datastructures import UploadFile
 from litestar.enums import HttpMethod
 from litestar.exceptions import ValidationException
 from litestar.response import Response
@@ -11,11 +12,13 @@ from litestar.status_codes import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CON
 from litestar.types.builtin_types import NoneType
 
 if TYPE_CHECKING:
-    from litestar.app import Litestar
+    from collections.abc import Sequence
+
     from litestar.background_tasks import BackgroundTask, BackgroundTasks
     from litestar.connection import Request
     from litestar.datastructures import Cookie, ResponseHeader
     from litestar.types import AfterRequestHookHandler, ASGIApp, AsyncAnyCallable, Method, TypeEncodersMap
+    from litestar.types.asgi_types import HttpMethodName
     from litestar.typing import FieldDefinition
 
 __all__ = (
@@ -59,7 +62,6 @@ def create_data_handler(
     async def handler(
         data: Any,
         request: Request[Any, Any, Any],
-        app: Litestar,
         **kwargs: Any,
     ) -> ASGIApp:
         if isawaitable(data):
@@ -76,7 +78,7 @@ def create_data_handler(
         if after_request:
             response = await after_request(response)  # type: ignore[arg-type,misc]
 
-        return response.to_asgi_response(app=None, request=request, headers=normalize_headers(headers), cookies=cookies)  # pyright: ignore
+        return response.to_asgi_response(request=request, headers=normalize_headers(headers), cookies=cookies)  # pyright: ignore
 
     return handler
 
@@ -144,13 +146,11 @@ def create_response_handler(
 
     async def handler(
         data: Response,
-        app: Litestar,
         request: Request,
         **kwargs: Any,  # kwargs is for return dto
     ) -> ASGIApp:
         response = await after_request(data) if after_request else data  # type:ignore[arg-type,misc]
         return response.to_asgi_response(  # type: ignore[no-any-return]
-            app=None,
             background=background,
             cookies=cookie_list,
             headers=normalized_headers,
@@ -163,7 +163,7 @@ def create_response_handler(
     return handler
 
 
-def normalize_http_method(http_methods: HttpMethod | Method | Sequence[HttpMethod | Method]) -> set[Method]:
+def normalize_http_method(http_methods: Method | Sequence[Method]) -> set[HttpMethodName]:
     """Normalize HTTP method(s) into a set of upper-case method names.
 
     Args:
@@ -183,10 +183,10 @@ def normalize_http_method(http_methods: HttpMethod | Method | Sequence[HttpMetho
             raise ValidationException(f"Invalid HTTP method: {method_name}")
         output.add(method_name)
 
-    return cast("set[Method]", output)
+    return cast("set[HttpMethodName]", output)
 
 
-def get_default_status_code(http_methods: set[Method]) -> int:
+def get_default_status_code(http_methods: set[HttpMethodName]) -> int:
     """Return the default status code for a given set of HTTP methods.
 
     Args:
@@ -217,3 +217,9 @@ def is_empty_response_annotation(return_annotation: FieldDefinition) -> bool:
 
 
 HTTP_METHOD_NAMES = {m.value for m in HttpMethod}
+
+
+async def cleanup_temporary_files(form_data: dict[str, Any]) -> None:
+    for v in form_data.values():
+        if isinstance(v, UploadFile) and not v.file.closed:
+            await v.close()

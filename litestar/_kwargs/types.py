@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Awaitable, Callable, Dict
+from collections.abc import Awaitable
+from typing import Any, Callable
 
 from typing_extensions import TypeAlias
 
 from litestar.connection import ASGIConnection
 
-Extractor: TypeAlias = Callable[[Dict[str, Any], ASGIConnection], Awaitable[None]]
+Extractor: TypeAlias = Callable[[dict[str, Any], ASGIConnection], Awaitable[None]]

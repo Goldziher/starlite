@@ -380,9 +380,10 @@ Built-in callables
     if you wish to insert the ``csrf_token`` into non-HTML based templates, or insert it into HTML templates not using a hidden input field but
     by some other means, for example inside a special ``<meta>`` tag.
 
-``url_for_static_asset``
-    URLs for static files can be created using the ``url_for_static_asset`` function. It's signature and behaviour are identical to
-    :meth:`app.url_for_static_asset <litestar.app.Litestar.url_for_static_asset>`.
+``url_for`` for static files
+    For static file serving as provided by :func:`~litestar.static_files.create_static_files_router`,
+    ``url_for`` can be used with the ``static`` handler name: ``url_for("static", file_name="style.css")``
+
 
 
 Registering template callables

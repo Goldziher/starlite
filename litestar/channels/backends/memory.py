@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from asyncio import Queue
 from collections import defaultdict, deque
-from typing import Any, AsyncGenerator, Iterable
+from typing import TYPE_CHECKING, Any
 
 from litestar.channels.backends.base import ChannelsBackend
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator, Iterable
 
 
 class MemoryChannelsBackend(ChannelsBackend):

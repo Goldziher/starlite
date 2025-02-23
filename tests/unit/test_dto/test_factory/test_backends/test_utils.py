@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Tuple, Union
+from typing import Union
 
 import pytest
 from msgspec import Struct
@@ -48,17 +48,17 @@ def test_create_transfer_model_type_annotation_simple_type_with_nested_field_inf
 
 def test_create_transfer_model_type_annotation_collection_type_not_nested() -> None:
     transfer_type = CollectionType(
-        field_definition=FieldDefinition.from_annotation(List[int]),
+        field_definition=FieldDefinition.from_annotation(list[int]),
         inner_type=SimpleType(field_definition=FieldDefinition.from_annotation(int), nested_field_info=None),
         has_nested=False,
     )
     annotation = _create_transfer_model_type_annotation(transfer_type=transfer_type)
-    assert annotation == List[int]
+    assert annotation == list[int]
 
 
 def test_create_transfer_model_type_annotation_collection_type_nested() -> None:
     transfer_type = CollectionType(
-        field_definition=FieldDefinition.from_annotation(List[DataModel]),
+        field_definition=FieldDefinition.from_annotation(list[DataModel]),
         inner_type=SimpleType(
             field_definition=FieldDefinition.from_annotation(DataModel),
             nested_field_info=NestedFieldInfo(model=TransferModel, field_definitions=()),
@@ -66,23 +66,23 @@ def test_create_transfer_model_type_annotation_collection_type_nested() -> None:
         has_nested=True,
     )
     annotation = _create_transfer_model_type_annotation(transfer_type=transfer_type)
-    assert annotation == List[TransferModel]
+    assert annotation == list[TransferModel]
 
 
 def test_create_transfer_model_type_annotation_mapping_type_not_nested() -> None:
     transfer_type = MappingType(
-        field_definition=FieldDefinition.from_annotation(Dict[str, int]),
+        field_definition=FieldDefinition.from_annotation(dict[str, int]),
         key_type=SimpleType(field_definition=FieldDefinition.from_annotation(str), nested_field_info=None),
         value_type=SimpleType(field_definition=FieldDefinition.from_annotation(int), nested_field_info=None),
         has_nested=False,
     )
     annotation = _create_transfer_model_type_annotation(transfer_type=transfer_type)
-    assert annotation == Dict[str, int]
+    assert annotation == dict[str, int]
 
 
 def test_create_transfer_model_type_annotation_mapping_type_nested() -> None:
     transfer_type = MappingType(
-        field_definition=FieldDefinition.from_annotation(Dict[str, DataModel]),
+        field_definition=FieldDefinition.from_annotation(dict[str, DataModel]),
         key_type=SimpleType(field_definition=FieldDefinition.from_annotation(str), nested_field_info=None),
         value_type=SimpleType(
             field_definition=FieldDefinition.from_annotation(DataModel),
@@ -91,12 +91,12 @@ def test_create_transfer_model_type_annotation_mapping_type_nested() -> None:
         has_nested=True,
     )
     annotation = _create_transfer_model_type_annotation(transfer_type=transfer_type)
-    assert annotation == Dict[str, TransferModel]
+    assert annotation == dict[str, TransferModel]
 
 
 def test_create_transfer_model_type_annotation_tuple_type_not_nested() -> None:
     transfer_type = TupleType(
-        field_definition=FieldDefinition.from_annotation(Tuple[str, int]),
+        field_definition=FieldDefinition.from_annotation(tuple[str, int]),
         inner_types=(
             SimpleType(field_definition=FieldDefinition.from_annotation(str), nested_field_info=None),
             SimpleType(field_definition=FieldDefinition.from_annotation(int), nested_field_info=None),
@@ -104,12 +104,12 @@ def test_create_transfer_model_type_annotation_tuple_type_not_nested() -> None:
         has_nested=False,
     )
     annotation = _create_transfer_model_type_annotation(transfer_type=transfer_type)
-    assert annotation == Tuple[str, int]
+    assert annotation == tuple[str, int]
 
 
 def test_create_transfer_model_type_annotation_tuple_type_nested() -> None:
     transfer_type = TupleType(
-        field_definition=FieldDefinition.from_annotation(Tuple[str, DataModel]),
+        field_definition=FieldDefinition.from_annotation(tuple[str, DataModel]),
         inner_types=(
             SimpleType(field_definition=FieldDefinition.from_annotation(str), nested_field_info=None),
             SimpleType(
@@ -120,7 +120,7 @@ def test_create_transfer_model_type_annotation_tuple_type_nested() -> None:
         has_nested=True,
     )
     annotation = _create_transfer_model_type_annotation(transfer_type=transfer_type)
-    assert annotation == Tuple[str, TransferModel]
+    assert annotation == tuple[str, TransferModel]
 
 
 def test_create_transfer_model_type_annotation_unexpected_transfer_type() -> None:

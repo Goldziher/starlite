@@ -1,6 +1,6 @@
 import dataclasses
 import secrets
-from typing import Any, Dict
+from typing import Any
 
 from litestar import Litestar, Request, get
 from litestar.connection import ASGIConnection
@@ -31,7 +31,7 @@ jwt_auth = JWTAuth[User](
 
 
 @get("/")
-def handler(request: Request[User, CustomToken, Any]) -> Dict[str, Any]:
+def handler(request: Request[User, CustomToken, Any]) -> dict[str, Any]:
     return {"id": request.user.id, "token_flag": request.auth.token_flag}
 
 

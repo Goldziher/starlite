@@ -35,10 +35,8 @@ class PathItemFactory:
         Returns:
             A PathItem instance.
         """
-        for http_method, handler_tuple in self.route.route_handler_map.items():
-            route_handler, _ = handler_tuple
-
-            if not route_handler.resolve_include_in_schema():
+        for http_method, route_handler in self.route.route_handler_map.items():
+            if not route_handler.include_in_schema:
                 continue
 
             operation = self.create_operation_for_handler_method(route_handler, HttpMethod(http_method))
@@ -66,7 +64,7 @@ class PathItemFactory:
         request_body = None
         if data_field := signature_fields.get("data"):
             request_body = create_request_body(
-                self.context, route_handler.handler_id, route_handler.resolve_data_dto(), data_field
+                self.context, route_handler.handler_id, route_handler.data_dto, data_field
             )
 
         raises_validation_error = bool(data_field or self._path_item.parameters or parameters)
@@ -76,14 +74,14 @@ class PathItemFactory:
 
         return route_handler.operation_class(
             operation_id=operation_id,
-            tags=route_handler.resolve_tags() or None,
+            tags=sorted(route_handler.tags) if route_handler.tags else None,
             summary=route_handler.summary or SEPARATORS_CLEANUP_PATTERN.sub("", route_handler.handler_name.title()),
             description=self.create_description_for_handler(route_handler),
             deprecated=route_handler.deprecated,
             responses=responses,
             request_body=request_body,
             parameters=parameters or None,  # type: ignore[arg-type]
-            security=route_handler.resolve_security() or None,
+            security=list(route_handler.security) if route_handler.security else None,
         )
 
     def create_operation_id(self, route_handler: HTTPRouteHandler, http_method: HttpMethod) -> str:

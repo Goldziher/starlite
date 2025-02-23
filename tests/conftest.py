@@ -7,10 +7,11 @@ import random
 import shutil
 import string
 import sys
+from collections.abc import AsyncGenerator, Generator
 from datetime import datetime
 from os import urandom
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Generator, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, Union, cast
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -330,7 +331,7 @@ def get_logger() -> GetLogger:
 @pytest.fixture()
 async def redis_client(docker_ip: str, redis_service: None) -> AsyncGenerator[AsyncRedis, None]:
     # this is to get around some weirdness with pytest-asyncio and redis interaction
-    # on 3.8 and 3.9
+    # on 3.9
 
     Redis(host=docker_ip, port=6397).flushall()
     client: AsyncRedis = AsyncRedis(host=docker_ip, port=6397)
@@ -344,7 +345,7 @@ async def redis_client(docker_ip: str, redis_service: None) -> AsyncGenerator[As
 @pytest.fixture()
 async def valkey_client(docker_ip: str, valkey_service: None) -> AsyncGenerator[AsyncValkey, None]:
     # this is to get around some weirdness with pytest-asyncio and valkey interaction
-    # on 3.8 and 3.9
+    # on 3.9
 
     Valkey(host=docker_ip, port=6381).flushall()
     client: AsyncValkey = AsyncValkey(host=docker_ip, port=6381)

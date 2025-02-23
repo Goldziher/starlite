@@ -1,25 +1,25 @@
-from typing import Optional, Type
+from typing import Optional
 
 import pytest
 
 from litestar import Controller, HttpMethod, Litestar, Request, Router, get
 from litestar.handlers.http_handlers.base import HTTPRouteHandler
 
-RouterRequest: Type[Request] = type("RouterRequest", (Request,), {})
-ControllerRequest: Type[Request] = type("ControllerRequest", (Request,), {})
-AppRequest: Type[Request] = type("AppRequest", (Request,), {})
-HandlerRequest: Type[Request] = type("HandlerRequest", (Request,), {})
+RouterRequest: type[Request] = type("RouterRequest", (Request,), {})
+ControllerRequest: type[Request] = type("ControllerRequest", (Request,), {})
+AppRequest: type[Request] = type("AppRequest", (Request,), {})
+HandlerRequest: type[Request] = type("HandlerRequest", (Request,), {})
 
 
 @pytest.mark.parametrize(
-    "handler_request_class, controller_request_class, router_request_class, app_request_class, has_default_app_class, expected",
+    "handler_request_class, controller_request_class, router_request_class, app_request_class, expected",
     (
-        (HandlerRequest, ControllerRequest, RouterRequest, AppRequest, True, HandlerRequest),
-        (None, ControllerRequest, RouterRequest, AppRequest, True, ControllerRequest),
-        (None, None, RouterRequest, AppRequest, True, RouterRequest),
-        (None, None, None, AppRequest, True, AppRequest),
-        (None, None, None, None, True, Request),
-        (None, None, None, None, False, Request),
+        (HandlerRequest, ControllerRequest, RouterRequest, AppRequest, HandlerRequest),
+        (None, ControllerRequest, RouterRequest, AppRequest, ControllerRequest),
+        (None, None, RouterRequest, AppRequest, RouterRequest),
+        (None, None, None, AppRequest, AppRequest),
+        (None, None, None, None, Request),
+        (None, None, None, None, Request),
     ),
     ids=(
         "Custom class for all layers",
@@ -31,35 +31,24 @@ HandlerRequest: Type[Request] = type("HandlerRequest", (Request,), {})
     ),
 )
 def test_request_class_resolution_of_layers(
-    handler_request_class: Optional[Type[Request]],
-    controller_request_class: Optional[Type[Request]],
-    router_request_class: Optional[Type[Request]],
-    app_request_class: Optional[Type[Request]],
-    has_default_app_class: bool,
-    expected: Type[Request],
+    handler_request_class: Optional[type[Request]],
+    controller_request_class: Optional[type[Request]],
+    router_request_class: Optional[type[Request]],
+    app_request_class: Optional[type[Request]],
+    expected: type[Request],
 ) -> None:
     class MyController(Controller):
-        @get()
+        request_class = controller_request_class
+
+        @get(request_class=handler_request_class)
         def handler(self, request: Request) -> None:
             assert type(request) is expected
 
-    if controller_request_class:
-        MyController.request_class = ControllerRequest
+    router = Router(path="/", route_handlers=[MyController], request_class=router_request_class)
 
-    router = Router(path="/", route_handlers=[MyController])
-
-    if router_request_class:
-        router.request_class = router_request_class
-
-    app = Litestar(route_handlers=[router])
-
-    if app_request_class or not has_default_app_class:
-        app.request_class = app_request_class  # type: ignore[assignment]
+    app = Litestar(route_handlers=[router], request_class=app_request_class)
 
     route_handler: HTTPRouteHandler = app.route_handler_method_map["/"][HttpMethod.GET]  # type: ignore[assignment]
 
-    if handler_request_class:
-        route_handler.request_class = handler_request_class
-
-    request_class = route_handler.resolve_request_class()
+    request_class = route_handler.request_class
     assert request_class is expected

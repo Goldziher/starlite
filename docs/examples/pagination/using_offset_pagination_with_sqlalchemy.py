@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, cast
+from typing import TYPE_CHECKING, cast
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Mapped
@@ -25,7 +25,7 @@ class PersonOffsetPaginator(AbstractAsyncOffsetPaginator[Person]):
     async def get_total(self) -> int:
         return cast("int", await self.async_session.scalar(select(func.count(Person.id))))
 
-    async def get_items(self, limit: int, offset: int) -> List[Person]:
+    async def get_items(self, limit: int, offset: int) -> list[Person]:
         people: ScalarResult = await self.async_session.scalars(select(Person).slice(offset, limit))
         return list(people.all())
 

@@ -3,12 +3,12 @@ WebSockets
 
 There are three ways to handle WebSockets in Litestar:
 
-1. The low-level :class:`~litestar.handlers.websocket` route handler, providing basic
+1. The low-level :func:`~litestar.handlers.websocket` route handler, providing basic
    abstractions over the ASGI WebSocket interface
-2. :class:`~litestar.handlers.websocket_listener` and :class:`~litestar.handlers.WebsocketListener`\  :
+2. :func:`~litestar.handlers.websocket_listener` and :class:`~litestar.handlers.WebsocketListener`\  :
    Reactive, event-driven WebSockets with full serialization and DTO support and support
    for a synchronous interface
-3. :class:`~litestar.handlers.websocket_stream` and :func:`~litestar.handlers.send_websocket_stream`\ :
+3. :func:`~litestar.handlers.websocket_stream` and :func:`~litestar.handlers.send_websocket_stream`\ :
    Proactive, stream oriented WebSockets with full serialization and DTO support
 
 
@@ -49,7 +49,7 @@ type of data which should be received, and it will be converted accordingly.
 
 .. note::
     Contrary to WebSocket route handlers, functions decorated with
-    :class:`websocket_listener <.handlers.websocket_listener>` don't have to be
+    :func:`websocket_listener <.handlers.websocket_listener>` don't have to be
     asynchronous.
 
 

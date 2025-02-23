@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Dict
 from unittest.mock import MagicMock
 
 from litestar import Controller, Litestar, Router, post
@@ -65,7 +64,7 @@ def test_dto_defined_on_app(ModelDataDTO: type[AbstractDTO]) -> None:
 
 
 def test_set_dto_none_disables_inherited_dto(ModelDataDTO: type[AbstractDTO]) -> None:
-    @post(dto=None, signature_namespace={"dict": Dict})
+    @post(dto=None, signature_namespace={"dict": dict})
     def handler(data: dict[str, str]) -> dict[str, str]:
         assert data == {"hello": "world"}
         return data
@@ -98,9 +97,10 @@ def test_enable_experimental_backend_override_in_dto_config(ModelDataDTO: type[A
     def handler(data: Model) -> Model:
         return data
 
-    Litestar(route_handlers=[handler])
+    app = Litestar(route_handlers=[handler])
+    resolved_handler = app.route_handler_method_map["/"]["POST"]
 
-    backend = handler.resolve_data_dto()._dto_backends[handler.handler_id]["data_backend"]  # type: ignore[union-attr]
+    backend = resolved_handler.data_dto._dto_backends[resolved_handler.handler_id]["data_backend"]  # type: ignore[union-attr]
     assert isinstance(backend, DTOBackend)
 
 
@@ -111,7 +111,8 @@ def test_use_codegen_backend_by_default(ModelDataDTO: type[AbstractDTO]) -> None
     def handler(data: Model) -> Model:
         return data
 
-    Litestar(route_handlers=[handler])
+    app = Litestar(route_handlers=[handler])
+    resolved_handler = app.route_handler_method_map["/"]["POST"]
 
-    backend = handler.resolve_data_dto()._dto_backends[handler.handler_id]["data_backend"]  # type: ignore[union-attr]
+    backend = resolved_handler.data_dto._dto_backends[resolved_handler.handler_id]["data_backend"]  # type: ignore[union-attr]
     assert isinstance(backend, DTOBackend)

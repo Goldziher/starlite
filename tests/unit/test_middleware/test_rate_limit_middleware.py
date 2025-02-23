@@ -6,14 +6,15 @@ import pytest
 from time_machine import travel
 
 from litestar import Litestar, Request, get
+from litestar.handlers import ASGIRouteHandler
 from litestar.middleware.rate_limit import (
     DURATION_VALUES,
     CacheObject,
     DurationUnit,
     RateLimitConfig,
 )
+from litestar.response.base import ASGIResponse
 from litestar.serialization import decode_json, encode_json
-from litestar.static_files.config import StaticFilesConfig
 from litestar.status_codes import HTTP_200_OK, HTTP_429_TOO_MANY_REQUESTS
 from litestar.stores.base import Store
 from litestar.testing import TestClient, create_test_client
@@ -224,20 +225,19 @@ async def test_rate_limiting_works_with_mounted_apps(tmpdir: "Path") -> None:
     path1 = tmpdir / "test.css"
     path1.write_text("styles content", "utf-8")
 
-    static_files_config = StaticFilesConfig(directories=[tmpdir], path="/src/static")  # pyright: ignore
+    asgi_handler = ASGIRouteHandler("/asgi", is_mount=True, fn=ASGIResponse(body="something"))
+
     rate_limit_config = RateLimitConfig(rate_limit=("minute", 1), exclude=[r"^/src.*$"])
-    with create_test_client(
-        [handler], static_files_config=[static_files_config], middleware=[rate_limit_config.middleware]
-    ) as client:
+    with create_test_client([handler, asgi_handler], middleware=[rate_limit_config.middleware]) as client:
         response = client.get("/not-excluded")
         assert response.status_code == HTTP_200_OK
 
         response = client.get("/not-excluded")
         assert response.status_code == HTTP_429_TOO_MANY_REQUESTS
 
-        response = client.get("/src/static/test.css")
+        response = client.get("/asgi")
         assert response.status_code == HTTP_200_OK
-        assert response.text == "styles content"
+        assert response.text == "something"
 
 
 async def test_rate_limiting_works_with_cache() -> None:

@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Literal, Mapping, Optional, Union, cast
+from collections.abc import Mapping
+from typing import Any, Literal, Optional, Union, cast
 
 import pytest
 
@@ -48,14 +49,14 @@ def test_setting_cors_middleware() -> None:
 @pytest.mark.parametrize("allow_methods", [["GET", "POST", "PUT", "DELETE"], ["GET", "POST"], ["GET"]])
 def test_cors_simple_response(
     origin: Optional[str],
-    allow_origins: List[str],
+    allow_origins: list[str],
     allow_credentials: bool,
-    expose_headers: List[str],
-    allow_headers: List[str],
-    allow_methods: List[Union[Literal["*"], "Method"]],
+    expose_headers: list[str],
+    allow_headers: list[str],
+    allow_methods: list[Union[Literal["*"], "Method"]],
 ) -> None:
     @get("/")
-    def handler() -> Dict[str, str]:
+    def handler() -> dict[str, str]:
         return {"hello": "world"}
 
     cors_config = CORSConfig(
@@ -107,7 +108,7 @@ def test_cors_applied_on_exception_response_if_origin_is_present(
     origin: Optional[str], should_apply_cors: bool
 ) -> None:
     @get("/")
-    def handler() -> Dict[str, str]:
+    def handler() -> dict[str, str]:
         return {"hello": "world"}
 
     cors_config = CORSConfig(allow_origins=["http://www.example.com"])

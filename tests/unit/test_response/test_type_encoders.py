@@ -1,13 +1,13 @@
-from typing import TYPE_CHECKING, Any, Tuple
+from typing import TYPE_CHECKING, Any
 
-from litestar import Controller, HttpMethod, Litestar, Response, Router, get
+from litestar import Controller, Litestar, Response, Router, get
 from litestar.testing import create_test_client
 
 if TYPE_CHECKING:
     from litestar.types import Serializer
 
 
-def create_mock_encoder(name: str) -> Tuple[type, "Serializer"]:
+def create_mock_encoder(name: str) -> tuple[type, "Serializer"]:
     mock_type = type(name, (type,), {})
 
     def mock_encoder(obj: Any) -> Any:
@@ -32,8 +32,8 @@ def test_resolve_type_encoders() -> None:
     router = Router("/router", type_encoders={router_type: router_encoder}, route_handlers=[MyController])
     app = Litestar([router], type_encoders={app_type: app_encoder})
 
-    route_handler = app.routes[0].route_handler_map[HttpMethod.GET][0]  # type: ignore[union-attr]
-    encoders = route_handler.resolve_type_encoders()
+    route_handler = app.routes[0].route_handler_map["GET"]  # type: ignore[union-attr]
+    encoders = route_handler.type_encoders
     assert encoders.get(handler_type) == handler_encoder
     assert encoders.get(controller_type) == controller_encoder
     assert encoders.get(router_type) == router_encoder

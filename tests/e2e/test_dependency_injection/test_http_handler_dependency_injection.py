@@ -1,5 +1,5 @@
 from asyncio import sleep
-from typing import TYPE_CHECKING, Any, Dict, Type
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
@@ -22,12 +22,12 @@ async def router_second_dependency() -> bool:
     return False
 
 
-def controller_first_dependency(headers: Dict[str, Any]) -> Dict[Any, Any]:
+def controller_first_dependency(headers: dict[str, Any]) -> dict[Any, Any]:
     assert headers
     return {}
 
 
-async def controller_second_dependency(request: "Request[Any, Any, State]") -> Dict[Any, Any]:
+async def controller_second_dependency(request: "Request[Any, Any, State]") -> dict[Any, Any]:
     assert request
     await sleep(0)
     return {}
@@ -47,7 +47,7 @@ test_path = "/test"
 
 
 @pytest.fixture
-def first_controller() -> Type[Controller]:
+def first_controller() -> type[Controller]:
     class FirstController(Controller):
         path = test_path
         dependencies = {
@@ -61,7 +61,7 @@ def first_controller() -> Type[Controller]:
                 "first": Provide(local_method_first_dependency, sync_to_thread=False),
             },
         )
-        def test_method(self, first: int, second: Dict[Any, Any], third: bool) -> None:
+        def test_method(self, first: int, second: dict[Any, Any], third: bool) -> None:
             assert isinstance(first, int)
             assert isinstance(second, dict)
             assert not third
@@ -69,7 +69,7 @@ def first_controller() -> Type[Controller]:
     return FirstController
 
 
-def test_controller_dependency_injection(first_controller: Type[Controller]) -> None:
+def test_controller_dependency_injection(first_controller: type[Controller]) -> None:
     with create_test_client(
         first_controller,
         dependencies={
@@ -105,12 +105,12 @@ def test_function_dependency_injection() -> None:
         assert response.status_code == HTTP_200_OK
 
 
-def test_dependency_isolation(first_controller: Type[Controller]) -> None:
+def test_dependency_isolation(first_controller: type[Controller]) -> None:
     class SecondController(Controller):
         path = "/second"
 
         @get()
-        def test_method(self, first: Dict[Any, Any]) -> None:
+        def test_method(self, first: dict[Any, Any]) -> None:
             pass
 
     with create_test_client([first_controller, SecondController]) as client:

@@ -1,7 +1,6 @@
-from typing import Generic, Optional, TypeVar
+from typing import Annotated, Generic, Optional, TypeVar
 
 from attrs import define
-from typing_extensions import Annotated
 
 from litestar.openapi.spec import OpenAPIType
 from litestar.openapi.spec.schema import Schema

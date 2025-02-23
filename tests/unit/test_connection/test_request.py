@@ -6,7 +6,8 @@ their API.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, Generator
+from collections.abc import Generator
+from typing import TYPE_CHECKING, Any, Callable
 from unittest.mock import patch
 
 import pytest
@@ -23,13 +24,10 @@ from litestar.exceptions import (
 from litestar.middleware import MiddlewareProtocol
 from litestar.response.base import ASGIResponse
 from litestar.serialization import encode_json, encode_msgpack
-from litestar.static_files.config import StaticFilesConfig
 from litestar.status_codes import HTTP_400_BAD_REQUEST, HTTP_413_REQUEST_ENTITY_TOO_LARGE
 from litestar.testing import TestClient, create_test_client
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from litestar.types import ASGIApp, Receive, Scope, Send
 
 
@@ -88,11 +86,11 @@ def test_request_url_for() -> None:
     def proxy() -> None:
         pass
 
-    @get(path="/test", signature_namespace={"dict": Dict})
+    @get(path="/test", signature_namespace={"dict": dict})
     def root(request: Request[Any, Any, State]) -> dict[str, str]:
         return {"url": request.url_for("proxy")}
 
-    @get(path="/test-none", signature_namespace={"dict": Dict})
+    @get(path="/test-none", signature_namespace={"dict": dict})
     def test_none(request: Request[Any, Any, State]) -> dict[str, str]:
         return {"url": request.url_for("none")}
 
@@ -101,26 +99,6 @@ def test_request_url_for() -> None:
         assert response.json() == {"url": "http://testserver.local/proxy"}
 
         response = client.get("/test-none")
-        assert response.status_code == 500
-
-
-def test_request_asset_url(tmp_path: Path) -> None:
-    @get(path="/resolver", signature_namespace={"dict": Dict})
-    def resolver(request: Request[Any, Any, State]) -> dict[str, str]:
-        return {"url": request.url_for_static_asset("js", "main.js")}
-
-    @get(path="/resolver-none", signature_namespace={"dict": Dict})
-    def resolver_none(request: Request[Any, Any, State]) -> dict[str, str]:
-        return {"url": request.url_for_static_asset("none", "main.js")}
-
-    with create_test_client(
-        route_handlers=[resolver, resolver_none],
-        static_files_config=[StaticFilesConfig(path="/static/js", directories=[tmp_path], name="js")],
-    ) as client:
-        response = client.get("/resolver")
-        assert response.json() == {"url": "http://testserver.local/static/js/main.js"}
-
-        response = client.get("/resolver-none")
         assert response.status_code == 500
 
 
@@ -400,7 +378,7 @@ async def test_request_disconnect(create_scope: Callable[..., Scope]) -> None:
 
 
 def test_request_state() -> None:
-    @get("/", signature_namespace={"dict": Dict})
+    @get("/", signature_namespace={"dict": dict})
     def handler(request: Request[Any, Any, State]) -> dict[Any, Any]:
         request.state.test = 1
         assert request.state.test == 1
@@ -541,7 +519,7 @@ def test_state() -> None:
         assert request.state.main == 1
         request.state.main = 2
 
-    @get(path="/", signature_namespace={"dict": Dict})
+    @get(path="/", signature_namespace={"dict": dict})
     async def get_state(request: Request[Any, Any, State]) -> dict[str, str]:
         return {"state": request.state.main}
 

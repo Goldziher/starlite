@@ -1,0 +1,16 @@
+Feature,Litestar,FastAPI,Starlette,Sanic,Quart
+OpenAPI,:octicon:`check`,:octicon:`check`,-,-,-
+Automatic API documentation,"Swagger, ReDoc, Stoplight Elements","Swagger, ReDoc",-,-,-
+Data validation,:octicon:`check`,:octicon:`check`,-,-,-
+Dependency Injection,:octicon:`check`,:octicon:`check`,-,:octicon:`check`,-
+Class based routing,:octicon:`check`,Extension,:octicon:`check`,:octicon:`check`,:octicon:`check`
+ORM integration,"SQLAlchemy, Tortoise, Piccolo",-,-,-,Extension
+Templating,"Jinja, Mako",Jinja,Jinja,Jinja,Jinja
+MessagePack,:octicon:`check`,-,-,-,-
+CORS,:octicon:`check`,:octicon:`check`,:octicon:`check`,:octicon:`check`,Extension
+CSRF,:octicon:`check`,-,-,-,-
+Rate-limiting,:octicon:`check`,-,-,Extension,-
+JWT,:octicon:`check`,-,-,-,-
+Sessions,:octicon:`check`,Client-side,Client-side,-,Client-side
+Authentication,JWT / Session based,-,-,-,-
+Caching,:octicon:`check`,-,-,-,-

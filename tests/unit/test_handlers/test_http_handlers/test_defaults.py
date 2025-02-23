@@ -37,5 +37,5 @@ from litestar.status_codes import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CON
     ],
 )
 def test_route_handler_default_status_code(http_method: Any, expected_status_code: int) -> None:
-    route_handler = HTTPRouteHandler(http_method=http_method)
+    route_handler = HTTPRouteHandler(http_method=http_method, fn=lambda: None)
     assert route_handler.status_code == expected_status_code

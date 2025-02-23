@@ -1,37 +1,36 @@
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
-from typing import Type
 from uuid import UUID
 
 import pytest
 
 from litestar import Litestar, Router, delete, get, patch, post, put
 from litestar.exceptions import NoRouteMatchFoundException
-from litestar.handlers.http_handlers import HTTPRouteHandler
+from litestar.types import HTTPHandlerDecorator
 
 
 @pytest.mark.parametrize("decorator", [get, post, patch, put, delete])
-def test_route_reverse(decorator: Type[HTTPRouteHandler]) -> None:
-    @decorator("/path-one/{param:str}", name="handler-name")  # type: ignore[call-arg]
+def test_route_reverse(decorator: HTTPHandlerDecorator) -> None:
+    @decorator("/path-one/{param:str}", name="handler-name")
     def handler() -> None:
         return None
 
-    @decorator("/path-two", name="handler-no-params")  # type: ignore[call-arg]
+    @decorator("/path-two", name="handler-no-params")
     def handler_no_params() -> None:
         return None
 
-    @decorator("/multiple/{str_param:str}/params/{int_param:int}/", name="multiple-params-handler-name")  # type: ignore[call-arg]
+    @decorator("/multiple/{str_param:str}/params/{int_param:int}/", name="multiple-params-handler-name")
     def handler2() -> None:
         return None
 
     @decorator(
         ["/handler3", "/handler3/{str_param:str}/", "/handler3/{str_param:str}/{int_param:int}/"],
         name="multiple-default-params",
-    )  # type: ignore[call-arg]
+    )
     def handler3(str_param: str = "default", int_param: int = 0) -> None:
         return None
 
-    @decorator(["/handler4/int/{int_param:int}", "/handler4/str/{str_param:str}"], name="handler4")  # type: ignore[call-arg]
+    @decorator(["/handler4/int/{int_param:int}", "/handler4/str/{str_param:str}"], name="handler4")
     def handler4(int_param: int = 1, str_param: str = "str") -> None:
         return None
 

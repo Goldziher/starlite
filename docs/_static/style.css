@@ -25,9 +25,9 @@
   color: #f55353;
 }
 
-p {
-  font-size: 1.1em;
-}
+/*p {*/
+/*  font-size: 1.1em;*/
+/*}*/
 
 html[data-theme="dark"] .mermaid svg {
   background-color: white;

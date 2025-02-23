@@ -5,7 +5,7 @@ Test the app running in a subprocess
 import asyncio
 import pathlib
 import sys
-from typing import AsyncIterator
+from collections.abc import AsyncIterator
 
 import httpx
 import httpx_sse

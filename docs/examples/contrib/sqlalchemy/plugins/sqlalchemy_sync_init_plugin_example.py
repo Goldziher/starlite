@@ -9,7 +9,7 @@ from litestar import Litestar, post
 from litestar.plugins.sqlalchemy import SQLAlchemyInitPlugin, SQLAlchemySyncConfig
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, List
+    from typing import Any
 
     from sqlalchemy.orm import Session
 
@@ -24,7 +24,7 @@ class TodoItem(Base):
 
 
 @post("/", sync_to_thread=True)
-def add_item(data: Dict[str, Any], db_session: Session) -> List[Dict[str, Any]]:
+def add_item(data: dict[str, Any], db_session: Session) -> list[dict[str, Any]]:
     todo_item = TodoItem(**data)
     with db_session.begin():
         db_session.add(todo_item)

@@ -94,8 +94,8 @@ class ParameterFactory:
         self.schema_creator = SchemaCreator.from_openapi_context(self.context, prefer_alias=True)
         self.route_handler = route_handler
         self.parameters = ParameterCollection(route_handler)
-        self.dependency_providers = route_handler.resolve_dependencies()
-        self.layered_parameters = route_handler.resolve_layered_parameters()
+        self.dependency_providers = route_handler.dependencies
+        self.layered_parameters = route_handler.parameter_field_definitions
         self.path_parameters = path_parameters
 
     def create_parameter(self, field_definition: FieldDefinition, parameter_name: str) -> Parameter:

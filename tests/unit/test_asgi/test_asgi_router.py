@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, AsyncGenerator, Callable
+from typing import TYPE_CHECKING, Callable
 from unittest.mock import AsyncMock, MagicMock, call
 
 import anyio
@@ -29,7 +30,7 @@ def test_add_mount_route_disallow_path_parameter() -> None:
         return None
 
     with pytest.raises(ImproperlyConfiguredException):
-        Litestar(route_handlers=[asgi("/mount-path", is_static=True)(handler), asgi("/mount-path/{id:str}")(handler)])
+        Litestar(route_handlers=[asgi("/mount-path", is_mount=True)(handler), asgi("/mount-path/{id:str}")(handler)])
 
 
 class _LifeSpanCallable:

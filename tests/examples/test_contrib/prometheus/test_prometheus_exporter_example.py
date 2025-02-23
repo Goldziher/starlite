@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 from prometheus_client import REGISTRY
@@ -48,7 +48,7 @@ def test_prometheus_exporter_example(
     clear_collectors()
 
     @get(route_template)
-    def home(name: str) -> Dict[str, Any]:
+    def home(name: str) -> dict[str, Any]:
         return {"hello": name}
 
     app.register(home)

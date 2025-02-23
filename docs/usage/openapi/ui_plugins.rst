@@ -139,57 +139,6 @@ In the following example, we configure the OpenAPI root path to be ``/docs``:
 This will result in any of the OpenAPI endpoints being served at ``/docs`` instead of ``/schema``, e.g.,
 ``/docs/openapi.json``.
 
-Backward Compatibility
-----------------------
-
-OpenAPI UI plugins are a new feature introduced in ``v2.8.0``.
-
-Providing a subclass of OpenAPIController
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: v2.8.0
-
-The previous method of configuring elements such as the root path and styling was to subclass
-:class:`OpenAPIController`, and set it on the :attr:`OpenAPIConfig.openapi_controller` attribute. This approach is now
-deprecated and slated for removal in ``v3.0.0``, but if you are using it, there should be no change in behavior.
-
-To maintain backward compatibility with the previous approach, if neither the :attr:`OpenAPIConfig.openapi_controller`
-or :attr:`OpenAPIConfig.render_plugins` attributes are set, we will automatically add the plugins to respect the also
-deprecated :attr:`OpenAPIConfig.enabled_endpoints` attribute. By default, this will result in the following endpoints
-being enabled:
-
-- ``/schema/openapi.json``
-- ``/schema/redoc``
-- ``/schema/rapidoc``
-- ``/schema/elements``
-- ``/schema/swagger``
-- ``/schema/openapi.yml``
-- ``/schema/openapi.yaml``
-
-In ``v3.0.0``, the :attr:`OpenAPIConfig.enabled_endpoints` attribute will be removed, and only a single UI plugin will be
-enabled by default, in addition to the ``openapi.json`` endpoint which will always be enabled. ``Scalar`` will also
-become the default UI plugin in ``v3.0.0``.
-
-To adopt the future behavior, explicitly set the :attr:`OpenAPIConfig.render_plugins` field to an instance of
-:class:`ScalarRenderPlugin`:
-
-.. literalinclude:: /examples/openapi/plugins/scalar_simple.py
-    :language: python
-    :lines: 13-21
-
-Backward compatibility with ``root_schema_site``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Litestar has always supported a ``root_schema_site`` attribute on the :class:`OpenAPIConfig` class. This attribute
-allows you to elect to serve a UI at the OpenAPI root path, e.g., by default ``redoc`` would be served at both
-``/schema`` and ``/schema/redoc``.
-
-In ``v3.0.0``, the ``root_schema_site`` attribute will be removed, and the first :class:`OpenAPIRenderPlugin` in the
-:attr:`OpenAPIConfig.render_plugins` list will be assigned to the ``/schema`` endpoint.
-
-As of ``v2.8.0``, if you explicitly use the new :attr:`OpenAPIConfig.render_plugins` attribute, you will be
-automatically opted in to the new behavior, and the ``root_schema_site`` attribute will be ignored.
-
 Building your own OpenAPI UI Plugin
 -----------------------------------
 
@@ -277,9 +226,9 @@ This can be used for a variety of purposes, including adding additional routes t
 OAuth2 in Swagger UI
 --------------------
 
-When using Swagger, OAuth2 settings can be configured via
-:attr:`swagger_ui_init_oauth <litestar.openapi.controller.OpenAPIController.swagger_ui_init_oauth>`, which can be set to
-a dictionary containing the parameters described in the Swagger UI documentation for OAuth2
+When using Swagger, OAuth2 settings can be configured via the :paramref:`~.openapi.plugins.SwaggerRenderPlugin.init_oauth` param of
+:meth:`SwaggerRenderPlugin <litestar.openapi.plugins.SwaggerRenderPlugin.__init__>`, which can be set to a dictionary
+containing the parameters described in the Swagger UI documentation for OAuth2
 `here <https://swagger.io/docs/open-source-tools/swagger-ui/usage/oauth2/>`_.
 
 With that, you can preset your clientId or enable PKCE support.

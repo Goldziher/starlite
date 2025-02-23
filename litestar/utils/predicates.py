@@ -4,7 +4,7 @@ from asyncio import iscoroutinefunction
 from collections import defaultdict, deque
 from collections.abc import Iterable as CollectionsIterable
 from dataclasses import is_dataclass
-from inspect import isasyncgenfunction, isclass, isgeneratorfunction
+from inspect import isclass
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -35,12 +35,10 @@ from typing_extensions import (
 
 from litestar.constants import UNDEFINED_SENTINELS
 from litestar.types.builtin_types import NoneType, UnionTypes
-from litestar.utils.deprecation import warn_deprecation
 from litestar.utils.helpers import unwrap_partial
 from litestar.utils.typing import get_origin_or_inner_type
 
 if TYPE_CHECKING:
-    from litestar.types.callable_types import AnyGenerator
     from litestar.types.protocols import DataclassProtocol
 
 
@@ -75,6 +73,10 @@ def is_async_callable(value: Callable[P, T]) -> TypeGuard[Callable[P, Awaitable[
     Returns:
         Bool determining if type of ``value`` is an awaitable.
     """
+    from litestar.utils.sync import AsyncCallable
+
+    if isinstance(value, AsyncCallable):
+        return True
     value = unwrap_partial(value)
 
     return iscoroutinefunction(value) or (
@@ -186,7 +188,7 @@ def is_non_string_sequence(annotation: Any) -> TypeGuard[Sequence[Any]]:
     annotation: A type.
 
     Returns:
-        A typeguard determining whether the type can be cast as :class`Sequence <typing.Sequence>` that is not a string.
+        A typeguard determining whether the type can be cast as :class:`Sequence <typing.Sequence>` that is not a string.
     """
     origin = get_origin_or_inner_type(annotation)
     if not origin and not isclass(annotation):
@@ -269,18 +271,6 @@ def is_class_var(annotation: Any) -> bool:
     return annotation is ClassVar
 
 
-def _is_sync_or_async_generator(obj: Any) -> TypeGuard[AnyGenerator]:
-    """Check if the given annotation is a sync or async generator.
-
-    Args:
-        obj: type to be tested for sync or async generator.
-
-    Returns:
-        A boolean.
-    """
-    return isgeneratorfunction(obj) or isasyncgenfunction(obj)
-
-
 def is_annotated_type(annotation: Any) -> bool:
     """Check if the given annotation is an Annotated.
 
@@ -303,19 +293,3 @@ def is_undefined_sentinel(value: Any) -> bool:
         A boolean.
     """
     return any(v is value for v in UNDEFINED_SENTINELS)
-
-
-_deprecated_names = {"is_sync_or_async_generator": _is_sync_or_async_generator}
-
-
-def __getattr__(name: str) -> Any:
-    if name in _deprecated_names:
-        warn_deprecation(
-            deprecated_name=f"litestar.utils.scope.{name}",
-            version="2.4",
-            kind="import",
-            removal_in="3.0",
-            info=f"'litestar.utils.predicates.{name}' is deprecated.",
-        )
-        return globals()["_deprecated_names"][name]
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")  # pragma: no cover

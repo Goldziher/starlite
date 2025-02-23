@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from litestar.openapi.spec import PathItem
 
-Paths = Dict[str, "PathItem"]
+Paths = dict[str, "PathItem"]
 """Holds the relative paths to the individual endpoints and their operations. The path is appended to the URL from the.
 
 `Server Object <https://spec.openapis.org/oas/v3.1.0#serverObject>`_ in order to construct the full URL.

@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Type, cast
+from typing import Any, Optional, cast
 
 import msgspec.json
 import pytest
@@ -47,7 +47,7 @@ def test_application_immutable_state_injection() -> None:
 
 
 @pytest.mark.parametrize("state_typing", (State, CustomState))
-def test_application_state_injection(state_typing: Type[State]) -> None:
+def test_application_state_injection(state_typing: type[State]) -> None:
     @get("/", media_type=MediaType.TEXT)
     def route_handler(state: state_typing) -> str:  # type: ignore[valid-type]
         assert state
@@ -108,7 +108,7 @@ def test_data_using_list_of_models(decorator: Any, http_method: Any, expected_st
         path = test_path
 
         @decorator()
-        def test_method(self, data: List[DataclassPerson]) -> None:
+        def test_method(self, data: list[DataclassPerson]) -> None:
             assert data == people
 
     with create_test_client(MyController) as client:
@@ -164,7 +164,7 @@ def test_path_params(decorator: Any, http_method: Any, expected_status_code: Any
 )
 def test_query_params(decorator: Any, http_method: Any, expected_status_code: Any) -> None:
     @decorator("/person")
-    def handler(first: str, second: List[str], third: int, fourth: Optional[str] = None) -> None:
+    def handler(first: str, second: list[str], third: int, fourth: Optional[str] = None) -> None:
         assert first == "foo"
         assert second == ["a", "b"]
         assert third == 2

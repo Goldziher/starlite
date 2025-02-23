@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-
-from typing_extensions import Annotated
+from typing import Annotated
 
 from litestar import Litestar, post
 from litestar.enums import RequestEncodingType

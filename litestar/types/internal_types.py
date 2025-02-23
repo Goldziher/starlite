@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
     from litestar.app import Litestar
     from litestar.controller import Controller
+    from litestar.handlers import BaseRouteHandler
     from litestar.handlers.asgi_handlers import ASGIRouteHandler
     from litestar.handlers.http_handlers import HTTPRouteHandler
     from litestar.handlers.websocket_handlers import WebsocketRouteHandler
@@ -26,10 +27,11 @@ if TYPE_CHECKING:
     from litestar.template.config import EngineType
     from litestar.types import Method
 
+
 ReservedKwargs: TypeAlias = Literal["request", "socket", "headers", "query", "cookies", "state", "data"]
 RouteHandlerType: TypeAlias = "HTTPRouteHandler | WebsocketRouteHandler | ASGIRouteHandler"
 ControllerRouterHandler: TypeAlias = "type[Controller] | RouteHandlerType | Router | Callable[..., Any]"
-RouteHandlerMapItem: TypeAlias = 'dict[Method | Literal["websocket", "asgi"], RouteHandlerType]'
+RouteHandlerMapItem: TypeAlias = 'dict[Method | Literal["websocket", "asgi"], BaseRouteHandler]'
 TemplateConfigType: TypeAlias = "TemplateConfig[EngineType]"
 
 # deprecated

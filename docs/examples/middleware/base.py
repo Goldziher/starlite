@@ -1,5 +1,4 @@
 import time
-from typing import Dict
 
 from litestar import Litestar, WebSocket, get, websocket
 from litestar.datastructures import MutableScopeHeaders
@@ -37,25 +36,25 @@ async def websocket_handler(socket: WebSocket) -> None:
 
 
 @get("/first_path", sync_to_thread=False)
-def first_handler() -> Dict[str, str]:
+def first_handler() -> dict[str, str]:
     """Handler is excluded due to regex pattern matching "first_path"."""
     return {"hello": "first"}
 
 
 @get("/second_path", sync_to_thread=False)
-def second_handler() -> Dict[str, str]:
+def second_handler() -> dict[str, str]:
     """Handler is excluded due to regex pattern matching "second_path"."""
     return {"hello": "second"}
 
 
 @get("/third_path", exclude_from_my_middleware=True, sync_to_thread=False)
-def third_handler() -> Dict[str, str]:
+def third_handler() -> dict[str, str]:
     """Handler is excluded due to the opt key 'exclude_from_my_middleware' matching the middleware 'exclude_opt_key'."""
     return {"hello": "third"}
 
 
 @get("/greet", sync_to_thread=False)
-def not_excluded_handler() -> Dict[str, str]:
+def not_excluded_handler() -> dict[str, str]:
     """This handler is not excluded, and thus the middleware will execute on every incoming request to it."""
     return {"hello": "world"}
 

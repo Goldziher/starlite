@@ -7,7 +7,7 @@ handler :term:`decorators <decorator>` exported from Litestar.
 For example:
 
 .. code-block:: python
-    :caption: Defining a route handler by decorating a function with the :class:`@get() <.handlers.get>` :term:`decorator`
+    :caption: Defining a route handler by decorating a function with the :func:`@get() <.handlers.get>` :term:`decorator`
 
     from litestar import get
 
@@ -146,12 +146,11 @@ There are several reasons for why this limitation is enforced:
 HTTP route handlers
 -------------------
 
-The most commonly used route handlers are those that handle HTTP requests and responses.
-These route handlers all inherit from the :class:`~.handlers.HTTPRouteHandler` class, which is aliased as the
-:term:`decorator` called :func:`~.handlers.route`:
+The :class:`~.handlers.HTTPRouteHandler` is used to handle HTTP requests, and can be
+created with the :func:`~.handlers.route` :term:`decorator`:
 
 .. code-block:: python
-    :caption: Defining a route handler by decorating a function with the :class:`@route() <.handlers.route>`
+    :caption: Defining a route handler by decorating a function with the :func:`@route() <.handlers.route>`
       :term:`decorator`
 
     from litestar import HttpMethod, route
@@ -160,19 +159,23 @@ These route handlers all inherit from the :class:`~.handlers.HTTPRouteHandler` c
     @route(path="/some-path", http_method=[HttpMethod.GET, HttpMethod.POST])
     async def my_endpoint() -> None: ...
 
-As mentioned above, :func:`@route() <.handlers.route>` is merely an alias for ``HTTPRouteHandler``,
-thus the below code is equivalent to the one above:
+The same can be achieved without a decorator, by using ``HTTPRouteHandler`` directly:
 
 .. code-block:: python
-    :caption: Defining a route handler by decorating a function with the
-      :class:`HTTPRouteHandler <.handlers.HTTPRouteHandler>` class
+    :caption: Defining a route handler creating an instance of
+      :class:`HTTPRouteHandler <.handlers.HTTPRouteHandler>`
 
     from litestar import HttpMethod
     from litestar.handlers.http_handlers import HTTPRouteHandler
 
 
-    @HTTPRouteHandler(path="/some-path", http_method=[HttpMethod.GET, HttpMethod.POST])
     async def my_endpoint() -> None: ...
+
+    handler = HTTPRouteHandler(
+        path="/some-path",
+        http_method=[HttpMethod.GET, HttpMethod.POST],
+        fn=my_endpoint
+    )
 
 
 Semantic handler :term:`decorators <decorator>`
@@ -189,8 +192,8 @@ which correlates with their name:
 * :func:`@post() <.handlers.post>`
 * :func:`@put() <.handlers.put>`
 
-These are used exactly like :func:`@route() <.handlers.route>` with the sole exception that you cannot configure the
-:paramref:`~.handlers.HTTPRouteHandler.http_method` :term:`kwarg <argument>`:
+These are used exactly like :func:`@route() <.handlers.route>` with the sole exception that you don't need to configure
+the :paramref:`~.handlers.HTTPRouteHandler.http_method` :term:`kwarg <argument>`:
 
 .. dropdown:: Click to see the predefined route handlers
 
@@ -240,11 +243,6 @@ These are used exactly like :func:`@route() <.handlers.route>` with the sole exc
         @delete(path="/resources/{pk:int}")
         async def delete_resource(pk: int) -> None: ...
 
-Although these :term:`decorators <decorator>` are merely subclasses of :class:`~.handlers.HTTPRouteHandler` that pre-set
-the :paramref:`~.handlers.HTTPRouteHandler.http_method`, using :func:`@get() <.handlers.get>`,
-:func:`@patch() <.handlers.patch>`, :func:`@put() <.handlers.put>`, :func:`@delete() <.handlers.delete>`, or
-:func:`@post() <.handlers.post>` instead of :func:`@route() <.handlers.route>` makes the code clearer and simpler.
-
 Furthermore, in the OpenAPI specification each unique combination of HTTP verb (e.g. ``GET``, ``POST``, etc.) and path
 is regarded as a distinct `operation <https://spec.openapis.org/oas/latest.html#operation-object>`_\ , and each
 operation should be distinguished by a unique :paramref:`~.handlers.HTTPRouteHandler.operation_id` and optimally
@@ -277,8 +275,8 @@ A WebSocket connection can be handled with a :func:`@websocket() <.handlers.Webs
        await socket.send_json({...})
        await socket.close()
 
-The :func:`@websocket() <.handlers.WebsocketRouteHandler>` :term:`decorator` is an alias of the
-:class:`~.handlers.WebsocketRouteHandler` class. Thus, the below code is equivalent to the one above:
+The :func:`@websocket() <.handlers.WebsocketRouteHandler>` :term:`decorator` can be used to create an instance of
+:class:`~.handlers.WebsocketRouteHandler`. Therefore, the below code is equivalent to the one above:
 
 .. code-block:: python
     :caption: Using the :class:`~.handlers.WebsocketRouteHandler` class directly
@@ -286,12 +284,15 @@ The :func:`@websocket() <.handlers.WebsocketRouteHandler>` :term:`decorator` is 
     from litestar import WebSocket
     from litestar.handlers.websocket_handlers import WebsocketRouteHandler
 
-
-    @WebsocketRouteHandler(path="/socket")
     async def my_websocket_handler(socket: WebSocket) -> None:
        await socket.accept()
        await socket.send_json({...})
        await socket.close()
+
+    my_websocket_handler = WebsocketRouteHandler(
+        path="/socket",
+        fn=my_websocket_handler,
+    )
 
 In difference to HTTP routes handlers, websocket handlers have the following requirements:
 
@@ -332,8 +333,8 @@ If you need to write your own ASGI application, you can do so using the :func:`@
        )
        await response(scope=scope, receive=receive, send=send)
 
-Like other route handlers, the :func:`@asgi() <.handlers.asgi>` :term:`decorator` is an alias of the
-:class:`~.handlers.ASGIRouteHandler` class. Thus, the code below is equivalent to the one above:
+:func:`@asgi() <.handlers.asgi>` :term:`decorator` can be used to create an instance of
+:class:`~.handlers.ASGIRouteHandler`. Therefore, the code below is equivalent to the one above:
 
 .. code-block:: python
     :caption: Using the :class:`~.handlers.ASGIRouteHandler` class directly
@@ -343,8 +344,6 @@ Like other route handlers, the :func:`@asgi() <.handlers.asgi>` :term:`decorator
     from litestar.status_codes import HTTP_400_BAD_REQUEST
     from litestar.types import Scope, Receive, Send
 
-
-    @ASGIRouteHandler(path="/my-asgi-app")
     async def my_asgi_app(scope: Scope, receive: Receive, send: Send) -> None:
        if scope["type"] == "http":
            if scope["method"] == "GET":
@@ -356,7 +355,10 @@ Like other route handlers, the :func:`@asgi() <.handlers.asgi>` :term:`decorator
        )
        await response(scope=scope, receive=receive, send=send)
 
-Limitations of ASGI route handlers
+    my_asgi_app = ASGIRouteHandler(path="/my-asgi-app", fn=my_asgi_app)
+
+
+ASGI route handler considerations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In difference to the other route handlers, the :func:`@asgi() <.handlers.asgi>` route handler accepts only three

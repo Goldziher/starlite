@@ -4,8 +4,9 @@ https://github.com/encode/starlette/blob/master/tests/test_responses.py And are 
 their API.
 """
 
+from collections.abc import AsyncIterator, Iterator
 from itertools import cycle
-from typing import TYPE_CHECKING, AsyncIterator, Iterator
+from typing import TYPE_CHECKING
 
 import anyio
 

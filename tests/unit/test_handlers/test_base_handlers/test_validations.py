@@ -5,14 +5,6 @@ import pytest
 from litestar import Litestar, post
 from litestar.dto import DTOData
 from litestar.exceptions import ImproperlyConfiguredException
-from litestar.handlers.base import BaseRouteHandler
-
-
-def test_raise_no_fn_validation() -> None:
-    handler = BaseRouteHandler(path="/")
-
-    with pytest.raises(ImproperlyConfiguredException):
-        handler.fn
 
 
 def test_dto_data_annotation_with_no_resolved_dto() -> None:

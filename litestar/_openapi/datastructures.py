@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
-from typing import TYPE_CHECKING, Iterator, Sequence, _GenericAlias  # type: ignore[attr-defined]
+from typing import TYPE_CHECKING, _GenericAlias  # type: ignore[attr-defined]
 
 from litestar.exceptions import ImproperlyConfiguredException
 from litestar.openapi.spec import Reference, Schema
 from litestar.params import KwargDefinition
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator, Sequence
+
     from litestar.openapi import OpenAPIConfig
     from litestar.plugins import OpenAPISchemaPluginProtocol
     from litestar.typing import FieldDefinition
@@ -243,6 +245,6 @@ class OpenAPIContext:
         if operation_id in self.operation_ids:
             raise ImproperlyConfiguredException(
                 "operation_ids must be unique, "
-                f"please ensure the value of 'operation_id' is either not set or unique for {operation_id}"
+                f"please ensure the value of 'operation_id' is either not set or unique for {operation_id!r}"
             )
         self.operation_ids.add(operation_id)

@@ -1,32 +1,21 @@
 from collections import defaultdict, deque
+from collections.abc import AsyncGenerator, Iterable, Mapping, MutableMapping, Sequence
 from dataclasses import MISSING, dataclass
 from functools import partial
 from inspect import Signature
 from typing import (
+    Annotated,
     Any,
-    AsyncGenerator,
     Callable,
     ClassVar,
-    DefaultDict,
-    Deque,
-    Dict,
-    FrozenSet,
     Generic,
-    Iterable,
-    List,
-    Mapping,
-    MutableMapping,
     Optional,
-    Sequence,
-    Set,
-    Tuple,
     TypeVar,
     Union,
     cast,
 )
 
 import pytest
-from typing_extensions import Annotated
 
 from litestar import Response, get
 from litestar.pagination import CursorPagination
@@ -48,7 +37,7 @@ class C:
 
 
 @get("/", sync_to_thread=False)
-def naive_handler() -> Dict[str, int]:
+def naive_handler() -> dict[str, int]:
     return {}
 
 
@@ -66,11 +55,11 @@ class Sub(C): ...
         ((Sub, C), True),
         ((Signature.from_callable(cast("Any", naive_handler.fn)).return_annotation, C), False),
         ((Signature.from_callable(cast("Any", response_handler.fn)).return_annotation, Response), True),
-        ((Dict[str, Any], C), False),
+        ((dict[str, Any], C), False),
         ((C(), C), False),
     ),
 )
-def test_is_class_and_subclass(args: Tuple[Any, Any], expected: bool) -> None:
+def test_is_class_and_subclass(args: tuple[Any, Any], expected: bool) -> None:
     assert is_class_and_subclass(*args) is expected
 
 
@@ -78,12 +67,12 @@ def test_is_class_and_subclass(args: Tuple[Any, Any], expected: bool) -> None:
     "value, expected",
     (
         (
-            (Tuple[int, ...], True),
-            (Tuple[int], True),
-            (List[str], True),
-            (Set[str], True),
-            (FrozenSet[str], True),
-            (Deque[str], True),
+            (tuple[int, ...], True),
+            (tuple[int], True),
+            (list[str], True),
+            (set[str], True),
+            (frozenset[str], True),
+            (deque[str], True),
             (Sequence[str], True),
             (Iterable[str], True),
             (list, True),
@@ -94,7 +83,7 @@ def test_is_class_and_subclass(args: Tuple[Any, Any], expected: bool) -> None:
             (str, False),
             (bytes, False),
             (dict, True),
-            (Dict[str, Any], True),
+            (dict[str, Any], True),
             (Union[str, int], False),
             (1, False),
         )
@@ -108,12 +97,12 @@ def test_is_non_string_iterable(value: Any, expected: bool) -> None:
     "value, expected",
     (
         (
-            (Tuple[int, ...], True),
-            (Tuple[int], True),
-            (List[str], True),
-            (Set[str], True),
-            (FrozenSet[str], True),
-            (Deque[str], True),
+            (tuple[int, ...], True),
+            (tuple[int], True),
+            (list[str], True),
+            (set[str], True),
+            (frozenset[str], True),
+            (deque[str], True),
             (Sequence[str], True),
             (Iterable[str], False),
             (list, True),
@@ -124,7 +113,7 @@ def test_is_non_string_iterable(value: Any, expected: bool) -> None:
             (str, False),
             (bytes, False),
             (dict, False),
-            (Dict[str, Any], False),
+            (dict[str, Any], False),
             (Union[str, int], False),
             (1, False),
         )
@@ -145,10 +134,10 @@ def test_is_generic(value: Any, expected: bool) -> None:
 @pytest.mark.parametrize(
     "value, expected",
     (
-        (Dict, True),
+        (dict, True),
         (dict, True),
         (defaultdict, True),
-        (DefaultDict, True),
+        (defaultdict, True),
         (Mapping, True),
         (MutableMapping, True),
         (list, False),
@@ -161,7 +150,7 @@ def test_is_mapping(value: Any, expected: bool) -> None:
 
 @pytest.mark.parametrize(
     "value, expected",
-    ((Any, True), (Union[Any, str], True), (int, False), (dict, False), (Dict[str, Any], False), (None, False)),
+    ((Any, True), (Union[Any, str], True), (int, False), (dict, False), (dict[str, Any], False), (None, False)),
 )
 def test_is_any(value: Any, expected: bool) -> None:
     assert is_any(value) is expected
@@ -202,7 +191,7 @@ def test_is_optional_union(value: Any, expected: bool) -> None:
     (
         (ClassVar[int], True),
         (Annotated[ClassVar[int], "abc"], True),
-        (Dict[str, int], False),
+        (dict[str, int], False),
         (None, False),
     ),
 )

@@ -58,12 +58,3 @@ def test_send_as_attachment(tmp_path: Path, assets_file: str) -> None:
         res = client.get("/static/test.txt")
         assert res.text == assets_file
         assert res.headers["content-disposition"].startswith("attachment")
-
-
-def test_upgrade_from_static(tmp_path: Path, assets_file: str) -> None:
-    from docs.examples.static_files import upgrade_from_static_1, upgrade_from_static_2
-
-    for app in [upgrade_from_static_1.app, upgrade_from_static_2.app]:
-        with TestClient(app) as client:
-            res = client.get("/static/test.txt")
-            assert res.text == assets_file

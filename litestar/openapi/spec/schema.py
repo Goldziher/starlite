@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Hashable, Mapping, Sequence
 from dataclasses import dataclass, field, fields, is_dataclass
-from typing import TYPE_CHECKING, Any, Hashable, Mapping, Sequence, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from litestar.openapi.spec.base import BaseSchemaObject
 from litestar.utils.predicates import is_non_string_sequence

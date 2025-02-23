@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import AsyncGenerator
 from datetime import timedelta
-from typing import AsyncGenerator, cast
+from typing import cast
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest

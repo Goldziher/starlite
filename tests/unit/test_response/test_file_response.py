@@ -1,9 +1,10 @@
 import os
+from collections.abc import Coroutine
 from datetime import datetime, timezone
 from email.utils import formatdate
 from os import stat, urandom
 from pathlib import Path
-from typing import Any, Coroutine
+from typing import Any
 
 import pytest
 from fsspec.implementations.local import LocalFileSystem

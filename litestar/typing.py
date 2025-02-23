@@ -3,11 +3,11 @@ from __future__ import annotations
 import dataclasses
 import warnings
 from collections import abc
-from copy import deepcopy
+from collections.abc import Collection, Mapping
 from dataclasses import dataclass, is_dataclass, replace
 from enum import Enum
 from inspect import Parameter, Signature
-from typing import Any, AnyStr, Callable, Collection, ForwardRef, Literal, Mapping, TypeVar, cast
+from typing import Any, AnyStr, Callable, ForwardRef, Literal, TypeVar, cast
 
 from litestar.types import Empty
 
@@ -16,16 +16,16 @@ try:
 except ImportError:
     annotated_types = Empty  # type: ignore[assignment]
 
+from typing import get_type_hints
+
 from msgspec import UnsetType
 from typing_extensions import (
     NewType,
     NotRequired,
     Required,
-    Self,
     TypeAliasType,
     get_args,
     get_origin,
-    get_type_hints,
     is_typeddict,
 )
 
@@ -143,9 +143,6 @@ class FieldDefinition:
     """Kwarg Parameter."""
     name: str
     """Field name."""
-
-    def __deepcopy__(self, memo: dict[str, Any]) -> Self:
-        return type(self)(**{attr: deepcopy(getattr(self, attr)) for attr in self.__slots__})
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, FieldDefinition):

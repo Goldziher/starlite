@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-
-from typing_extensions import Annotated
+from typing import Annotated
 
 from litestar import Litestar, post
 from litestar.dto import DataclassDTO, DTOConfig

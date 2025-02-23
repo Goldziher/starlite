@@ -6,7 +6,7 @@ from copy import copy
 from dataclasses import asdict
 from http import HTTPStatus
 from operator import attrgetter
-from typing import TYPE_CHECKING, Any, Iterator
+from typing import TYPE_CHECKING, Any
 
 from litestar._openapi.schema_generation import SchemaCreator
 from litestar._openapi.schema_generation.utils import get_formatted_examples
@@ -32,6 +32,8 @@ from litestar.typing import FieldDefinition
 from litestar.utils import get_enum_string_value, get_name
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from litestar._openapi.datastructures import OpenAPIContext
     from litestar.datastructures.cookie import Cookie
     from litestar.handlers.http_handlers import HTTPRouteHandler
@@ -127,7 +129,7 @@ class ResponseFactory:
         else:
             media_type = self.route_handler.media_type
 
-            if dto := self.route_handler.resolve_return_dto():
+            if dto := self.route_handler.return_dto:
                 result = dto.create_openapi_schema(
                     field_definition=self.field_definition,
                     handler_id=self.route_handler.handler_id,
@@ -209,7 +211,7 @@ class ResponseFactory:
         else:
             schema_creator = SchemaCreator.from_openapi_context(self.context, generate_examples=False)
 
-        for response_header in self.route_handler.resolve_response_headers():
+        for response_header in self.route_handler.response_headers:
             header = OpenAPIHeader()
             for attribute_name, attribute_value in (
                 (k, v) for k, v in asdict(response_header).items() if v is not None
@@ -223,7 +225,7 @@ class ResponseFactory:
 
             response.headers[response_header.name] = header
 
-        if cookies := self.route_handler.resolve_response_cookies():
+        if cookies := self.route_handler.response_cookies:
             response.headers["Set-Cookie"] = OpenAPIHeader(
                 schema=Schema(
                     all_of=[create_cookie_schema(cookie=cookie) for cookie in sorted(cookies, key=attrgetter("key"))]

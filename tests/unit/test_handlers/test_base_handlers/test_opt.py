@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Callable, Dict
+from typing import TYPE_CHECKING, Any, Callable
 
 import pytest
 
@@ -17,7 +17,7 @@ from litestar import (
 
 if TYPE_CHECKING:
     from litestar import WebSocket
-    from litestar.types import Receive, RouteHandlerType, Scope, Send
+    from litestar.types import AnyCallable, Receive, RouteHandlerType, Scope, Send
 
 
 def regular_handler() -> None: ...
@@ -41,9 +41,11 @@ async def socket_handler(socket: "WebSocket") -> None: ...
         (websocket, socket_handler),
     ],
 )
-def test_opt_settings(decorator: "RouteHandlerType", handler: Callable) -> None:
+def test_opt_settings(
+    decorator: Callable[..., Callable[["AnyCallable"], "RouteHandlerType"]], handler: "Callable"
+) -> None:
     base_opt = {"base": 1, "kwarg_value": 0}
-    result = decorator("/", opt=base_opt, kwarg_value=2)(handler)  # type: ignore[arg-type, call-arg]
+    result = decorator("/", opt=base_opt, kwarg_value=2)(handler)
     assert result.opt == {"base": 1, "kwarg_value": 2}
 
 
@@ -68,11 +70,11 @@ def test_opt_settings(decorator: "RouteHandlerType", handler: Callable) -> None:
     ],
 )
 def test_opt_resolution(
-    app_opt: Dict[str, Any],
-    router_opt: Dict[str, Any],
-    controller_opt: Dict[str, Any],
-    route_opt: Dict[str, Any],
-    expected_opt: Dict[str, Any],
+    app_opt: dict[str, Any],
+    router_opt: dict[str, Any],
+    controller_opt: dict[str, Any],
+    route_opt: dict[str, Any],
+    expected_opt: dict[str, Any],
 ) -> None:
     class MyController(Controller):
         path = "/controller"

@@ -3,10 +3,14 @@ from __future__ import annotations
 from inspect import isasyncgenfunction, isclass, isgeneratorfunction
 from typing import TYPE_CHECKING, Any
 
+from litestar._signature import SignatureModel
 from litestar.exceptions import ImproperlyConfiguredException
-from litestar.types import Empty
+from litestar.plugins import DIPlugin, PluginRegistry
+from litestar.types import Empty, TypeDecodersSequence
 from litestar.utils import ensure_async_callable
+from litestar.utils.helpers import unwrap_partial
 from litestar.utils.predicates import is_async_callable
+from litestar.utils.signature import ParsedSignature
 from litestar.utils.warnings import (
     warn_implicit_sync_to_thread,
     warn_sync_to_thread_with_async_callable,
@@ -14,9 +18,8 @@ from litestar.utils.warnings import (
 )
 
 if TYPE_CHECKING:
-    from litestar._signature import SignatureModel
+    from litestar.dto import AbstractDTO
     from litestar.types import AnyCallable
-    from litestar.utils.signature import ParsedSignature
 
 __all__ = ("Provide",)
 
@@ -25,19 +28,17 @@ class Provide:
     """Wrapper class for dependency injection"""
 
     __slots__ = (
+        "_parsed_fn_signature",
+        "_signature_model",
         "dependency",
         "has_async_generator_dependency",
         "has_sync_callable",
         "has_sync_generator_dependency",
-        "parsed_fn_signature",
-        "signature_model",
         "sync_to_thread",
         "use_cache",
         "value",
     )
 
-    parsed_fn_signature: ParsedSignature
-    signature_model: type[SignatureModel]
     dependency: AnyCallable
 
     def __init__(
@@ -90,6 +91,50 @@ class Provide:
         self.sync_to_thread = bool(sync_to_thread)
         self.use_cache = use_cache
         self.value: Any = Empty
+        self._parsed_fn_signature: ParsedSignature | None = None
+        self._signature_model: type[SignatureModel] | None = None
+
+    @property
+    def signature_model(self) -> type[SignatureModel]:
+        if self._signature_model is None:
+            raise ValueError(f"Cannot access signature model of Provider {self} because it is not finalized")
+        return self._signature_model
+
+    @property
+    def parsed_fn_signature(self) -> ParsedSignature:
+        if self._parsed_fn_signature is None:
+            raise ValueError(f"Cannot access parsed signature of Provider {self} because it is not finalized")
+        return self._parsed_fn_signature
+
+    def finalize(
+        self,
+        *,
+        plugins: PluginRegistry,
+        signature_namespace: dict[str, Any],
+        dependency_keys: set[str],
+        data_dto: type[AbstractDTO] | None,
+        type_decoders: TypeDecodersSequence,
+    ) -> None:
+        if self._parsed_fn_signature is None:
+            dependency = unwrap_partial(self.dependency)
+            plugin = next(
+                (p for p in plugins.di if isinstance(p, DIPlugin) and p.has_typed_init(dependency)),
+                None,
+            )
+            if plugin:
+                signature, init_type_hints = plugin.get_typed_init(dependency)
+                self._parsed_fn_signature = ParsedSignature.from_signature(signature, init_type_hints)
+            else:
+                self._parsed_fn_signature = ParsedSignature.from_fn(dependency, signature_namespace)
+
+        if self._signature_model is None:
+            self._signature_model = SignatureModel.create(
+                dependency_name_set=dependency_keys,
+                fn=self.dependency,
+                parsed_signature=self.parsed_fn_signature,
+                data_dto=data_dto,
+                type_decoders=type_decoders,
+            )
 
     async def __call__(self, **kwargs: Any) -> Any:
         """Call the provider's dependency."""

@@ -58,7 +58,7 @@ def test_pass_options() -> None:
         tags=tags,
     )
 
-    assert router.guards == [guard]
+    assert router.guards == (guard,)
     assert router.exception_handlers == exception_handlers
     assert router.opt == opts
     assert router.after_request is after_request

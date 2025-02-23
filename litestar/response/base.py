@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import itertools
 import re
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, Iterable, Literal, Mapping, TypeVar, overload
+from collections.abc import Iterable, Mapping
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, TypeVar, overload
 
 from litestar.datastructures.cookie import Cookie
 from litestar.datastructures.headers import ETag, MutableScopeHeaders
@@ -17,7 +18,6 @@ from litestar.utils.helpers import get_enum_string_value
 if TYPE_CHECKING:
     from typing import Optional
 
-    from litestar.app import Litestar
     from litestar.background_tasks import BackgroundTask, BackgroundTasks
     from litestar.connection import Request
     from litestar.types import (
@@ -397,7 +397,6 @@ class Response(Generic[T]):
 
     def to_asgi_response(
         self,
-        app: Litestar | None,
         request: Request,
         *,
         background: BackgroundTask | BackgroundTasks | None = None,
@@ -412,7 +411,6 @@ class Response(Generic[T]):
         """Create an ASGIResponse from a Response instance.
 
         Args:
-            app: The :class:`Litestar <.app.Litestar>` application instance.
             background: Background task(s) to be executed after the response is sent.
             cookies: A list of cookies to be set on the response.
             encoded_headers: A list of already encoded headers.
@@ -426,15 +424,6 @@ class Response(Generic[T]):
         Returns:
             An ASGIResponse instance.
         """
-
-        if app is not None:
-            warn_deprecation(
-                version="2.1",
-                deprecated_name="app",
-                kind="parameter",
-                removal_in="3.0.0",
-                alternative="request.app",
-            )
 
         headers = {**headers, **self.headers} if headers is not None else self.headers
         cookies = self.cookies if cookies is None else itertools.chain(self.cookies, cookies)

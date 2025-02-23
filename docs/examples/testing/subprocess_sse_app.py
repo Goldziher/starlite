@@ -2,7 +2,7 @@
 Assemble components into an app that shall be tested
 """
 
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 from litestar import Litestar, get
 from litestar.response import ServerSentEvent

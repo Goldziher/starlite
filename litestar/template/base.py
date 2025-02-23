@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Mapping, Protocol, TypedDict, TypeVar, cast, runtime_checkable
+from typing import TYPE_CHECKING, Any, Callable, Protocol, TypedDict, TypeVar, cast, runtime_checkable
 
 from typing_extensions import Concatenate, ParamSpec, TypeAlias
 
@@ -9,6 +9,7 @@ from litestar.utils.empty import value_or_default
 from litestar.utils.scope.state import ScopeState
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from pathlib import Path
 
     from litestar.connection import Request
@@ -19,7 +20,6 @@ __all__ = (
     "TemplateProtocol",
     "csrf_token",
     "url_for",
-    "url_for_static_asset",
 )
 
 
@@ -68,23 +68,6 @@ def csrf_token(context: Mapping[str, Any], /) -> str:
     """
     scope = _get_request_from_context(context).scope
     return value_or_default(ScopeState.from_scope(scope).csrf_token, "")
-
-
-def url_for_static_asset(context: Mapping[str, Any], /, name: str, file_path: str) -> str:
-    """Wrap :meth:`url_for_static_asset <litestar.app.url_for_static_asset>` to be used in templates.
-
-    Args:
-        context: The template context object.
-        name: A static handler unique name.
-        file_path: a string containing path to an asset.
-
-    Raises:
-        NoRouteMatchFoundException: If static files handler with ``name`` does not exist.
-
-    Returns:
-        A url path to the asset.
-    """
-    return _get_request_from_context(context).app.url_for_static_asset(name, file_path)
 
 
 class TemplateProtocol(Protocol):

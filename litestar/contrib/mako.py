@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from functools import partial
-from typing import TYPE_CHECKING, Any, Mapping, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from typing_extensions import ParamSpec
 
@@ -12,7 +13,6 @@ from litestar.template.base import (
     TemplateProtocol,
     csrf_token,
     url_for,
-    url_for_static_asset,
 )
 
 try:
@@ -82,7 +82,6 @@ class MakoTemplateEngine(TemplateEngineProtocol[MakoTemplate, Mapping[str, Any]]
             self.engine = engine_instance
 
         self._template_callables: list[tuple[str, TemplateCallableType]] = []
-        self.register_template_callable(key="url_for_static_asset", template_callable=url_for_static_asset)
         self.register_template_callable(key="csrf_token", template_callable=csrf_token)
         self.register_template_callable(key="url_for", template_callable=url_for)
 

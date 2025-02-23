@@ -6,11 +6,13 @@ import inspect
 import re
 from functools import cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Generator
+from typing import TYPE_CHECKING, Any
 
 from docutils.utils import get_source_line
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from docutils.nodes import Element, Node
     from sphinx.addnodes import pending_xref
     from sphinx.application import Sphinx

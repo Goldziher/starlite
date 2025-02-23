@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Pattern, Sequence
+from re import Pattern
+from typing import TYPE_CHECKING
 
 from litestar.exceptions import ImproperlyConfiguredException
 
@@ -10,6 +11,8 @@ __all__ = ("build_exclude_path_pattern", "should_bypass_middleware")
 from litestar.utils.warnings import warn_middleware_excluded_on_all_routes
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from litestar.types import Method, Scope, Scopes
 
 

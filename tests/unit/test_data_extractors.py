@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 from unittest.mock import AsyncMock
 
 import pytest
@@ -97,7 +97,7 @@ async def test_response_data_extractor() -> None:
     cookies = [Cookie(key="regular"), Cookie(key="auth")]
     response = ASGIResponse(body=b'{"hello":"world"}', cookies=cookies, headers=headers)
     extractor = ResponseDataExtractor()
-    messages: List[Any] = []
+    messages: list[Any] = []
 
     async def send(message: "Any") -> None:
         messages.append(message)

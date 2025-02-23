@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import sys
 import typing
-from copy import deepcopy
 from dataclasses import dataclass, replace
 from inspect import Signature, getmembers, isclass, ismethod
 from itertools import chain
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Annotated, Any, Union, get_type_hints
 
-from typing_extensions import Annotated, Self, get_args, get_origin, get_type_hints
+from typing_extensions import Self, get_args, get_origin
 
 from litestar import connection, datastructures, types
 from litestar.types import Empty
@@ -17,7 +16,7 @@ from litestar.utils.typing import expand_type_var_in_type_hint, unwrap_annotatio
 from litestar.utils.warnings import warn_signature_namespace_override
 
 if TYPE_CHECKING:
-    from typing import Sequence
+    from collections.abc import Sequence
 
     from litestar.types import AnyCallable
 
@@ -192,13 +191,6 @@ class ParsedSignature:
     """The return annotation of the callable."""
     original_signature: Signature
     """The raw signature as returned by :func:`inspect.signature`"""
-
-    def __deepcopy__(self, memo: dict[str, Any]) -> Self:
-        return type(self)(
-            parameters={k: deepcopy(v) for k, v in self.parameters.items()},
-            return_type=deepcopy(self.return_type),
-            original_signature=deepcopy(self.original_signature),
-        )
 
     @classmethod
     def from_fn(cls, fn: AnyCallable, signature_namespace: dict[str, Any]) -> Self:

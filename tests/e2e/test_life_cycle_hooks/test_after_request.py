@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import pytest
 
@@ -8,19 +8,19 @@ from litestar.testing import create_test_client
 from litestar.types import AfterRequestHookHandler
 
 
-def sync_after_request_handler(response: Response[Dict[str, str]]) -> Response[Dict[str, str]]:
+def sync_after_request_handler(response: Response[dict[str, str]]) -> Response[dict[str, str]]:
     assert isinstance(response, Response)
     response.content = {"hello": "moon"}
     return response
 
 
-async def async_after_request_handler(response: Response[Dict[str, str]]) -> Response[Dict[str, str]]:
+async def async_after_request_handler(response: Response[dict[str, str]]) -> Response[dict[str, str]]:
     assert isinstance(response, Response)
     response.content = {"hello": "moon"}
     return response
 
 
-async def async_after_request_handler_with_hello_world(response: Response[Dict[str, str]]) -> Response[Dict[str, str]]:
+async def async_after_request_handler_with_hello_world(response: Response[dict[str, str]]) -> Response[dict[str, str]]:
     assert isinstance(response, Response)
     response.content = {"hello": "world"}
     return response
@@ -35,10 +35,10 @@ async def async_after_request_handler_with_hello_world(response: Response[Dict[s
     ],
 )
 def test_after_request_handler_called(
-    after_request: Optional[AfterRequestHookHandler], expected: Dict[str, str]
+    after_request: Optional[AfterRequestHookHandler], expected: dict[str, str]
 ) -> None:
     @get(after_request=after_request)
-    def handler() -> Dict[str, str]:
+    def handler() -> dict[str, str]:
         return {"hello": "world"}
 
     with create_test_client(route_handlers=handler) as client:
@@ -65,7 +65,7 @@ def test_after_request_handler_resolution(
     router_after_request_handler: Optional[AfterRequestHookHandler],
     controller_after_request_handler: Optional[AfterRequestHookHandler],
     method_after_request_handler: Optional[AfterRequestHookHandler],
-    expected: Dict[str, str],
+    expected: dict[str, str],
 ) -> None:
     class MyController(Controller):
         path = "/hello"
@@ -73,7 +73,7 @@ def test_after_request_handler_resolution(
         after_request = controller_after_request_handler
 
         @get(after_request=method_after_request_handler)
-        def hello(self) -> Dict[str, str]:
+        def hello(self) -> dict[str, str]:
             return {"hello": "world"}
 
     router = Router(path="/greetings", route_handlers=[MyController], after_request=router_after_request_handler)

@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import io
 import re
+from collections.abc import AsyncGenerator, AsyncIterable, AsyncIterator, Iterable, Iterator
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, AsyncGenerator, AsyncIterable, AsyncIterator, Iterable, Iterator
+from typing import TYPE_CHECKING, Any
 
 from litestar.concurrency import sync_to_thread
 from litestar.exceptions import ImproperlyConfiguredException

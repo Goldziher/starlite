@@ -57,8 +57,6 @@ class RouteTrieNode:
     """Designate the node as having an `asgi` type handler."""
     is_mount: bool
     """Designate the node as being a mount route."""
-    is_static: bool
-    """Designate the node as being a static mount route."""
     path_parameters: dict[Method | Literal["websocket"] | Literal["asgi"], tuple[PathParameterDefinition, ...]]
     """A list of tuples containing path parameter definitions.
 
@@ -82,7 +80,6 @@ def create_node() -> RouteTrieNode:
         is_path_param_node=False,
         is_asgi=False,
         is_mount=False,
-        is_static=False,
         is_path_type=False,
         path_parameters={},
         path_template="",

@@ -3,10 +3,9 @@ from __future__ import annotations
 
 import dataclasses
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Generic, Tuple, TypeVar, Union
+from typing import TYPE_CHECKING, Annotated, Generic, TypeVar, Union
 
 import pytest
-from typing_extensions import Annotated
 
 from litestar import Request
 from litestar.dto import DataclassDTO, DTOConfig
@@ -130,7 +129,7 @@ def test_raises_invalid_annotation_for_non_homogenous_collection_types() -> None
     with pytest.raises(InvalidAnnotationException):
         dto_type.create_for_field_definition(
             handler_id="handler",
-            field_definition=FieldDefinition.from_annotation(Tuple[Model, str]),
+            field_definition=FieldDefinition.from_annotation(tuple[Model, str]),
         )
 
 

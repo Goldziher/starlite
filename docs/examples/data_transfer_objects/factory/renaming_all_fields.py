@@ -1,7 +1,7 @@
 from datetime import datetime
+from typing import Annotated
 
 from sqlalchemy.orm import Mapped, mapped_column
-from typing_extensions import Annotated
 
 from litestar import Litestar, post
 from litestar.dto import DTOConfig, dto_field

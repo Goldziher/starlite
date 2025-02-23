@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, Annotated, Optional, cast
 
 import pydantic as pydantic_v2
 import pytest
 from pydantic import v1 as pydantic_v1
-from typing_extensions import Annotated, Literal
+from typing_extensions import Literal
 
 from litestar import Request, post
 from litestar.dto import DTOConfig

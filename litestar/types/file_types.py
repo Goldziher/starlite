@@ -5,7 +5,6 @@ from typing import (
     TYPE_CHECKING,
     Any,
     AnyStr,
-    Awaitable,
     Literal,
     Protocol,
     TypedDict,
@@ -16,6 +15,8 @@ __all__ = ("FileInfo", "FileSystemProtocol")
 
 
 if TYPE_CHECKING:
+    from collections.abc import Awaitable
+
     from _typeshed import OpenBinaryMode, OpenTextMode
     from anyio import AsyncFile
     from typing_extensions import NotRequired

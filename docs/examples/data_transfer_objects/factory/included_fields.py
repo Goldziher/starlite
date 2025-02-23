@@ -1,10 +1,9 @@
 from datetime import datetime
-from typing import List
+from typing import Annotated
 from uuid import UUID
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing_extensions import Annotated
 
 from litestar import Litestar, post
 from litestar.dto import DTOConfig, dto_field
@@ -31,7 +30,7 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(info=dto_field("read-only"))
     address_id: Mapped[UUID] = mapped_column(ForeignKey("address.id"), info=dto_field("private"))
     address: Mapped[Address] = relationship(info=dto_field("read-only"))
-    pets: Mapped[List[Pets]] = relationship(info=dto_field("read-only"))
+    pets: Mapped[list[Pets]] = relationship(info=dto_field("read-only"))
 
 
 UserDTO = SQLAlchemyDTO[User]
