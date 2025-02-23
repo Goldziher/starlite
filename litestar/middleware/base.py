@@ -169,6 +169,7 @@ class ASGIMiddleware(abc.ABC):
         An instance of the individual middleware's will be created *once* and used to
         build up the internal middleware stack. As such, middlewares should *not* be
         stateful, as this state will be shared across all requests.
+        Any connection-specific state should be scoped to the `handle` implementation. Not doing so would typically lead to conflicting variable reads/writes across requests, and most likely bugs.
 
     .. example::
 
