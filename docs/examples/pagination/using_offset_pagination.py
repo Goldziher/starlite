@@ -1,5 +1,4 @@
 from itertools import islice
-from typing import List
 
 from polyfactory.factories.pydantic_factory import ModelFactory
 from pydantic import BaseModel
@@ -28,7 +27,7 @@ class PersonOffsetPaginator(AbstractSyncOffsetPaginator[Person]):
     def get_total(self) -> int:
         return len(self.data)
 
-    def get_items(self, limit: int, offset: int) -> List[Person]:
+    def get_items(self, limit: int, offset: int) -> list[Person]:
         return list(islice(islice(self.data, offset, None), limit))
 
 

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Tuple
+from typing import TYPE_CHECKING, Any
 
 from litestar import Controller, Litestar, Response, Router, get
 from litestar.testing import create_test_client
@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from litestar.types import Serializer
 
 
-def create_mock_encoder(name: str) -> Tuple[type, "Serializer"]:
+def create_mock_encoder(name: str) -> tuple[type, "Serializer"]:
     mock_type = type(name, (type,), {})
 
     def mock_encoder(obj: Any) -> Any:

@@ -12,7 +12,7 @@ import sys
 import time
 from contextlib import contextmanager, redirect_stderr
 from pathlib import Path
-from typing import TYPE_CHECKING, Generator
+from typing import TYPE_CHECKING
 
 import httpx
 import uvicorn
@@ -24,6 +24,8 @@ from sphinx.addnodes import highlightlang
 from litestar import Litestar
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from sphinx.application import Sphinx
 
 

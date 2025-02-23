@@ -1,5 +1,3 @@
-from typing import List
-
 from polyfactory.factories.pydantic_factory import ModelFactory
 from pydantic import BaseModel
 
@@ -27,7 +25,7 @@ class PersonClassicPaginator(AbstractSyncClassicPaginator[Person]):
     def get_total(self, page_size: int) -> int:
         return round(len(self.data) / page_size)
 
-    def get_items(self, page_size: int, current_page: int) -> List[Person]:
+    def get_items(self, page_size: int, current_page: int) -> list[Person]:
         return [self.data[i : i + page_size] for i in range(0, len(self.data), page_size)][current_page - 1]
 
 

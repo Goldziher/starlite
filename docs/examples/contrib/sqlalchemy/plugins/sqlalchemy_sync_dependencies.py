@@ -8,14 +8,12 @@ from litestar import Litestar, post
 from litestar.plugins.sqlalchemy import SQLAlchemyInitPlugin, SQLAlchemySyncConfig
 
 if TYPE_CHECKING:
-    from typing import Tuple
-
     from sqlalchemy import Engine
     from sqlalchemy.orm import Session
 
 
 @post("/", sync_to_thread=True)
-def handler(db_session: Session, db_engine: Engine) -> Tuple[int, int]:
+def handler(db_session: Session, db_engine: Engine) -> tuple[int, int]:
     one = db_session.execute(select(1)).scalar()
 
     with db_engine.begin() as conn:

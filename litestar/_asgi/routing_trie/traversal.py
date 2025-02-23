@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Pattern
+from typing import TYPE_CHECKING, Any
 
 from litestar._asgi.routing_trie.types import PathParameterSentinel
 from litestar.exceptions import MethodNotAllowedException, NotFoundException
@@ -11,6 +11,8 @@ __all__ = ("parse_node_handlers", "parse_path_params", "parse_path_to_route", "t
 
 
 if TYPE_CHECKING:
+    from re import Pattern
+
     from litestar._asgi.routing_trie.types import ASGIHandlerTuple, RouteTrieNode
     from litestar.types import ASGIApp, Method, RouteHandlerType
     from litestar.types.internal_types import PathParameterDefinition

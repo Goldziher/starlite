@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from typing import Annotated
 from uuid import UUID
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing_extensions import Annotated
 
 from litestar import Litestar, put
 from litestar.dto import DTOConfig

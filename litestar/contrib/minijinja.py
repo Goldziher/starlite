@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import functools
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Mapping, Protocol, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar, cast
 
 from typing_extensions import ParamSpec
 
@@ -23,6 +23,7 @@ except ImportError as e:
     raise MissingDependencyException("minijinja") from e
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from typing import Callable
 
     C = TypeVar("C", bound="Callable")

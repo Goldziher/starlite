@@ -1,5 +1,3 @@
-from typing import Type
-
 from polyfactory import BaseFactory
 
 from litestar import Controller, Litestar
@@ -8,7 +6,7 @@ from litestar._openapi.typescript_converter.converter import (
 )
 
 
-def test_openapi_to_typescript_converter(person_controller: Type[Controller], pet_controller: Type[Controller]) -> None:
+def test_openapi_to_typescript_converter(person_controller: type[Controller], pet_controller: type[Controller]) -> None:
     BaseFactory.seed_random(1)
     app = Litestar(route_handlers=[person_controller, pet_controller])
     assert app.openapi_schema

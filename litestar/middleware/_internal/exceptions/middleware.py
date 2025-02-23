@@ -4,7 +4,7 @@ import pdb  # noqa: T100
 from inspect import getmro
 from sys import exc_info
 from traceback import format_exception
-from typing import TYPE_CHECKING, Any, Type, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from litestar.enums import ScopeType
 from litestar.exceptions import HTTPException, LitestarException, WebSocketException
@@ -69,7 +69,7 @@ def get_exception_handler(exception_handlers: ExceptionHandlersMap, exc: Excepti
         default_handler = exception_handlers.get(HTTP_500_INTERNAL_SERVER_ERROR)
 
     return next(
-        (exception_handlers[cast("Type[Exception]", cls)] for cls in getmro(type(exc)) if cls in exception_handlers),
+        (exception_handlers[cast("type[Exception]", cls)] for cls in getmro(type(exc)) if cls in exception_handlers),
         default_handler,
     )
 

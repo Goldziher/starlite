@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from os.path import commonpath
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING, Any, Literal, Mapping, Sequence
+from typing import TYPE_CHECKING, Any, Literal
 
 from litestar.exceptions import ImproperlyConfiguredException, NotFoundException
 from litestar.file_system import BaseLocalFileSystem, FileSystemAdapter
@@ -17,6 +17,8 @@ from litestar.utils import normalize_path
 __all__ = ("create_static_files_router",)
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+
     from litestar.datastructures import CacheControlHeader
     from litestar.openapi.spec import SecurityRequirement
     from litestar.types import (

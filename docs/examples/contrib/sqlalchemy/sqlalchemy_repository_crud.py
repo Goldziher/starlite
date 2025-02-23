@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import date, datetime
-from typing import AsyncIterator
 from uuid import UUID
 
 import anyio

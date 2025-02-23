@@ -7,7 +7,8 @@ from litestar.types import Empty
 from litestar.utils.predicates import is_dataclass_instance
 
 if TYPE_CHECKING:
-    from typing import AbstractSet, Any, Iterable
+    from collections.abc import Iterable, Set
+    from typing import Any
 
     from litestar.types.protocols import DataclassProtocol
 
@@ -22,8 +23,8 @@ def extract_dataclass_fields(
     dt: DataclassProtocol,
     exclude_none: bool = False,
     exclude_empty: bool = False,
-    include: AbstractSet[str] | None = None,
-    exclude: AbstractSet[str] | None = None,
+    include: Set[str] | None = None,
+    exclude: Set[str] | None = None,
 ) -> tuple[Field[Any], ...]:
     """Extract dataclass fields.
 
@@ -61,8 +62,8 @@ def extract_dataclass_items(
     dt: DataclassProtocol,
     exclude_none: bool = False,
     exclude_empty: bool = False,
-    include: AbstractSet[str] | None = None,
-    exclude: AbstractSet[str] | None = None,
+    include: Set[str] | None = None,
+    exclude: Set[str] | None = None,
 ) -> tuple[tuple[str, Any], ...]:
     """Extract dataclass name, value pairs.
 

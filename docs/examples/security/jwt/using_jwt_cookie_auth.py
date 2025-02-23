@@ -1,5 +1,5 @@
 from os import environ
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
@@ -19,7 +19,7 @@ class User(BaseModel):
     email: EmailStr
 
 
-MOCK_DB: Dict[str, User] = {}
+MOCK_DB: dict[str, User] = {}
 
 
 # JWTCookieAuth requires a retrieve handler callable that receives the JWT token model and the ASGI connection

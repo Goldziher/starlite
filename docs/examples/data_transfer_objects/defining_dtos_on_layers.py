@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List
 from uuid import UUID, uuid4
 
 from litestar import Controller, delete, get, post, put
@@ -34,7 +33,7 @@ class UserController(Controller):
         return data
 
     @get("/", sync_to_thread=False)
-    def get_users(self) -> List[User]:
+    def get_users(self) -> list[User]:
         return [User(name="Mr Sunglass", email="mr.sunglass@example.com", age=30)]
 
     @get("/{user_id:uuid}", sync_to_thread=False)

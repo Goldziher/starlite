@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import TYPE_CHECKING, Any, Iterable, Literal, Sequence
+from typing import TYPE_CHECKING, Any, Literal
 from urllib.parse import urlencode
 
 from litestar.constants import REDIRECT_ALLOWED_MEDIA_TYPES, REDIRECT_STATUS_CODES
@@ -14,7 +14,7 @@ from litestar.utils import url_quote
 from litestar.utils.helpers import get_enum_string_value
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Iterable, Mapping, Sequence
 
     from litestar.background_tasks import BackgroundTask, BackgroundTasks
     from litestar.connection import Request

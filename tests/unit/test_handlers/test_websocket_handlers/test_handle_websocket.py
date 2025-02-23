@@ -1,4 +1,3 @@
-from typing import List
 from unittest.mock import MagicMock
 
 import pytest
@@ -30,7 +29,7 @@ def test_websocket_signature_namespace() -> None:
         path = "/ws"
         signature_namespace = {"c": float}
 
-        @websocket(path="/", signature_namespace={"d": List[str]})
+        @websocket(path="/", signature_namespace={"d": list[str]})
         async def simple_websocket_handler(
             self,
             socket: WebSocket,

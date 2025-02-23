@@ -1,7 +1,8 @@
 import logging
 import sys
+from collections.abc import Awaitable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, List, cast
+from typing import TYPE_CHECKING, Any, Callable, cast
 
 import pytest
 from _pytest.capture import CaptureFixture
@@ -14,8 +15,6 @@ from litestar.middleware import DefineMiddleware, MiddlewareProtocol
 from litestar.testing import create_test_client
 
 if TYPE_CHECKING:
-    from typing import Type
-
     from litestar.types import ASGIApp, Receive, Scope, Send
 
 logger = logging.getLogger(__name__)
@@ -124,9 +123,9 @@ def test_request_body_logging_middleware(caplog: LogCaptureFixture, capsys: "Cap
 def test_middleware_call_order() -> None:
     """Test that middlewares are called in the order they have been passed."""
 
-    results: List[int] = []
+    results: list[int] = []
 
-    def create_test_middleware(middleware_id: int) -> "Type[MiddlewareProtocol]":
+    def create_test_middleware(middleware_id: int) -> "type[MiddlewareProtocol]":
         class TestMiddleware(MiddlewareProtocol):
             def __init__(self, app: "ASGIApp") -> None:
                 self.app = app

@@ -6,7 +6,8 @@ their API.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, Generator
+from collections.abc import Generator
+from typing import TYPE_CHECKING, Any, Callable
 from unittest.mock import patch
 
 import pytest
@@ -85,11 +86,11 @@ def test_request_url_for() -> None:
     def proxy() -> None:
         pass
 
-    @get(path="/test", signature_namespace={"dict": Dict})
+    @get(path="/test", signature_namespace={"dict": dict})
     def root(request: Request[Any, Any, State]) -> dict[str, str]:
         return {"url": request.url_for("proxy")}
 
-    @get(path="/test-none", signature_namespace={"dict": Dict})
+    @get(path="/test-none", signature_namespace={"dict": dict})
     def test_none(request: Request[Any, Any, State]) -> dict[str, str]:
         return {"url": request.url_for("none")}
 
@@ -377,7 +378,7 @@ async def test_request_disconnect(create_scope: Callable[..., Scope]) -> None:
 
 
 def test_request_state() -> None:
-    @get("/", signature_namespace={"dict": Dict})
+    @get("/", signature_namespace={"dict": dict})
     def handler(request: Request[Any, Any, State]) -> dict[Any, Any]:
         request.state.test = 1
         assert request.state.test == 1
@@ -518,7 +519,7 @@ def test_state() -> None:
         assert request.state.main == 1
         request.state.main = 2
 
-    @get(path="/", signature_namespace={"dict": Dict})
+    @get(path="/", signature_namespace={"dict": dict})
     async def get_state(request: Request[Any, Any, State]) -> dict[str, str]:
         return {"state": request.state.main}
 

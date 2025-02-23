@@ -5,12 +5,8 @@ from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from typing import (
     TYPE_CHECKING,
     Any,
-    AsyncGenerator,
     Callable,
-    Dict,
-    Mapping,
     Optional,
-    Sequence,
     overload,
 )
 
@@ -39,7 +35,7 @@ from ._utils import (
 from .route_handler import WebsocketRouteHandler
 
 if TYPE_CHECKING:
-    from typing import Coroutine
+    from collections.abc import AsyncGenerator, Coroutine, Mapping, Sequence
 
     from litestar import Litestar, Router
     from litestar.dto import AbstractDTO
@@ -281,8 +277,8 @@ class WebsocketListenerRouteHandler(WebsocketRouteHandler):
     async def default_connection_lifespan(
         self,
         socket: WebSocket,
-        on_accept_dependencies: Optional[Dict[str, Any]] = None,  # noqa: UP006, UP007
-        on_disconnect_dependencies: Optional[Dict[str, Any]] = None,  # noqa: UP006, UP007
+        on_accept_dependencies: Optional[dict[str, Any]] = None,  # noqa: UP007
+        on_disconnect_dependencies: Optional[dict[str, Any]] = None,  # noqa: UP007
     ) -> AsyncGenerator[None, None]:
         """Handle the connection lifespan of a :class:`WebSocket <.connection.WebSocket>`.
 

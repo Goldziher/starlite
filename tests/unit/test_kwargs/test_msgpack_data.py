@@ -1,5 +1,6 @@
+from typing import Annotated
+
 from msgspec import Struct
-from typing_extensions import Annotated
 
 from litestar import post
 from litestar.enums import RequestEncodingType

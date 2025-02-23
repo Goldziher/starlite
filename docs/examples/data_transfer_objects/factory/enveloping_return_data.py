@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Generic, List, TypeVar
+from typing import Generic, TypeVar
 
 from sqlalchemy.orm import Mapped
 
@@ -16,7 +16,7 @@ T = TypeVar("T")
 @dataclass
 class WithCount(Generic[T]):
     count: int
-    data: List[T]
+    data: list[T]
 
 
 class User(Base):

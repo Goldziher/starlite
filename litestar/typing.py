@@ -3,10 +3,11 @@ from __future__ import annotations
 import dataclasses
 import warnings
 from collections import abc
+from collections.abc import Collection, Mapping
 from dataclasses import dataclass, is_dataclass, replace
 from enum import Enum
 from inspect import Parameter, Signature
-from typing import Any, AnyStr, Callable, Collection, ForwardRef, Literal, Mapping, TypeVar, cast
+from typing import Any, AnyStr, Callable, ForwardRef, Literal, TypeVar, cast
 
 from litestar.types import Empty
 
@@ -14,6 +15,8 @@ try:
     import annotated_types
 except ImportError:
     annotated_types = Empty  # type: ignore[assignment]
+
+from typing import get_type_hints
 
 from msgspec import UnsetType
 from typing_extensions import (
@@ -23,7 +26,6 @@ from typing_extensions import (
     TypeAliasType,
     get_args,
     get_origin,
-    get_type_hints,
     is_typeddict,
 )
 

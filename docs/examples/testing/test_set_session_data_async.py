@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from litestar import Litestar, Request, get
 from litestar.middleware.session.server_side import ServerSideSessionConfig
@@ -8,7 +8,7 @@ session_config = ServerSideSessionConfig()
 
 
 @get(path="/test", sync_to_thread=False)
-def get_session_data(request: Request) -> Dict[str, Any]:
+def get_session_data(request: Request) -> dict[str, Any]:
     return request.session
 
 

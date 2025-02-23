@@ -1,18 +1,12 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterable, AsyncIterator, Awaitable, Iterable, Iterator, Sequence
 from functools import partial
 from typing import (
     TYPE_CHECKING,
     Any,
-    AsyncIterable,
-    AsyncIterator,
-    Awaitable,
-    Dict,
-    Iterable,
-    Iterator,
     Literal,
     Optional,
-    Sequence,
     TypeVar,
     Union,
 )
@@ -43,5 +37,5 @@ StreamType: TypeAlias = Union[Iterable[T], Iterator[T], AsyncIterable[T], AsyncI
 MaybePartial: TypeAlias = Union[T, partial]
 """A potentially partial callable."""
 
-SSEData: TypeAlias = Union[int, str, bytes, Dict[str, Any], "ServerSentEventMessage"]
+SSEData: TypeAlias = Union[int, str, bytes, dict[str, Any], "ServerSentEventMessage"]
 """A type alias for SSE data."""

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any
 
 from litestar.connection import ASGIConnection
 from litestar.enums import HttpMethod, ScopeType
@@ -15,6 +15,8 @@ __all__ = ("AbstractAuthenticationMiddleware", "AuthenticationResult")
 
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from litestar.types import ASGIApp, Method, Receive, Scope, Scopes, Send
 
 

@@ -1,12 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator, Awaitable, Iterable, Iterator
 from typing import (
-    AsyncGenerator,
-    Awaitable,
     Callable,
     Generic,
-    Iterable,
-    Iterator,
     TypeVar,
     overload,
 )

@@ -12,7 +12,6 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
   "Natural Language :: English",
   "Operating System :: OS Independent",
-  "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -36,8 +35,7 @@ dependencies = [
   "httpx>=0.22",
   "exceptiongroup; python_version < \"3.11\"",
   "importlib-metadata; python_version < \"3.10\"",
-  "importlib-resources>=5.12.0; python_version < \"3.9\"",
-  "msgspec>=0.18.2",
+  "msgspec>=0.19.0",
   "multidict>=6.0.2",
   "polyfactory>=2.6.3",
   "pyyaml",
@@ -63,7 +61,7 @@ maintainers = [
 ]
 name = "litestar"
 readme = "README.md"
-requires-python = ">=3.8,<4.0"
+requires-python = ">=3.9,<4.0"
 version = "2.14.0"
 
 [project.urls]
@@ -103,8 +101,7 @@ prometheus = ["prometheus-client"]
 pydantic = [
   "pydantic",
   "email-validator",
-  "pydantic-extra-types!=2.9.0; python_version < \"3.9\"",
-  "pydantic-extra-types; python_version >= \"3.9\"",
+  "pydantic-extra-types",
 ]
 redis = ["redis[hiredis]>=4.4.4"]
 valkey = ["valkey[libvalkey]>=6.0.2"]
@@ -181,8 +178,7 @@ linting = [
 test = [
   "covdefaults",
   "pytest",
-  "pytest-asyncio<=0.24.0; python_version < \"3.9\"",
-  "pytest-asyncio>0.24.0; python_version >= \"3.9\"",
+  "pytest-asyncio>0.24.0",
   "pytest-cov",
   "pytest-lazy-fixtures",
   "pytest-mock",
@@ -257,7 +253,7 @@ enable_error_code = [
   "possibly-undefined",
   "redundant-self",
 ]
-python_version = "3.8"
+python_version = "3.9"
 
 disallow_any_generics = false
 show_error_codes = true
@@ -350,7 +346,7 @@ exclude = [
   "tests/unit/test_contrib/test_sqlalchemy.py",
 ]
 include = ["litestar", "tests"]
-pythonVersion = "3.8"
+pythonVersion = "3.9"
 reportUnnecessaryTypeIgnoreComments = true
 
 [tool.slotscheck]
@@ -440,7 +436,7 @@ lint.ignore = [
   "CPY001", # ruff - copyright notice at the top of the file
 ]
 src = ["litestar", "tests", "docs/examples"]
-target-version = "py38"
+target-version = "py39"
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -473,6 +469,9 @@ known-first-party = ["litestar", "tests", "examples"]
 "litestar/handlers/**/*.*" = ["N801"]
 "litestar/handlers/websocket_handlers/listener.py" = ["B027"]
 "litestar/params.py" = ["N802"]
+"litestar/utils/typing.py" = ["UP006", "UP035"]
+"litestar/utils/predicates.py" = ["UP006", "UP035"]
+"tests/unit/test_typing.py" = ["UP006", "UP035"]
 "test_apps/**/*.*" = ["D", "TRY", "EM", "S", "PTH"]
 "tests/**/*.*" = [
   "A",

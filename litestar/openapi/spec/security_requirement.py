@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List
-
-SecurityRequirement = Dict[str, List[str]]
+SecurityRequirement = dict[str, list[str]]
 """Lists the required security schemes to execute this operation. The name used for each property MUST correspond to a
 security scheme declared in the.
 

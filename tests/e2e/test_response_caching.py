@@ -1,7 +1,7 @@
 import gzip
 import random
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Optional, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union
 from unittest.mock import MagicMock
 from uuid import uuid4
 
@@ -214,7 +214,7 @@ def test_does_not_apply_to_non_cached_routes(mock: MagicMock) -> None:
     ],
 )
 def test_middleware_not_applied_to_non_cached_routes(
-    cache: Union[bool, int, Type[CACHE_FOREVER]], expect_applied: bool
+    cache: Union[bool, int, type[CACHE_FOREVER]], expect_applied: bool
 ) -> None:
     @get(path="/", cache=cache)
     def handler() -> None: ...
@@ -262,7 +262,7 @@ async def test_compression_applies_before_cache() -> None:
     ],
 )
 def test_default_do_response_cache_predicate(
-    mock: MagicMock, response: Union[int, Type[RuntimeError]], should_cache: bool
+    mock: MagicMock, response: Union[int, type[RuntimeError]], should_cache: bool
 ) -> None:
     @get("/", cache=True)
     def handler() -> Response[None]:

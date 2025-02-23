@@ -1,12 +1,10 @@
-from typing import Dict
-
 from litestar import Litestar, get
 from litestar.openapi.config import OpenAPIConfig
 from litestar.openapi.plugins import ScalarRenderPlugin
 
 
 @get("/", sync_to_thread=False)
-def hello_world() -> Dict[str, str]:
+def hello_world() -> dict[str, str]:
     return {"message": "Hello World"}
 
 

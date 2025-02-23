@@ -1,5 +1,3 @@
-from typing import Dict
-
 from litestar import Litestar, MediaType, Response, get
 
 
@@ -15,7 +13,7 @@ async def hello() -> str:
 
 
 @get("/goodbye")
-async def goodbye() -> Dict[str, str]:
+async def goodbye() -> dict[str, str]:
     return {"message": "Goodbye"}
 
 

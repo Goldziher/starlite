@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, ClassVar, Collection, Iterable, Protocol, TypeVar, runtime_checkable
+from collections.abc import Collection, Iterable
+from typing import Any, ClassVar, Protocol, TypeVar, runtime_checkable
 
 __all__ = (
     "DataclassProtocol",

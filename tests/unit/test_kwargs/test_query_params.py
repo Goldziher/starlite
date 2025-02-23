@@ -1,16 +1,13 @@
 from datetime import datetime
 from typing import (
+    Annotated,
     Any,
-    Dict,
-    List,
     Optional,
-    Tuple,
     Union,
 )
 from urllib.parse import urlencode
 
 import pytest
-from typing_extensions import Annotated
 
 from litestar import MediaType, Request, get, post
 from litestar.datastructures import MultiDict
@@ -108,7 +105,7 @@ def test_query_params(params_dict: dict, should_raise: bool) -> None:
     def test_method(
         page: int,
         page_size: int = Parameter(query="pageSize", gt=0, le=100),
-        brands: List[str] = Parameter(min_items=1, max_items=3),
+        brands: list[str] = Parameter(min_items=1, max_items=3),
         from_date: Optional[datetime] = None,
         to_date: Optional[datetime] = None,
     ) -> None:
@@ -129,8 +126,8 @@ def test_query_params(params_dict: dict, should_raise: bool) -> None:
 @pytest.mark.parametrize(
     "expected_type,provided_value,default,expected_response_code",
     [
-        (Union[int, List[int]], [1, 2, 3], None, HTTP_200_OK),
-        (Union[int, List[int]], [1], None, HTTP_200_OK),
+        (Union[int, list[int]], [1, 2, 3], None, HTTP_200_OK),
+        (Union[int, list[int]], [1], None, HTTP_200_OK),
     ],
 )
 def test_query_param_arrays(expected_type: Any, provided_value: Any, default: Any, expected_response_code: int) -> None:
@@ -166,7 +163,7 @@ def test_query_kwarg() -> None:
     )
 
     @get(test_path)
-    def handler(a: List[str], b: List[str], query: MultiDict) -> None:
+    def handler(a: list[str], b: list[str], query: MultiDict) -> None:
         assert isinstance(query, MultiDict)
         assert {k: query.getall(k) for k in query} == {"a": ["foo", "bar"], "b": ["qux"]}
         assert isinstance(a, list)
@@ -188,10 +185,10 @@ def test_query_kwarg() -> None:
         (("first", "a@A&.ac"), ("second", "aaa")),
     ),
 )
-def test_query_parsing_of_escaped_values(values: Tuple[Tuple[str, str], Tuple[str, str]]) -> None:
+def test_query_parsing_of_escaped_values(values: tuple[tuple[str, str], tuple[str, str]]) -> None:
     # https://github.com/litestar-org/litestar/issues/915
 
-    request_values: Dict[str, Any] = {}
+    request_values: dict[str, Any] = {}
 
     @get(path="/handler")
     def handler(request: Request, first: str, second: str) -> None:

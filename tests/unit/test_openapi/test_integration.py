@@ -3,12 +3,11 @@ from __future__ import annotations
 import dataclasses
 from dataclasses import dataclass
 from types import ModuleType
-from typing import Callable, Generic, Optional, TypeVar, cast
+from typing import Annotated, Callable, Generic, Optional, TypeVar, cast
 
 import msgspec
 import pytest
 import yaml
-from typing_extensions import Annotated
 
 from litestar import Controller, Litestar, delete, get, patch, post
 from litestar._openapi.plugin import OpenAPIPlugin

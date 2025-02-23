@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING
 
 from litestar.datastructures.cookie import Cookie
 from litestar.datastructures.response_header import ResponseHeader

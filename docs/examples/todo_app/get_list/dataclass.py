@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List
 
 from litestar import Litestar, get
 
@@ -10,7 +9,7 @@ class TodoItem:
     done: bool
 
 
-TODO_LIST: List[TodoItem] = [
+TODO_LIST: list[TodoItem] = [
     TodoItem(title="Start writing TODO list", done=True),
     TodoItem(title="???", done=False),
     TodoItem(title="Profit", done=False),
@@ -18,7 +17,7 @@ TODO_LIST: List[TodoItem] = [
 
 
 @get("/")
-async def get_list() -> List[TodoItem]:
+async def get_list() -> list[TodoItem]:
     return TODO_LIST
 
 

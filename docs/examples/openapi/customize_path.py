@@ -1,11 +1,9 @@
-from typing import Dict
-
 from litestar import Litestar, get
 from litestar.openapi.config import OpenAPIConfig
 
 
 @get("/")
-def hello_world() -> Dict[str, str]:
+def hello_world() -> dict[str, str]:
     return {"message": "Hello World"}
 
 

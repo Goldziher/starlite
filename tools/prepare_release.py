@@ -10,11 +10,14 @@ import shutil
 import subprocess
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Generator
+from typing import TYPE_CHECKING
 
 import click
 import httpx
 import msgspec
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 _polar = "[Polar.sh](https://polar.sh/litestar-org)"
 _open_collective = "[OpenCollective](https://opencollective.com/litestar)"

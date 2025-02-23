@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 from mimetypes import guess_type
 from pathlib import PurePath
-from typing import TYPE_CHECKING, Any, Iterable, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from litestar.enums import MediaType
 from litestar.exceptions import ImproperlyConfiguredException
@@ -13,6 +13,8 @@ from litestar.utils.empty import value_or_default
 from litestar.utils.scope.state import ScopeState
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from litestar.background_tasks import BackgroundTask, BackgroundTasks
     from litestar.connection import Request
     from litestar.datastructures import Cookie

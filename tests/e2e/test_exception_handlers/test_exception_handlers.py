@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 def test_exception_handling(exc_to_raise: HTTPException, expected_layer: str) -> None:
     caller = {"name": ""}
 
-    def create_named_handler(caller_name: str, expected_exception: Type[Exception]) -> "ExceptionHandler":
+    def create_named_handler(caller_name: str, expected_exception: type[Exception]) -> "ExceptionHandler":
         def handler(req: Request, exc: Exception) -> Response:
             assert isinstance(exc, expected_exception)
             assert isinstance(req, Request)

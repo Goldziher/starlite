@@ -1,5 +1,3 @@
-from typing import List
-
 from litestar import get
 from litestar.background_tasks import BackgroundTask, BackgroundTasks
 from litestar.status_codes import HTTP_200_OK
@@ -7,9 +5,9 @@ from litestar.testing import create_test_client
 
 
 async def test_background_tasks_regular_execution() -> None:
-    values: List[int] = []
+    values: list[int] = []
 
-    def extend_values(values_to_extend: List[int]) -> None:
+    def extend_values(values_to_extend: list[int]) -> None:
         values.extend(values_to_extend)
 
     tasks = BackgroundTasks(
@@ -27,9 +25,9 @@ async def test_background_tasks_regular_execution() -> None:
 
 
 async def test_background_tasks_task_group_execution() -> None:
-    values: List[int] = []
+    values: list[int] = []
 
-    def extend_values(values_to_extend: List[int]) -> None:
+    def extend_values(values_to_extend: list[int]) -> None:
         values.extend(values_to_extend)
 
     tasks = BackgroundTasks(

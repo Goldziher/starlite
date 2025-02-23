@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Callable, Dict
+from typing import TYPE_CHECKING, Any, Callable
 
 import pytest
 
@@ -70,11 +70,11 @@ def test_opt_settings(
     ],
 )
 def test_opt_resolution(
-    app_opt: Dict[str, Any],
-    router_opt: Dict[str, Any],
-    controller_opt: Dict[str, Any],
-    route_opt: Dict[str, Any],
-    expected_opt: Dict[str, Any],
+    app_opt: dict[str, Any],
+    router_opt: dict[str, Any],
+    controller_opt: dict[str, Any],
+    route_opt: dict[str, Any],
+    expected_opt: dict[str, Any],
 ) -> None:
     class MyController(Controller):
         path = "/controller"

@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union
+from typing import Optional, Union
 
 from pydantic import BaseModel
 from pydantic.dataclasses import dataclass as pydantic_dataclass
@@ -14,9 +14,9 @@ class PydanticDataclassPerson:
     last_name: str
     id: str
     optional: Optional[str]
-    complex: Dict[str, List[Dict[str, str]]]
-    union: Union[int, List[str]]
-    pets: Optional[List[DataclassPet]] = None
+    complex: dict[str, list[dict[str, str]]]
+    union: Union[int, list[str]]
+    pets: Optional[list[DataclassPet]] = None
 
 
 class PydanticPerson(BaseModel):
@@ -24,9 +24,9 @@ class PydanticPerson(BaseModel):
     last_name: str
     id: str
     optional: Optional[str]
-    complex: Dict[str, List[Dict[str, str]]]
-    union: Union[int, List[str]]
-    pets: Optional[List[DataclassPet]] = None
+    complex: dict[str, list[dict[str, str]]]
+    union: Union[int, list[str]]
+    pets: Optional[list[DataclassPet]] = None
 
 
 class PydanticV1Person(BaseModelV1):
@@ -34,9 +34,9 @@ class PydanticV1Person(BaseModelV1):
     last_name: str
     id: str
     optional: Optional[str]
-    complex: Dict[str, List[Dict[str, str]]]
-    union: Union[int, List[str]]
-    pets: Optional[List[DataclassPet]] = None
+    complex: dict[str, list[dict[str, str]]]
+    union: Union[int, list[str]]
+    pets: Optional[list[DataclassPet]] = None
 
 
 @dataclass_v1
@@ -45,6 +45,6 @@ class PydanticV1DataclassPerson:
     last_name: str
     id: str
     optional: Optional[str]
-    complex: Dict[str, List[Dict[str, str]]]
-    union: Union[int, List[str]]
-    pets: Optional[List[DataclassPet]] = None
+    complex: dict[str, list[dict[str, str]]]
+    union: Union[int, list[str]]
+    pets: Optional[list[DataclassPet]] = None

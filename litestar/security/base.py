@@ -3,12 +3,14 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from copy import copy
 from dataclasses import field
-from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, Sequence, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Callable, Generic, TypeVar, cast
 
 from litestar import Response
 from litestar.utils.sync import ensure_async_callable
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
+
     from litestar.config.app import AppConfig
     from litestar.connection import ASGIConnection
     from litestar.di import Provide

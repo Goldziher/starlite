@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass, field, fields
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 from litestar._openapi.utils import default_operation_id_creator
 from litestar.openapi.plugins import ScalarRenderPlugin
@@ -22,6 +22,8 @@ from litestar.openapi.spec import (
 from litestar.utils.path import normalize_path
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from litestar.openapi.plugins import OpenAPIRenderPlugin
     from litestar.router import Router
     from litestar.types.callable_types import OperationIDCreator

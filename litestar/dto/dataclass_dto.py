@@ -10,7 +10,7 @@ from litestar.params import DependencyKwarg, KwargDefinition
 from litestar.types.empty import Empty
 
 if TYPE_CHECKING:
-    from typing import Collection, Generator
+    from collections.abc import Collection, Generator
 
     from litestar.types.protocols import DataclassProtocol
     from litestar.typing import FieldDefinition

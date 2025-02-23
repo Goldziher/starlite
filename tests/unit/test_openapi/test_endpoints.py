@@ -1,5 +1,4 @@
-from collections.abc import Callable
-from typing import List, Sequence, Type
+from collections.abc import Callable, Sequence
 
 import pytest
 from typing_extensions import ParamSpec, TypeAlias
@@ -19,7 +18,7 @@ from litestar.openapi.plugins import (
 from litestar.status_codes import HTTP_200_OK, HTTP_404_NOT_FOUND
 from litestar.testing import create_test_client
 
-root_paths: List[str] = ["", "/part1", "/part1/part2"]
+root_paths: list[str] = ["", "/part1", "/part1/part2"]
 
 P = ParamSpec("P")
 ConfigFactoryType: TypeAlias = "Callable[[Sequence[OpenAPIRenderPlugin]], OpenAPIConfig]"
@@ -34,7 +33,7 @@ def config_factory() -> ConfigFactoryType:
 
 
 def test_default_redoc_cdn_urls(
-    person_controller: Type[Controller], pet_controller: Type[Controller], config_factory: ConfigFactoryType
+    person_controller: type[Controller], pet_controller: type[Controller], config_factory: ConfigFactoryType
 ) -> None:
     default_redoc_version = "next"
     default_redoc_js_bundle = f"https://cdn.jsdelivr.net/npm/redoc@{default_redoc_version}/bundles/redoc.standalone.js"
@@ -46,7 +45,7 @@ def test_default_redoc_cdn_urls(
 
 
 def test_default_swagger_ui_cdn_urls(
-    person_controller: Type[Controller], pet_controller: Type[Controller], config_factory: ConfigFactoryType
+    person_controller: type[Controller], pet_controller: type[Controller], config_factory: ConfigFactoryType
 ) -> None:
     default_swagger_ui_version = "5.18.2"
     default_swagger_bundles = [
@@ -62,7 +61,7 @@ def test_default_swagger_ui_cdn_urls(
 
 
 def test_default_stoplight_elements_cdn_urls(
-    person_controller: Type[Controller], pet_controller: Type[Controller], config_factory: ConfigFactoryType
+    person_controller: type[Controller], pet_controller: type[Controller], config_factory: ConfigFactoryType
 ) -> None:
     default_stoplight_elements_version = "7.7.18"
     default_stoplight_elements_bundles = [
@@ -77,7 +76,7 @@ def test_default_stoplight_elements_cdn_urls(
 
 
 def test_default_rapidoc_elements_cdn_urls(
-    person_controller: Type[Controller], pet_controller: Type[Controller], config_factory: ConfigFactoryType
+    person_controller: type[Controller], pet_controller: type[Controller], config_factory: ConfigFactoryType
 ) -> None:
     default_rapidoc_version = "9.3.4"
     default_rapidoc_bundles = [f"https://unpkg.com/rapidoc@{default_rapidoc_version}/dist/rapidoc-min.js"]
@@ -89,7 +88,7 @@ def test_default_rapidoc_elements_cdn_urls(
 
 
 def test_redoc_with_google_fonts(
-    person_controller: Type[Controller], pet_controller: Type[Controller], config_factory: ConfigFactoryType
+    person_controller: type[Controller], pet_controller: type[Controller], config_factory: ConfigFactoryType
 ) -> None:
     google_font_cdn = "https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700"
     with create_test_client(
@@ -100,7 +99,7 @@ def test_redoc_with_google_fonts(
 
 
 def test_redoc_without_google_fonts(
-    person_controller: Type[Controller], pet_controller: Type[Controller], config_factory: ConfigFactoryType
+    person_controller: type[Controller], pet_controller: type[Controller], config_factory: ConfigFactoryType
 ) -> None:
     offline_config = config_factory((RedocRenderPlugin(google_fonts=False),))
     with create_test_client([person_controller, pet_controller], openapi_config=offline_config) as client:
@@ -114,7 +113,7 @@ OFFLINE_LOCATION_OTHER_URL = "https://offline_location/bundle.other"
 
 
 def test_openapi_redoc_offline(
-    person_controller: Type[Controller], pet_controller: Type[Controller], config_factory: ConfigFactoryType
+    person_controller: type[Controller], pet_controller: type[Controller], config_factory: ConfigFactoryType
 ) -> None:
     offline_config = config_factory((RedocRenderPlugin(js_url=OFFLINE_LOCATION_JS_URL),))
     with create_test_client([person_controller, pet_controller], openapi_config=offline_config) as client:
@@ -123,7 +122,7 @@ def test_openapi_redoc_offline(
 
 
 def test_openapi_swagger_offline(
-    person_controller: Type[Controller], pet_controller: Type[Controller], config_factory: ConfigFactoryType
+    person_controller: type[Controller], pet_controller: type[Controller], config_factory: ConfigFactoryType
 ) -> None:
     offline_config = config_factory(
         (
@@ -143,7 +142,7 @@ def test_openapi_swagger_offline(
 
 
 def test_openapi_stoplight_elements_offline(
-    person_controller: Type[Controller], pet_controller: Type[Controller], config_factory: ConfigFactoryType
+    person_controller: type[Controller], pet_controller: type[Controller], config_factory: ConfigFactoryType
 ) -> None:
     offline_config = config_factory(
         (StoplightRenderPlugin(js_url=OFFLINE_LOCATION_JS_URL, css_url=OFFLINE_LOCATION_CSS_URL),)
@@ -154,7 +153,7 @@ def test_openapi_stoplight_elements_offline(
 
 
 def test_openapi_scalar_offline(
-    person_controller: Type[Controller], pet_controller: Type[Controller], config_factory: ConfigFactoryType
+    person_controller: type[Controller], pet_controller: type[Controller], config_factory: ConfigFactoryType
 ) -> None:
     offline_config = config_factory(
         (ScalarRenderPlugin(js_url=OFFLINE_LOCATION_JS_URL, css_url=OFFLINE_LOCATION_CSS_URL),)
@@ -165,7 +164,7 @@ def test_openapi_scalar_offline(
 
 
 def test_openapi_rapidoc_offline(
-    person_controller: Type[Controller], pet_controller: Type[Controller], config_factory: ConfigFactoryType
+    person_controller: type[Controller], pet_controller: type[Controller], config_factory: ConfigFactoryType
 ) -> None:
     offline_config = config_factory((RapidocRenderPlugin(js_url=OFFLINE_LOCATION_JS_URL),))
     with create_test_client([person_controller, pet_controller], openapi_config=offline_config) as client:
@@ -188,8 +187,8 @@ def test_openapi_plugins(
     root_path: str,
     plugin: OpenAPIRenderPlugin,
     path: str,
-    person_controller: Type[Controller],
-    pet_controller: Type[Controller],
+    person_controller: type[Controller],
+    pet_controller: type[Controller],
     config_factory: ConfigFactoryType,
 ) -> None:
     with create_test_client(
@@ -206,8 +205,8 @@ def test_openapi_plugins(
 @pytest.mark.parametrize("root_path", root_paths)
 def test_openapi_swagger_caching_schema(
     root_path: str,
-    person_controller: Type[Controller],
-    pet_controller: Type[Controller],
+    person_controller: type[Controller],
+    pet_controller: type[Controller],
     config_factory: ConfigFactoryType,
 ) -> None:
     with create_test_client(
@@ -225,7 +224,7 @@ def test_openapi_swagger_caching_schema(
         assert response.headers["content-type"].startswith(MediaType.HTML.value)
 
 
-def test_openapi_plugin_not_found(person_controller: Type[Controller], pet_controller: Type[Controller]) -> None:
+def test_openapi_plugin_not_found(person_controller: type[Controller], pet_controller: type[Controller]) -> None:
     with create_test_client(
         [person_controller, pet_controller],
         openapi_config=OpenAPIConfig(
@@ -248,7 +247,7 @@ def test_openapi_plugin_not_found(person_controller: Type[Controller], pet_contr
         ([JsonRenderPlugin(path=["/openapi.json", "/custom_path"])],),
     ],
 )
-def test_json_plugin_always_enabled(render_plugins: List["OpenAPIRenderPlugin"]) -> None:
+def test_json_plugin_always_enabled(render_plugins: list["OpenAPIRenderPlugin"]) -> None:
     """We assume that an '/openapi.json' path is available in many of the openapi render plugins.
 
     This test ensures that the json plugin is always enabled, even if the user has not explicitly

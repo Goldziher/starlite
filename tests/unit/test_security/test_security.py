@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 import pytest
 
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from litestar.handlers.base import BaseRouteHandler
 
 
-def retrieve_user_handler(_: Dict[str, Any], __: "ASGIConnection") -> Any:
+def retrieve_user_handler(_: dict[str, Any], __: "ASGIConnection") -> Any:
     pass
 
 

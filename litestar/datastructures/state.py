@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Generator, Iterable, Iterator, Mapping, MutableMapping
 from copy import deepcopy
 from threading import RLock
-from typing import TYPE_CHECKING, Any, Callable, Generator, Iterable, Iterator, Mapping, MutableMapping
+from typing import TYPE_CHECKING, Any, Callable
 
 from litestar.utils.scope.state import CONNECTION_STATE_KEY
 

@@ -1,5 +1,6 @@
+from collections.abc import Mapping
 from itertools import permutations
-from typing import TYPE_CHECKING, List, Mapping, Optional
+from typing import TYPE_CHECKING, Optional
 
 import pytest
 
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
     "http_methods",
     (list(perm) for perm in iter(permutations(["GET", "POST", "PATCH", "DELETE", "HEAD"], r=RANDOM.randrange(1, 6)))),
 )
-def test_regular_options_request(http_methods: List["Method"]) -> None:
+def test_regular_options_request(http_methods: list["Method"]) -> None:
     @route("/", http_method=http_methods)
     def handler() -> None:
         return None
@@ -88,7 +89,7 @@ def test_cors_options_request_with_wrong_origin_fails() -> None:
     ),
 )
 def test_cors_options_request_with_different_domains_matches_regex(
-    allowed_origins: List[str], allowed_origin_regex: Optional[str], origin: str
+    allowed_origins: list[str], allowed_origin_regex: Optional[str], origin: str
 ) -> None:
     @get("/")
     def handler() -> None:

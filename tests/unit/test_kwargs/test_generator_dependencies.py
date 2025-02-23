@@ -1,4 +1,5 @@
-from typing import AsyncGenerator, Callable, Dict, Generator
+from collections.abc import AsyncGenerator, Generator
+from typing import Callable
 from unittest.mock import MagicMock
 
 import pytest
@@ -68,7 +69,7 @@ def test_generator_dependency(
     dependency = request.getfixturevalue(dependency_fixture)
 
     @get("/", dependencies={"dep": dependency}, cache=cache)
-    def handler(dep: str) -> Dict[str, str]:
+    def handler(dep: str) -> dict[str, str]:
         return {"value": dep}
 
     with create_test_client(route_handlers=[handler]) as client:
@@ -114,7 +115,7 @@ def test_generator_dependency_handle_exception_debug_false(
     dependency = request.getfixturevalue(dependency_fixture)
 
     @get("/", dependencies={"dep": dependency})
-    def handler(dep: str) -> Dict[str, str]:
+    def handler(dep: str) -> dict[str, str]:
         raise ValueError("foo")
 
     with create_test_client(route_handlers=[handler], debug=False) as client:
@@ -138,7 +139,7 @@ def test_generator_dependency_exception_during_cleanup_debug_false(
     cleanup_mock.side_effect = Exception("foo")
 
     @get("/", dependencies={"dep": dependency})
-    def handler(dep: str) -> Dict[str, str]:
+    def handler(dep: str) -> dict[str, str]:
         return {"value": dep}
 
     with create_test_client(route_handlers=[handler], debug=False) as client:
@@ -174,7 +175,7 @@ def test_generator_dependency_nested(
             "nested_two": nested_dependency_two,
         },
     )
-    def handler(nested_two: str) -> Dict[str, str]:
+    def handler(nested_two: str) -> dict[str, str]:
         return {"value": nested_two}
 
     with create_test_client(route_handlers=[handler]) as client:
@@ -208,7 +209,7 @@ def test_generator_dependency_nested_error_during_cleanup(
         "/",
         dependencies={"generator_dep": dependency, "other": other_dependency},
     )
-    def handler(other: str) -> Dict[str, str]:
+    def handler(other: str) -> dict[str, str]:
         return {"value": other}
 
     with create_test_client(route_handlers=[handler]) as client:

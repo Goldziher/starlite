@@ -6,7 +6,7 @@ import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from dataclasses import fields
-from typing import TYPE_CHECKING, Any, Callable, List, Tuple
+from typing import TYPE_CHECKING, Any, Callable
 from unittest.mock import MagicMock, Mock, PropertyMock
 
 import pytest
@@ -31,8 +31,6 @@ from litestar.status_codes import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_500_IN
 from litestar.testing import TestClient, create_test_client
 
 if TYPE_CHECKING:
-    from typing import Dict
-
     from litestar.types import Message, Scope
 
 
@@ -160,7 +158,7 @@ def test_app_config_object_used(app_config_object: AppConfig, monkeypatch: pytes
 
     # replace each field on the `AppConfig` object with a `PropertyMock`, this allows us to assert that the properties
     # have been accessed during app instantiation.
-    property_mocks: List[Tuple[str, Mock]] = []
+    property_mocks: list[tuple[str, Mock]] = []
     for field in fields(AppConfig):
         property_mock = PropertyMock()
         property_mocks.append((field.name, property_mock))
@@ -232,7 +230,7 @@ def test_app_from_config(app_config_object: AppConfig) -> None:
 
 def test_before_send() -> None:
     @get("/test")
-    def handler() -> Dict[str, str]:
+    def handler() -> dict[str, str]:
         return {"key": "value"}
 
     async def before_send_hook_handler(message: Message, scope: Scope) -> None:

@@ -1,4 +1,4 @@
-from typing import Dict, Generator
+from collections.abc import Generator
 
 from litestar import Litestar, get
 from litestar.di import Provide
@@ -22,7 +22,7 @@ def generator_function() -> Generator[str, None, None]:
 
 
 @get("/{name:str}", dependencies={"message": Provide(generator_function)})
-def index(name: str, message: str) -> Dict[str, str]:
+def index(name: str, message: str) -> dict[str, str]:
     """If `name` is "John", return a message, otherwise raise an error."""
     if name == "John":
         return {name: message}

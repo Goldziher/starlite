@@ -1,9 +1,9 @@
-from typing import Dict, Optional
+from typing import Optional
 
 from litestar import Litestar, Request, get
 
 
-async def before_request_handler(request: Request) -> Optional[Dict[str, str]]:
+async def before_request_handler(request: Request) -> Optional[dict[str, str]]:
     name = request.query_params["name"]
     if name == "Ben":
         return {"message": "These are not the bytes you are looking for"}
@@ -12,7 +12,7 @@ async def before_request_handler(request: Request) -> Optional[Dict[str, str]]:
 
 
 @get("/")
-async def handler(request: Request, name: str) -> Dict[str, str]:
+async def handler(request: Request, name: str) -> dict[str, str]:
     message: str = request.state["message"]
     return {"message": message}
 

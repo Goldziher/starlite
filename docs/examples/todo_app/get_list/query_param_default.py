@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 
 from litestar import Litestar, get
 
@@ -10,7 +10,7 @@ class TodoItem:
     done: bool
 
 
-TODO_LIST: List[TodoItem] = [
+TODO_LIST: list[TodoItem] = [
     TodoItem(title="Start writing TODO list", done=True),
     TodoItem(title="???", done=False),
     TodoItem(title="Profit", done=False),
@@ -18,7 +18,7 @@ TODO_LIST: List[TodoItem] = [
 
 
 @get("/")
-async def get_list(done: Optional[bool] = None) -> List[TodoItem]:
+async def get_list(done: Optional[bool] = None) -> list[TodoItem]:
     if done is None:
         return TODO_LIST
     return [item for item in TODO_LIST if item.done == done]

@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from contextlib import AsyncExitStack
-from typing import Any, AsyncGenerator, Iterable
+from typing import TYPE_CHECKING, Any
 
 from psycopg import AsyncConnection
 from psycopg.sql import SQL, Identifier
 
 from litestar.channels.backends.base import ChannelsBackend
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator, Iterable
 
 
 class PsycoPgChannelsBackend(ChannelsBackend):

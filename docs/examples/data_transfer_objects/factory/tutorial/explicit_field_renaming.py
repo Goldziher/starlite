@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List
 
 from litestar import Litestar, get
 from litestar.dto import DataclassDTO, DTOConfig
@@ -20,7 +19,7 @@ class Person:
     age: int
     email: str
     address: Address
-    children: List[Person]
+    children: list[Person]
 
 
 class ReadDTO(DataclassDTO[Person]):

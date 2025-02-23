@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING
 
 from litestar.enums import HttpMethod, MediaType
 from litestar.handlers import HTTPRouteHandler
@@ -8,6 +8,8 @@ from litestar.response import Response
 from litestar.status_codes import HTTP_204_NO_CONTENT
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from litestar.types import Method
 
 

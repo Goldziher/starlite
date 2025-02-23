@@ -3,8 +3,9 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 from functools import lru_cache
+from re import Pattern
 from traceback import format_exc
-from typing import TYPE_CHECKING, Any, Pattern
+from typing import TYPE_CHECKING, Any
 
 from litestar._asgi.routing_trie import validate_node
 from litestar._asgi.routing_trie.mapping import add_route_to_trie

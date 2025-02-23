@@ -1,5 +1,5 @@
 from itertools import islice
-from typing import Any, List, Optional, Tuple
+from typing import Any, Optional
 
 import pytest
 
@@ -24,52 +24,52 @@ from tests.models import DataclassPerson, DataclassPersonFactory
 class TestSyncClassicPaginator(AbstractSyncClassicPaginator[DataclassPerson]):
     __test__ = False
 
-    def __init__(self, data: List[DataclassPerson]):
+    def __init__(self, data: list[DataclassPerson]):
         self.data = data
 
     def get_total(self, page_size: int) -> int:
         return round(len(self.data) / page_size)
 
-    def get_items(self, page_size: int, current_page: int) -> List[DataclassPerson]:
+    def get_items(self, page_size: int, current_page: int) -> list[DataclassPerson]:
         return [self.data[i : i + page_size] for i in range(0, len(self.data), page_size)][current_page - 1]
 
 
 class TestAsyncClassicPaginator(AbstractAsyncClassicPaginator[DataclassPerson]):
     __test__ = False
 
-    def __init__(self, data: List[DataclassPerson]):
+    def __init__(self, data: list[DataclassPerson]):
         self.data = data
 
     async def get_total(self, page_size: int) -> int:
         return round(len(self.data) / page_size)
 
-    async def get_items(self, page_size: int, current_page: int) -> List[DataclassPerson]:
+    async def get_items(self, page_size: int, current_page: int) -> list[DataclassPerson]:
         return [self.data[i : i + page_size] for i in range(0, len(self.data), page_size)][current_page - 1]
 
 
 class TestSyncOffsetPaginator(AbstractSyncOffsetPaginator[DataclassPerson]):
     __test__ = False
 
-    def __init__(self, data: List[DataclassPerson]):
+    def __init__(self, data: list[DataclassPerson]):
         self.data = data
 
     def get_total(self) -> int:
         return len(self.data)
 
-    def get_items(self, limit: int, offset: int) -> List[DataclassPerson]:
+    def get_items(self, limit: int, offset: int) -> list[DataclassPerson]:
         return list(islice(islice(self.data, offset, None), limit))
 
 
 class TestAsyncOffsetPaginator(AbstractAsyncOffsetPaginator[DataclassPerson]):
     __test__ = False
 
-    def __init__(self, data: List[DataclassPerson]):
+    def __init__(self, data: list[DataclassPerson]):
         self.data = data
 
     async def get_total(self) -> int:
         return len(self.data)
 
-    async def get_items(self, limit: int, offset: int) -> List[DataclassPerson]:
+    async def get_items(self, limit: int, offset: int) -> list[DataclassPerson]:
         return list(islice(islice(self.data, offset, None), limit))
 
 
@@ -193,10 +193,10 @@ def test_limit_offset_pagination_openapi_schema(paginator: Any) -> None:
 class TestSyncCursorPagination(AbstractSyncCursorPaginator[str, DataclassPerson]):
     __test__ = False
 
-    def __init__(self, data: List[DataclassPerson]):
+    def __init__(self, data: list[DataclassPerson]):
         self.data = data
 
-    def get_items(self, cursor: Optional[str], results_per_page: int) -> "Tuple[List[DataclassPerson], Optional[str]]":
+    def get_items(self, cursor: Optional[str], results_per_page: int) -> "tuple[list[DataclassPerson], Optional[str]]":
         results = self.data[:results_per_page]
         return results, results[-1].id
 
@@ -204,12 +204,12 @@ class TestSyncCursorPagination(AbstractSyncCursorPaginator[str, DataclassPerson]
 class TestAsyncCursorPagination(AbstractAsyncCursorPaginator[str, DataclassPerson]):
     __test__ = False
 
-    def __init__(self, data: List[DataclassPerson]):
+    def __init__(self, data: list[DataclassPerson]):
         self.data = data
 
     async def get_items(
         self, cursor: Optional[str], results_per_page: int
-    ) -> "Tuple[List[DataclassPerson], Optional[str]]":
+    ) -> "tuple[list[DataclassPerson], Optional[str]]":
         results = self.data[:results_per_page]
         return results, results[-1].id
 

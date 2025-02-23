@@ -1,4 +1,4 @@
-from typing import Any, Type
+from typing import Any
 
 from msgspec import Struct
 
@@ -36,7 +36,7 @@ class TenantUser:
         return self.tenant_prefix + "_" + self.user_id
 
 
-def tenant_user_type_predicate(type: Type) -> bool:
+def tenant_user_type_predicate(type: type) -> bool:
     return type is TenantUser
 
 
@@ -48,7 +48,7 @@ def tenant_user_dec_hook(tenant_user_id_str: str) -> TenantUser:
     return TenantUser.from_string(tenant_user_id_str)
 
 
-def general_dec_hook(type: Type, obj: Any) -> Any:
+def general_dec_hook(type: type, obj: Any) -> Any:
     if tenant_user_type_predicate(type):
         return tenant_user_dec_hook(obj)
 

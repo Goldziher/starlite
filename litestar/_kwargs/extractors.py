@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from functools import lru_cache, partial
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Mapping, NamedTuple, cast
+from typing import TYPE_CHECKING, Any, Callable, NamedTuple, cast
 
 from litestar._multipart import parse_multipart_form
 from litestar._parsers import (
@@ -21,6 +21,8 @@ from litestar.utils.predicates import is_non_string_sequence, is_optional_union
 from litestar.utils.scope.state import ScopeState
 
 if TYPE_CHECKING:
+    from collections.abc import Coroutine, Mapping
+
     from litestar._kwargs import KwargsModel
     from litestar._kwargs.parameter_definition import ParameterDefinition
     from litestar._kwargs.types import Extractor

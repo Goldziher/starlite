@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 from sys import version_info
-from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
+from typing import Annotated, Any, Dict, Generic, List, Optional, TypeVar, Union  # noqa: UP035
 
 import pytest
-from typing_extensions import Annotated
 
 from litestar.utils.typing import (
     expand_type_var_in_type_hint,

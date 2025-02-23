@@ -1,5 +1,6 @@
+from typing import Annotated
+
 from pydantic import BaseModel, Json, conint
-from typing_extensions import Annotated
 
 from litestar import Litestar, get
 from litestar.openapi.spec.example import Example

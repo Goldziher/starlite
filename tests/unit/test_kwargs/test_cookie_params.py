@@ -1,7 +1,6 @@
-from typing import Optional, Type
+from typing import Annotated, Optional
 
 import pytest
-from typing_extensions import Annotated
 
 from litestar import get, post
 from litestar.params import Parameter, ParameterKwarg
@@ -29,7 +28,7 @@ from litestar.testing import create_test_client
         ),
     ],
 )
-def test_cookie_params(t_type: Type, param_dict: dict, param: ParameterKwarg, expected_code: int) -> None:
+def test_cookie_params(t_type: type, param_dict: dict, param: ParameterKwarg, expected_code: int) -> None:
     test_path = "/test"
 
     @get(path=test_path)

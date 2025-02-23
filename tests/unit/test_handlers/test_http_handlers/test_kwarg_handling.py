@@ -1,4 +1,4 @@
-from typing import Any, Optional, Type
+from typing import Any, Optional
 
 import pytest
 from hypothesis import given
@@ -28,7 +28,7 @@ def test_route_handler_kwarg_handling(
     http_method: Any,
     media_type: MediaType,
     include_in_schema: bool,
-    response_class: Optional[Type[Response]],
+    response_class: Optional[type[Response]],
     response_headers: Any,
     status_code: Any,
     path: Any,

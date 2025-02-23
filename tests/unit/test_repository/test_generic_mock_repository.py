@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Protocol, Type, Union, cast
+from typing import Protocol, Union, cast
 from uuid import uuid4
 
 import pytest
@@ -20,9 +20,9 @@ from tests.helpers import maybe_async
 from tests.unit.test_repository.models_uuid import UUIDAuthor, UUIDBook
 
 AuthorRepository = GenericAsyncMockRepository[UUIDAuthor]
-AuthorRepositoryType = Type[AuthorRepository]
-ModelType = Type[Union[base.UUIDBase, base.BigIntBase]]
-AuditModelType = Type[Union[base.UUIDAuditBase, base.BigIntAuditBase]]
+AuthorRepositoryType = type[AuthorRepository]
+ModelType = type[Union[base.UUIDBase, base.BigIntBase]]
+AuditModelType = type[Union[base.UUIDAuditBase, base.BigIntAuditBase]]
 
 
 class CreateAuditModelFixture(Protocol):

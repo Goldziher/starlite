@@ -1,19 +1,16 @@
 from __future__ import annotations
 
 import asyncio
-import sys
-
-if sys.version_info < (3, 9):
-    import importlib_resources  # pyright: ignore
-else:
-    import importlib.resources as importlib_resources
+import importlib.resources as importlib_resources
 from abc import ABC
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Iterable, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from litestar.channels.backends.base import ChannelsBackend
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator, Iterable
+
     from redis.asyncio import Redis
     from redis.asyncio.client import PubSub
 

@@ -1,6 +1,4 @@
-from typing import Any
-
-from typing_extensions import Annotated
+from typing import Annotated, Any
 
 from litestar import Litestar, get
 from litestar.params import Dependency

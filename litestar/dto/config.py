@@ -6,8 +6,6 @@ from typing import TYPE_CHECKING
 from litestar.exceptions import ImproperlyConfiguredException
 
 if TYPE_CHECKING:
-    from typing import AbstractSet
-
     from litestar.dto.types import RenameStrategy
 
 __all__ = ("DTOConfig",)
@@ -17,7 +15,7 @@ __all__ = ("DTOConfig",)
 class DTOConfig:
     """Control the generated DTO."""
 
-    exclude: AbstractSet[str] = field(default_factory=set)
+    exclude: set[str] = field(default_factory=set)
     """Explicitly exclude fields from the generated DTO.
 
     If exclude is specified, all fields not specified in exclude will be included by default.
@@ -28,7 +26,7 @@ class DTOConfig:
         - 'exclude' mutually exclusive with 'include' - specifying both values will raise an
             ``ImproperlyConfiguredException``.
     """
-    include: AbstractSet[str] = field(default_factory=set)
+    include: set[str] = field(default_factory=set)
     """Explicitly include fields in the generated DTO.
 
     If include is specified, all fields not specified in include will be excluded by default.

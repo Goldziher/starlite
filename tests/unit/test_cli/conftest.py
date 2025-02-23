@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+from collections.abc import Generator
 from pathlib import Path
 from shutil import rmtree
-from typing import TYPE_CHECKING, Callable, Generator, Protocol, cast
+from typing import TYPE_CHECKING, Callable, Protocol, cast
 
 import pytest
 from _pytest.fixtures import FixtureRequest

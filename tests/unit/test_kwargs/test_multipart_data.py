@@ -6,11 +6,10 @@ from dataclasses import asdict, dataclass
 from os import path
 from os.path import dirname, join, realpath
 from pathlib import Path
-from typing import Any, DefaultDict, Dict, List, Optional
+from typing import Annotated, Any, Optional
 
 import msgspec
 import pytest
-from typing_extensions import Annotated
 
 from litestar import Request, post
 from litestar.datastructures.upload_file import UploadFile
@@ -30,7 +29,7 @@ class FormData:
 
 
 @post("/form")
-async def form_handler(request: Request) -> Dict[str, Any]:
+async def form_handler(request: Request) -> dict[str, Any]:
     data = await request.form()
     output = {}
     for key, value in data.items():
@@ -47,7 +46,7 @@ async def form_handler(request: Request) -> Dict[str, Any]:
 
 
 @post("/form")
-async def form_multi_item_handler(request: Request) -> DefaultDict[str, list]:
+async def form_multi_item_handler(request: Request) -> defaultdict[str, list]:
     data = await request.form()
     output = defaultdict(list)
     for key, value in data.multi_items():
@@ -66,7 +65,7 @@ async def form_multi_item_handler(request: Request) -> DefaultDict[str, list]:
 
 
 @post("/form")
-async def form_with_headers_handler(request: Request) -> Dict[str, Any]:
+async def form_with_headers_handler(request: Request) -> dict[str, Any]:
     data = await request.form()
     output = {}
     for key, value in data.items():
@@ -83,7 +82,7 @@ async def form_with_headers_handler(request: Request) -> Dict[str, Any]:
     return output
 
 
-@pytest.mark.parametrize("t_type", [FormData, Dict[str, UploadFile], List[UploadFile], UploadFile])
+@pytest.mark.parametrize("t_type", [FormData, dict[str, UploadFile], list[UploadFile], UploadFile])
 def test_request_body_multi_part(t_type: type) -> None:
     test_path = "/test"
     data = asdict(Form(name="Moishe Zuchmir", age=30, programmer=True, value="100"))
@@ -101,7 +100,7 @@ def test_request_body_multi_part_mixed_field_content_types() -> None:
     @dataclass()
     class MultiPartFormWithMixedFields:
         image: UploadFile
-        tags: List[int]
+        tags: list[int]
 
     @post(path="/form", signature_types=[MultiPartFormWithMixedFields])
     async def test_method(data: MultiPartFormWithMixedFields = Body(media_type=RequestEncodingType.MULTI_PART)) -> None:
@@ -390,9 +389,10 @@ def test_image_upload() -> None:
     async def hello_world(data: UploadFile = Body(media_type=RequestEncodingType.MULTI_PART)) -> None:
         await data.read()
 
-    with open(join(dirname(realpath(__file__)), "flower.jpeg"), "rb") as f, create_test_client(
-        route_handlers=[hello_world]
-    ) as client:
+    with (
+        open(join(dirname(realpath(__file__)), "flower.jpeg"), "rb") as f,
+        create_test_client(route_handlers=[hello_world]) as client,
+    ):
         data = f.read()
         response = client.post("/", files={"data": data})
         assert response.status_code == HTTP_201_CREATED
@@ -401,7 +401,7 @@ def test_image_upload() -> None:
 @pytest.mark.parametrize("optional", [True, False])
 @pytest.mark.parametrize("file_count", (1, 2))
 def test_upload_multiple_files(file_count: int, optional: bool) -> None:
-    annotation = List[UploadFile]
+    annotation = list[UploadFile]
     if optional:
         annotation = Optional[annotation]  # type: ignore[misc, assignment]
 
@@ -421,13 +421,13 @@ def test_upload_multiple_files(file_count: int, optional: bool) -> None:
 
 @dataclass
 class Files:
-    file_list: List[UploadFile]
+    file_list: list[UploadFile]
 
 
 # https://github.com/litestar-org/litestar/issues/3407
 @dataclass
 class OptionalFiles:
-    file_list: Optional[List[UploadFile]]
+    file_list: Optional[list[UploadFile]]
 
 
 @pytest.mark.parametrize("file_model", (Files, OptionalFiles))
@@ -461,7 +461,7 @@ def test_optional_formdata() -> None:
 @pytest.mark.parametrize("limit", (1000, 100, 10))
 def test_multipart_form_part_limit(limit: int) -> None:
     @post("/", signature_types=[UploadFile])
-    async def hello_world(data: List[UploadFile] = Body(media_type=RequestEncodingType.MULTI_PART)) -> dict:
+    async def hello_world(data: list[UploadFile] = Body(media_type=RequestEncodingType.MULTI_PART)) -> dict:
         return {"limit": len(data)}
 
     with create_test_client(route_handlers=[hello_world], multipart_form_part_limit=limit) as client:
@@ -482,7 +482,7 @@ def test_multipart_form_part_limit_body_param_precedence() -> None:
 
     @post("/", signature_types=[UploadFile])
     async def hello_world(
-        data: List[UploadFile] = Body(media_type=RequestEncodingType.MULTI_PART, multipart_form_part_limit=route_limit),
+        data: list[UploadFile] = Body(media_type=RequestEncodingType.MULTI_PART, multipart_form_part_limit=route_limit),
     ) -> None:
         assert len(data) == route_limit
 

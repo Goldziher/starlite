@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Mapping, Protocol, TypedDict, TypeVar, cast, runtime_checkable
+from typing import TYPE_CHECKING, Any, Callable, Protocol, TypedDict, TypeVar, cast, runtime_checkable
 
 from typing_extensions import Concatenate, ParamSpec, TypeAlias
 
@@ -9,6 +9,7 @@ from litestar.utils.empty import value_or_default
 from litestar.utils.scope.state import ScopeState
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from pathlib import Path
 
     from litestar.connection import Request

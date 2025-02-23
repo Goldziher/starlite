@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import uuid
 from datetime import date
-from typing import List
 from uuid import UUID
 
 from sqlalchemy import ForeignKey, func, select
@@ -19,7 +18,7 @@ class Author(base.UUIDBase):
     __tablename__ = "author"
     name: Mapped[str]
     dob: Mapped[date]
-    books: Mapped[List[Book]] = relationship(back_populates="author", lazy="selectin")
+    books: Mapped[list[Book]] = relationship(back_populates="author", lazy="selectin")
 
 
 # The `UUIDAuditBase` class includes the same UUID` based primary key (`id`) and 2
@@ -51,7 +50,7 @@ async def on_startup(app: Litestar) -> None:
 
 
 @get(path="/authors")
-async def get_authors(db_session: AsyncSession, db_engine: AsyncEngine) -> List[Author]:
+async def get_authors(db_session: AsyncSession, db_engine: AsyncEngine) -> list[Author]:
     """Interact with SQLAlchemy engine and session."""
     return list(await db_session.scalars(select(Author)))
 

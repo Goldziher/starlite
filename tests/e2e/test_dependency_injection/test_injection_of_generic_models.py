@@ -1,4 +1,4 @@
-from typing import Generic, Optional, Type, TypeVar
+from typing import Generic, Optional, TypeVar
 
 from msgspec import Struct
 
@@ -13,7 +13,7 @@ T = TypeVar("T")
 class Store(Struct, Generic[T]):
     """Abstract store."""
 
-    model: Type[T]
+    model: type[T]
 
     def get(self, value_id: str) -> Optional[T]:
         raise NotImplementedError

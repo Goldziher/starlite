@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING, Any, Callable
 
 from litestar.enums import HttpMethod, MediaType
 from litestar.exceptions import HTTPException
@@ -27,7 +28,8 @@ from litestar.types import (
 )
 
 if TYPE_CHECKING:
-    from typing import Any, Mapping, Sequence
+    from collections.abc import Mapping, Sequence
+    from typing import Any
 
     from litestar.background_tasks import BackgroundTask, BackgroundTasks
     from litestar.config.response_cache import CACHE_FOREVER

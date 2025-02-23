@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from inspect import isawaitable
-from typing import TYPE_CHECKING, Any, Sequence, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from litestar.datastructures import UploadFile
 from litestar.enums import HttpMethod
@@ -12,6 +12,8 @@ from litestar.status_codes import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CON
 from litestar.types.builtin_types import NoneType
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from litestar.background_tasks import BackgroundTask, BackgroundTasks
     from litestar.connection import Request
     from litestar.datastructures import Cookie, ResponseHeader

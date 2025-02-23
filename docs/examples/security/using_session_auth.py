@@ -1,4 +1,4 @@
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal, Optional
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, EmailStr, SecretStr
@@ -37,7 +37,7 @@ class UserLoginPayload(BaseModel):
     password: SecretStr
 
 
-MOCK_DB: Dict[str, User] = {}
+MOCK_DB: dict[str, User] = {}
 memory_store = MemoryStore()
 
 
@@ -51,7 +51,7 @@ memory_store = MemoryStore()
 #
 # Note: The callable can be either sync or async - both will work.
 async def retrieve_user_handler(
-    session: Dict[str, Any], connection: "ASGIConnection[Any, Any, Any, Any]"
+    session: dict[str, Any], connection: "ASGIConnection[Any, Any, Any, Any]"
 ) -> Optional[User]:
     return MOCK_DB.get(user_id) if (user_id := session.get("user_id")) else None
 
@@ -103,7 +103,7 @@ async def signup(data: UserCreatePayload, request: Request[Any, Any, Any]) -> Us
 # the endpoint below requires the user to be already authenticated
 # to be able to access it.
 @get("/user", sync_to_thread=False)
-def get_user(request: Request[User, Dict[Literal["user_id"], str], Any]) -> Any:
+def get_user(request: Request[User, dict[Literal["user_id"], str], Any]) -> Any:
     # because this route requires authentication, we can access
     # `request.user`, which is the authenticated user returned
     # by the 'retrieve_user_handler' function we passed to SessionAuth.

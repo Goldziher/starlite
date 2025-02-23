@@ -2,8 +2,8 @@ import pathlib
 import socket
 import subprocess
 import time
+from collections.abc import AsyncIterator, Iterator
 from contextlib import asynccontextmanager, contextmanager
-from typing import AsyncIterator, Iterator
 
 import httpx
 

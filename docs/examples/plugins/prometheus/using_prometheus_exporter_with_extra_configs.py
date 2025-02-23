@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from litestar import Litestar, Request
 from litestar.plugins.prometheus import PrometheusConfig, PrometheusController
@@ -27,7 +27,7 @@ buckets = [0.1, 0.2, 0.3, 0.4, 0.5]
 
 # Adding exemplars to the metrics.
 # Note that this supported only in openmetrics format.
-def custom_exemplar(request: Request[Any, Any, Any]) -> Dict[str, str]:
+def custom_exemplar(request: Request[Any, Any, Any]) -> dict[str, str]:
     return {"trace_id": "1234"}
 
 

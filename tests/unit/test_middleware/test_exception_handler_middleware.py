@@ -1,5 +1,6 @@
+from collections.abc import Generator
 from inspect import getinnerframes
-from typing import TYPE_CHECKING, Any, Callable, Generator, Optional
+from typing import TYPE_CHECKING, Any, Callable, Optional
 from unittest.mock import MagicMock
 
 import pydantic

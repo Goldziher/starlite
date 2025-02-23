@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Generic, Literal, cast, overload
+from typing import TYPE_CHECKING, Any, Generic, Literal, cast, overload
 
 from litestar.connection.base import (
     ASGIConnection,
@@ -19,6 +19,8 @@ __all__ = ("WebSocket",)
 
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
     from litestar.handlers.websocket_handlers import WebsocketRouteHandler  # noqa: F401
     from litestar.types import Message, Serializer, WebSocketScope
     from litestar.types.asgi_types import (

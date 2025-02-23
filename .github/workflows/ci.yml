@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - main
-      - v1.51
 
 env:
   UV_LOCKED: 1
@@ -19,7 +18,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.8"
+          python-version: "3.9"
 
       - name: Install Pre-Commit
         run: python -m pip install pre-commit
@@ -41,8 +40,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.8"
-          allow-prereleases: true
+          python-version: "3.9"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -60,8 +58,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.8"
-          allow-prereleases: true
+          python-version: "3.9"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -79,8 +76,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.8"
-          allow-prereleases: false
+          python-version: "3.9"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -96,10 +92,10 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     uses: ./.github/workflows/test.yml
     with:
-      coverage: ${{ (matrix.python-version == '3.12' || matrix.python-version == '3.8') }}
+      coverage: ${{ (matrix.python-version == '3.12' || matrix.python-version == '3.9') }}
       python-version: ${{ matrix.python-version }}
 
   # add an aggregate step here to check if any of the steps of the matrix 'test' job

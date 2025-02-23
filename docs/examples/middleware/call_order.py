@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Type
+from typing import TYPE_CHECKING
 
 from litestar import Controller, Litestar, Router, get
 from litestar.datastructures import State
@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from litestar.types import ASGIApp, Receive, Scope, Send
 
 
-def create_test_middleware(middleware_id: int) -> Type[MiddlewareProtocol]:
+def create_test_middleware(middleware_id: int) -> type[MiddlewareProtocol]:
     class TestMiddleware(MiddlewareProtocol):
         def __init__(self, app: "ASGIApp") -> None:
             self.app = app
@@ -30,7 +30,7 @@ class MyController(Controller):
         "/handler",
         middleware=[create_test_middleware(6), create_test_middleware(7)],
     )
-    async def my_handler(self, state: State) -> List[int]:
+    async def my_handler(self, state: State) -> list[int]:
         return state["middleware_calls"]
 
 

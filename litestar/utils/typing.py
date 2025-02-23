@@ -92,19 +92,19 @@ instantiable_type_mapping = {
 }
 
 safe_generic_origin_map = {
-    set: AbstractSet,
+    set: set,
+    dict: dict,
+    frozenset: FrozenSet,
+    list: list,
+    tuple: tuple,
     defaultdict: DefaultDict,
     deque: Deque,
-    dict: Dict,
-    frozenset: FrozenSet,
-    list: List,
-    tuple: Tuple,
     abc.Mapping: Mapping,
     abc.MutableMapping: MutableMapping,
     abc.MutableSequence: MutableSequence,
     abc.MutableSet: MutableSet,
     abc.Sequence: Sequence,
-    abc.Set: AbstractSet,
+    abc.Set: abc.Set,
     abc.Collection: Collection,
     abc.Container: Container,
     abc.ItemsView: ItemsView,
@@ -122,10 +122,12 @@ safe_generic_origin_map = {
     abc.Awaitable: Awaitable,
     **{union_t: Union for union_t in UnionTypes},
 }
-"""A mapping of types to equivalent types that are safe to be used as generics across all Python versions.
+"""
+A mapping of types to equivalent types that are safe to be used as generics across
+all Python versions.
 
-This is necessary because occasionally we want to rebuild a generic outer type with different args, and types such as
-``collections.abc.Mapping``, are not valid generic types in Python 3.8.
+This is necessary because occasionally we want to rebuild a generic outer type with
+different args, and types.
 """
 
 wrapper_type_set = {Annotated, Required, NotRequired}

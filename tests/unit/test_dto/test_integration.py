@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Dict
 from unittest.mock import MagicMock
 
 from litestar import Controller, Litestar, Router, post
@@ -65,7 +64,7 @@ def test_dto_defined_on_app(ModelDataDTO: type[AbstractDTO]) -> None:
 
 
 def test_set_dto_none_disables_inherited_dto(ModelDataDTO: type[AbstractDTO]) -> None:
-    @post(dto=None, signature_namespace={"dict": Dict})
+    @post(dto=None, signature_namespace={"dict": dict})
     def handler(data: dict[str, str]) -> dict[str, str]:
         assert data == {"hello": "world"}
         return data

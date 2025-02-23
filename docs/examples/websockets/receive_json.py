@@ -1,10 +1,8 @@
-from typing import Dict
-
 from litestar import Litestar, websocket_listener
 
 
 @websocket_listener("/")
-async def handler(data: Dict[str, str]) -> Dict[str, str]:
+async def handler(data: dict[str, str]) -> dict[str, str]:
     return data
 
 

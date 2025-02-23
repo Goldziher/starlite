@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 import pytest
 
@@ -11,7 +10,7 @@ from litestar.testing import create_test_client
 
 
 @pytest.mark.parametrize("directories", [[], [""]])
-def test_validation_of_directories(directories: List[str]) -> None:
+def test_validation_of_directories(directories: list[str]) -> None:
     with pytest.raises(ImproperlyConfiguredException):
         create_static_files_router(path="/static", directories=[])
 

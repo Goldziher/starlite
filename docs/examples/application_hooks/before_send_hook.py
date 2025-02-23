@@ -6,13 +6,11 @@ from litestar import Litestar, get
 from litestar.datastructures import MutableScopeHeaders
 
 if TYPE_CHECKING:
-    from typing import Dict
-
     from litestar.types import Message, Scope
 
 
 @get("/test", sync_to_thread=False)
-def handler() -> Dict[str, str]:
+def handler() -> dict[str, str]:
     """Example Handler function."""
     return {"key": "value"}
 

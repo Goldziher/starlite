@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any
 
 import msgspec
 import yaml
@@ -12,6 +12,8 @@ from litestar.handlers import get
 from litestar.serialization import encode_json, get_serializer
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from litestar.config.csrf import CSRFConfig
     from litestar.connection import Request
     from litestar.router import Router

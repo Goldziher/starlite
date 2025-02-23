@@ -1,14 +1,14 @@
-from typing import Optional, Type
+from typing import Optional
 
 import pytest
 
 from litestar import Controller, HttpMethod, Litestar, Response, Router, get
 from litestar.handlers.http_handlers.base import HTTPRouteHandler
 
-RouterResponse: Type[Response] = type("RouterResponse", (Response,), {})
-ControllerResponse: Type[Response] = type("ControllerResponse", (Response,), {})
-AppResponse: Type[Response] = type("AppResponse", (Response,), {})
-HandlerResponse: Type[Response] = type("HandlerResponse", (Response,), {})
+RouterResponse: type[Response] = type("RouterResponse", (Response,), {})
+ControllerResponse: type[Response] = type("ControllerResponse", (Response,), {})
+AppResponse: type[Response] = type("AppResponse", (Response,), {})
+HandlerResponse: type[Response] = type("HandlerResponse", (Response,), {})
 
 
 @pytest.mark.parametrize(
@@ -29,11 +29,11 @@ HandlerResponse: Type[Response] = type("HandlerResponse", (Response,), {})
     ),
 )
 def test_response_class_resolution_of_layers(
-    handler_response_class: Optional[Type[Response]],
-    controller_response_class: Optional[Type[Response]],
-    router_response_class: Optional[Type[Response]],
-    app_response_class: Optional[Type[Response]],
-    expected: Type[Response],
+    handler_response_class: Optional[type[Response]],
+    controller_response_class: Optional[type[Response]],
+    router_response_class: Optional[type[Response]],
+    app_response_class: Optional[type[Response]],
+    expected: type[Response],
 ) -> None:
     class MyController(Controller):
         response_class = controller_response_class

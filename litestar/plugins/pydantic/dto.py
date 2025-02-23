@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import dataclasses
 from dataclasses import replace
-from typing import TYPE_CHECKING, Any, Collection, Generic, TypeVar
+from typing import TYPE_CHECKING, Annotated, Any, Generic, TypeVar
 from warnings import warn
 
-from typing_extensions import Annotated, TypeAlias, override
+from typing_extensions import TypeAlias, override
 
 from litestar.dto.base_dto import AbstractDTO
 from litestar.dto.data_structures import DTOFieldDefinition
@@ -16,7 +16,7 @@ from litestar.types.empty import Empty
 from litestar.typing import FieldDefinition
 
 if TYPE_CHECKING:
-    from typing import Generator
+    from collections.abc import Collection, Generator
 
     from litestar.dto import DTOConfig
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any
 
 import pytest
 
@@ -24,7 +24,7 @@ def test_websocket_signature_namespace(method: str, decorator: HTTPHandlerDecora
         path = "/"
         signature_namespace = {"c": float}
 
-        @decorator(path="/", signature_namespace={"d": List[str], "dict": Dict}, status_code=200)
+        @decorator(path="/", signature_namespace={"d": list[str], "dict": dict}, status_code=200)
         async def simple_handler(
             self,
             a: a,  # type:ignore[name-defined]  # noqa: F821

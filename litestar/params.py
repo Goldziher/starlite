@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Hashable, Sequence
 from dataclasses import asdict, dataclass, field
-from typing import TYPE_CHECKING, Any, Hashable, Sequence
+from typing import TYPE_CHECKING, Any
 
 from litestar.enums import RequestEncodingType
 from litestar.types import Empty

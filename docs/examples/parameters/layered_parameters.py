@@ -1,6 +1,4 @@
-from typing import Dict, Union
-
-from typing_extensions import Annotated
+from typing import Annotated, Union
 
 from litestar import Controller, Litestar, Router, get
 from litestar.params import Parameter
@@ -19,7 +17,7 @@ class MyController(Controller):
         local_param: str,
         router_param: str,
         controller_param: Annotated[int, Parameter(int, lt=50)],
-    ) -> Dict[str, Union[str, int]]:
+    ) -> dict[str, Union[str, int]]:
         return {
             "path_param": path_param,
             "local_param": local_param,

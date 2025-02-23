@@ -1,14 +1,14 @@
-from typing import Type, Union
+from typing import Union
 
 import pytest
 
 from litestar import Controller, Litestar, Router, WebSocket
 from litestar.handlers.websocket_handlers.listener import WebsocketListener, websocket_listener
 
-RouterWebSocket: Type[WebSocket] = type("RouterWebSocket", (WebSocket,), {})
-ControllerWebSocket: Type[WebSocket] = type("ControllerWebSocket", (WebSocket,), {})
-AppWebSocket: Type[WebSocket] = type("AppWebSocket", (WebSocket,), {})
-HandlerWebSocket: Type[WebSocket] = type("HandlerWebSocket", (WebSocket,), {})
+RouterWebSocket: type[WebSocket] = type("RouterWebSocket", (WebSocket,), {})
+ControllerWebSocket: type[WebSocket] = type("ControllerWebSocket", (WebSocket,), {})
+AppWebSocket: type[WebSocket] = type("AppWebSocket", (WebSocket,), {})
+HandlerWebSocket: type[WebSocket] = type("HandlerWebSocket", (WebSocket,), {})
 
 
 @pytest.mark.parametrize(
@@ -31,12 +31,12 @@ HandlerWebSocket: Type[WebSocket] = type("HandlerWebSocket", (WebSocket,), {})
     ),
 )
 def test_websocket_class_resolution_of_layers(
-    handler_websocket_class: Union[Type[WebSocket], None],
-    controller_websocket_class: Union[Type[WebSocket], None],
-    router_websocket_class: Union[Type[WebSocket], None],
-    app_websocket_class: Union[Type[WebSocket], None],
+    handler_websocket_class: Union[type[WebSocket], None],
+    controller_websocket_class: Union[type[WebSocket], None],
+    router_websocket_class: Union[type[WebSocket], None],
+    app_websocket_class: Union[type[WebSocket], None],
     has_default_app_class: bool,
-    expected: Type[WebSocket],
+    expected: type[WebSocket],
 ) -> None:
     class MyController(Controller):
         websocket_class = controller_websocket_class
@@ -76,10 +76,10 @@ def test_websocket_class_resolution_of_layers(
     ),
 )
 def test_listener_websocket_class_resolution_of_layers(
-    handler_websocket_class: Union[Type[WebSocket], None],
-    router_websocket_class: Union[Type[WebSocket], None],
-    app_websocket_class: Union[Type[WebSocket], None],
-    expected: Type[WebSocket],
+    handler_websocket_class: Union[type[WebSocket], None],
+    router_websocket_class: Union[type[WebSocket], None],
+    app_websocket_class: Union[type[WebSocket], None],
+    expected: type[WebSocket],
 ) -> None:
     class Handler(WebsocketListener):
         path = "/"

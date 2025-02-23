@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor
-from typing import Generator
 from unittest.mock import AsyncMock
 
 import pytest

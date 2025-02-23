@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence
+from typing import TYPE_CHECKING, Any, Callable
 
 from litestar.exceptions import NotAuthorizedException
 from litestar.middleware._internal.exceptions import ExceptionHandlerMiddleware
@@ -13,6 +13,8 @@ from litestar.types import Empty, Method, Scopes
 __all__ = ("MiddlewareWrapper", "SessionAuthMiddleware")
 
 if TYPE_CHECKING:
+    from collections.abc import Awaitable, Sequence
+
     from litestar.connection import ASGIConnection
     from litestar.security.session_auth.auth import SessionAuth
     from litestar.types import ASGIApp, Receive, Scope, Send

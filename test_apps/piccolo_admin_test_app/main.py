@@ -1,5 +1,5 @@
 import asyncio
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from home.piccolo_app import APP_CONFIG
 from home.tables import Task
@@ -21,7 +21,7 @@ async def admin(scope: "Scope", receive: "Receive", send: "Send") -> None:
 
 
 @get("/tasks", tags=["Task"])
-async def tasks() -> List[Task]:
+async def tasks() -> list[Task]:
     return await Task.select().order_by(Task.id, ascending=False)
 
 

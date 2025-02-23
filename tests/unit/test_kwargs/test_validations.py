@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict
+from typing import Any, Callable
 
 import pytest
 
@@ -63,17 +63,17 @@ def test_raises_when_reserved_kwargs_are_misused(reserved_kwarg: str) -> None:
         Litestar(route_handlers=[handler_with_aliased_param])
 
 
-def url_encoded_dependency(data: Dict[str, Any] = Body(media_type=RequestEncodingType.URL_ENCODED)) -> Dict[str, Any]:
+def url_encoded_dependency(data: dict[str, Any] = Body(media_type=RequestEncodingType.URL_ENCODED)) -> dict[str, Any]:
     assert data
     return data
 
 
-def multi_part_dependency(data: Dict[str, Any] = Body(media_type=RequestEncodingType.MULTI_PART)) -> Dict[str, Any]:
+def multi_part_dependency(data: dict[str, Any] = Body(media_type=RequestEncodingType.MULTI_PART)) -> dict[str, Any]:
     assert data
     return data
 
 
-def json_dependency(data: Dict[str, Any] = Body()) -> Dict[str, Any]:
+def json_dependency(data: dict[str, Any] = Body()) -> dict[str, Any]:
     assert data
     return data
 
@@ -88,7 +88,7 @@ def json_dependency(data: Dict[str, Any] = Body()) -> Dict[str, Any]:
 )
 def test_dependency_data_kwarg_validation_success_scenarios(body: BodyKwarg, dependency: Callable) -> None:
     @post("/", dependencies={"first": Provide(dependency)})
-    def handler(first: Dict[str, Any], data: Any = body) -> None:
+    def handler(first: dict[str, Any], data: Any = body) -> None:
         pass
 
     Litestar(route_handlers=[handler])
@@ -107,7 +107,7 @@ def test_dependency_data_kwarg_validation_success_scenarios(body: BodyKwarg, dep
 )
 def test_dependency_data_kwarg_validation_failure_scenarios(body: BodyKwarg, dependency: Callable) -> None:
     @post("/", dependencies={"first": Provide(dependency, sync_to_thread=False)})
-    def handler(first: Dict[str, Any], data: Any = body) -> None:
+    def handler(first: dict[str, Any], data: Any = body) -> None:
         assert first
         assert data
 

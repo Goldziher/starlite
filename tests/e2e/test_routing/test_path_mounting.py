@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, List
+from typing import TYPE_CHECKING, Callable
 
 import httpx
 import pytest
@@ -108,7 +108,7 @@ def test_does_not_support_asgi_handlers_on_same_level_as_websockets() -> None:
 @pytest.mark.xdist_group("live_server_test")
 @pytest.mark.server_integration
 def test_path_mounting_live_server(
-    tmp_path: Path, monkeypatch: MonkeyPatch, server_command: List[str], run_server: Callable[[str, List[str]], None]
+    tmp_path: Path, monkeypatch: MonkeyPatch, server_command: list[str], run_server: Callable[[str, list[str]], None]
 ) -> None:
     app = """
 from litestar import asgi, Litestar

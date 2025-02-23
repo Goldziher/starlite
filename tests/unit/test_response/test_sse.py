@@ -1,4 +1,4 @@
-from typing import AsyncIterator, Iterator, List
+from collections.abc import AsyncIterator, Iterator
 
 import anyio
 import pytest
@@ -59,7 +59,7 @@ async def test_sse_steaming_response() -> None:
         ("comment", [HTTPXServerSentEvent(event="something-with-comment", id="123", retry=1000) for i in range(1, 6)]),
     ],
 )
-async def test_various_sse_inputs(input: str, expected_events: List[HTTPXServerSentEvent]) -> None:
+async def test_various_sse_inputs(input: str, expected_events: list[HTTPXServerSentEvent]) -> None:
     @get("/testme")
     async def handler() -> ServerSentEvent:
         async def numbers() -> AsyncIterator[SSEData]:

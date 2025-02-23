@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import itertools
 import re
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, Iterable, Literal, Mapping, TypeVar, overload
+from collections.abc import Iterable, Mapping
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, TypeVar, overload
 
 from litestar.datastructures.cookie import Cookie
 from litestar.datastructures.headers import ETag, MutableScopeHeaders

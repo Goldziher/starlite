@@ -5,9 +5,9 @@ import typing
 from dataclasses import dataclass, replace
 from inspect import Signature, getmembers, isclass, ismethod
 from itertools import chain
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Annotated, Any, Union, get_type_hints
 
-from typing_extensions import Annotated, Self, get_args, get_origin, get_type_hints
+from typing_extensions import Self, get_args, get_origin
 
 from litestar import connection, datastructures, types
 from litestar.types import Empty
@@ -16,7 +16,7 @@ from litestar.utils.typing import expand_type_var_in_type_hint, unwrap_annotatio
 from litestar.utils.warnings import warn_signature_namespace_override
 
 if TYPE_CHECKING:
-    from typing import Sequence
+    from collections.abc import Sequence
 
     from litestar.types import AnyCallable
 

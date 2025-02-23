@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Mapping, Sequence
+from typing import TYPE_CHECKING, Any
 
 from litestar._layers.utils import narrow_response_cookies, narrow_response_headers
 from litestar.exceptions import ImproperlyConfiguredException
@@ -13,6 +13,8 @@ __all__ = ("Router",)
 
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+
     from litestar.connection import Request, WebSocket
     from litestar.datastructures import CacheControlHeader, ETag
     from litestar.dto import AbstractDTO

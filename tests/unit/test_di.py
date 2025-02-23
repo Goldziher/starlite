@@ -1,5 +1,6 @@
+from collections.abc import AsyncGenerator, Generator
 from functools import partial
-from typing import Any, AsyncGenerator, Generator
+from typing import Any
 
 import pytest
 

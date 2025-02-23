@@ -1,6 +1,6 @@
 import dataclasses
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Optional
 from uuid import UUID
 
 import msgspec
@@ -28,8 +28,8 @@ class DataclassPerson:
     last_name: str
     id: str
     optional: Optional[str]
-    complex: Dict[str, List[Dict[str, str]]]
-    pets: Optional[List[DataclassPet]] = None
+    complex: dict[str, list[dict[str, str]]]
+    pets: Optional[list[DataclassPet]] = None
 
 
 class TypedDictPerson(TypedDict):
@@ -37,8 +37,8 @@ class TypedDictPerson(TypedDict):
     last_name: Required[str]
     id: Required[str]
     optional: NotRequired[Optional[str]]
-    complex: Required[Dict[str, List[Dict[str, str]]]]
-    pets: NotRequired[Optional[List[DataclassPet]]]
+    complex: Required[dict[str, list[dict[str, str]]]]
+    pets: NotRequired[Optional[list[DataclassPet]]]
 
 
 class MsgSpecStructPerson(msgspec.Struct):
@@ -46,8 +46,8 @@ class MsgSpecStructPerson(msgspec.Struct):
     last_name: str
     id: str
     optional: Optional[str]
-    complex: Dict[str, List[Dict[str, str]]]
-    pets: Optional[List[DataclassPet]]
+    complex: dict[str, list[dict[str, str]]]
+    pets: Optional[list[DataclassPet]]
 
 
 @dataclasses.dataclass

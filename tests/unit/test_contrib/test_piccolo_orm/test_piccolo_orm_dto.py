@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
 from decimal import Decimal
-from typing import AsyncGenerator, Callable
+from typing import Callable
 
 import pytest
 from polyfactory.utils.predicates import is_annotated

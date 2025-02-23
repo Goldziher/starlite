@@ -8,13 +8,11 @@ from litestar import Litestar, post
 from litestar.plugins.sqlalchemy import SQLAlchemyAsyncConfig, SQLAlchemyInitPlugin
 
 if TYPE_CHECKING:
-    from typing import Tuple
-
     from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 
 @post("/")
-async def handler(db_session: AsyncSession, db_engine: AsyncEngine) -> Tuple[int, int]:
+async def handler(db_session: AsyncSession, db_engine: AsyncEngine) -> tuple[int, int]:
     one = (await db_session.execute(select(1))).scalar()
 
     async with db_engine.begin() as conn:

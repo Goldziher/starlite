@@ -6,9 +6,10 @@ import inspect
 import logging
 import random
 import sys
-from contextlib import AbstractContextManager, contextmanager
+from collections.abc import Awaitable, Generator
+from contextlib import AbstractAsyncContextManager, AbstractContextManager, contextmanager
 from pathlib import Path
-from typing import Any, AsyncContextManager, Awaitable, ContextManager, Generator, TypeVar, cast, overload
+from typing import Any, TypeVar, cast, overload
 
 import pytest
 from _pytest.logging import LogCaptureHandler, _LiveLoggingNullHandler
@@ -23,16 +24,6 @@ T = TypeVar("T")
 
 
 RANDOM = random.Random(b"bA\xcd\x00\xa9$\xa7\x17\x1c\x10")
-
-
-# TODO: Remove when dropping 3.9
-if sys.version_info < (3, 9):
-
-    def randbytes(n: int) -> bytes:
-        return RANDOM.getrandbits(8 * n).to_bytes(n, "little")
-
-else:
-    randbytes = RANDOM.randbytes
 
 
 if sys.version_info >= (3, 12):
@@ -56,7 +47,7 @@ async def maybe_async(obj: Awaitable[T] | T) -> T:
     return await obj if inspect.isawaitable(obj) else obj  # pyright: ignore
 
 
-class _AsyncContextManagerWrapper(AsyncContextManager):
+class _AsyncContextManagerWrapper(AbstractAsyncContextManager):
     def __init__(self, cm: AbstractContextManager):
         self.cm = cm
 
@@ -67,9 +58,9 @@ class _AsyncContextManagerWrapper(AsyncContextManager):
         return self.cm.__exit__(exc_type, exc_val, exc_tb)
 
 
-def maybe_async_cm(obj: ContextManager[T] | AsyncContextManager[T]) -> AsyncContextManager[T]:
+def maybe_async_cm(obj: AbstractContextManager[T] | AbstractAsyncContextManager[T]) -> AbstractAsyncContextManager[T]:
     if isinstance(obj, AbstractContextManager):
-        return cast(AsyncContextManager[T], _AsyncContextManagerWrapper(obj))
+        return cast(AbstractAsyncContextManager[T], _AsyncContextManagerWrapper(obj))
     return obj
 
 

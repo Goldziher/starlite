@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Dict, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from litestar import HttpMethod, Request, Response, get, post, route
 from litestar.middleware.session.server_side import ServerSideSessionConfig
@@ -24,7 +24,7 @@ def test_session_middleware_not_installed_raises() -> None:
 
 def test_integration(session_backend_config: "BaseBackendConfig") -> None:
     @route("/session", http_method=[HttpMethod.GET, HttpMethod.POST, HttpMethod.DELETE])
-    def session_handler(request: Request) -> Optional[Dict[str, bool]]:
+    def session_handler(request: Request) -> Optional[dict[str, bool]]:
         if request.method == HttpMethod.GET:
             return {"has_session": request.session != {}}
 
@@ -60,7 +60,7 @@ def test_integration(session_backend_config: "BaseBackendConfig") -> None:
 def test_session_id_correctness(session_backend_config: "BaseBackendConfig") -> None:
     # Test that `request.get_session_id()` is the same as in the cookies
     @route("/session", http_method=[HttpMethod.POST])
-    def session_handler(request: Request) -> Optional[Dict[str, Union[str, None]]]:
+    def session_handler(request: Request) -> Optional[dict[str, Union[str, None]]]:
         request.set_session({"foo": "bar"})
         return {"session_id": request.get_session_id()}
 
@@ -84,7 +84,7 @@ def test_session_id_correctness(session_backend_config: "BaseBackendConfig") -> 
 def test_keep_session_id(session_backend_config: "BaseBackendConfig") -> None:
     # Test that session is only created if not already exists
     @route("/session", http_method=[HttpMethod.POST])
-    def session_handler(request: Request) -> Optional[Dict[str, Union[str, None]]]:
+    def session_handler(request: Request) -> Optional[dict[str, Union[str, None]]]:
         request.set_session({"foo": "bar"})
         return {"session_id": request.get_session_id()}
 
@@ -125,7 +125,7 @@ def test_set_empty(session_backend_config: "BaseBackendConfig") -> None:
         assert not client.get_session_data()
 
 
-def get_session_installed(request: Request) -> Dict[str, bool]:
+def get_session_installed(request: Request) -> dict[str, bool]:
     return {"has_session": "session" in request.scope}
 
 
@@ -133,15 +133,15 @@ def test_middleware_exclude_pattern(session_backend_config_memory: "ServerSideSe
     session_backend_config_memory.exclude = ["north", "south"]
 
     @get("/north")
-    def north_handler(request: Request) -> Dict[str, bool]:
+    def north_handler(request: Request) -> dict[str, bool]:
         return get_session_installed(request)
 
     @get("/south")
-    def south_handler(request: Request) -> Dict[str, bool]:
+    def south_handler(request: Request) -> dict[str, bool]:
         return get_session_installed(request)
 
     @get("/west")
-    def west_handler(request: Request) -> Dict[str, bool]:
+    def west_handler(request: Request) -> dict[str, bool]:
         return get_session_installed(request)
 
     with create_test_client(
@@ -160,11 +160,11 @@ def test_middleware_exclude_pattern(session_backend_config_memory: "ServerSideSe
 
 def test_middleware_exclude_flag(session_backend_config_memory: "ServerSideSessionConfig") -> None:
     @get("/north")
-    def north_handler(request: Request) -> Dict[str, bool]:
+    def north_handler(request: Request) -> dict[str, bool]:
         return get_session_installed(request)
 
     @get("/south", skip_session=True)
-    def south_handler(request: Request) -> Dict[str, bool]:
+    def south_handler(request: Request) -> dict[str, bool]:
         return get_session_installed(request)
 
     with create_test_client(
@@ -182,11 +182,11 @@ def test_middleware_exclude_custom_key(session_backend_config_memory: "ServerSid
     session_backend_config_memory.exclude_opt_key = "my_exclude_key"
 
     @get("/north")
-    def north_handler(request: Request) -> Dict[str, bool]:
+    def north_handler(request: Request) -> dict[str, bool]:
         return get_session_installed(request)
 
     @get("/south", my_exclude_key=True)
-    def south_handler(request: Request) -> Dict[str, bool]:
+    def south_handler(request: Request) -> dict[str, bool]:
         return get_session_installed(request)
 
     with create_test_client(

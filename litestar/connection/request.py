@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import warnings
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Generic, cast
+from typing import TYPE_CHECKING, Any, Generic, cast
 
 from litestar._multipart import parse_content_header, parse_multipart_form
 from litestar._parsers import parse_url_encoded_form_data
@@ -31,6 +31,8 @@ __all__ = ("Request",)
 
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
     from litestar.handlers.http_handlers import HTTPRouteHandler  # noqa: F401
     from litestar.types.asgi_types import HTTPScope, Method, Receive, Scope, Send
     from litestar.types.empty import EmptyType

@@ -1,5 +1,5 @@
 from inspect import Parameter, Signature
-from typing import Any, Dict, Tuple
+from typing import Any
 
 from litestar import Litestar, get
 from litestar.di import Provide
@@ -15,7 +15,7 @@ class MyDIPlugin(DIPlugin):
     def has_typed_init(self, type_: Any) -> bool:
         return issubclass(type_, MyBaseType)
 
-    def get_typed_init(self, type_: Any) -> Tuple[Signature, Dict[str, Any]]:
+    def get_typed_init(self, type_: Any) -> tuple[Signature, dict[str, Any]]:
         signature = Signature([Parameter(name="param", kind=Parameter.POSITIONAL_OR_KEYWORD)])
         annotations = {"param": str}
         return signature, annotations

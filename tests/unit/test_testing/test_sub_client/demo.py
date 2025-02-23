@@ -3,7 +3,7 @@ Assemble components into an app that shall be tested
 """
 
 import asyncio
-from typing import AsyncIterator
+from collections.abc import AsyncIterator
 
 from litestar import Litestar, get
 from litestar.response import ServerSentEvent

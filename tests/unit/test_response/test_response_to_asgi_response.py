@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Generator, Iterator
 from inspect import iscoroutine
 from pathlib import Path
 from time import sleep
-from typing import TYPE_CHECKING, Any, Generator, Iterator, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import pytest
 from starlette.responses import HTMLResponse, JSONResponse, PlainTextResponse
@@ -26,7 +27,7 @@ from litestar.types import StreamType
 from litestar.utils import AsyncIteratorWrapper
 
 if TYPE_CHECKING:
-    from typing import AsyncGenerator
+    from collections.abc import AsyncGenerator
 
     from litestar.routes import HTTPRoute
 

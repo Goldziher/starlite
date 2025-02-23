@@ -1,7 +1,6 @@
-from typing import Dict, Optional, Union
+from typing import Annotated, Optional, Union
 
 import pytest
-from typing_extensions import Annotated
 
 from litestar import get, post
 from litestar.params import Parameter, ParameterKwarg
@@ -28,7 +27,7 @@ from litestar.testing import create_test_client
     ],
 )
 def test_header_params(
-    t_type: Optional[Union[str, int]], param_dict: Dict[str, str], param: ParameterKwarg, should_raise: bool
+    t_type: Optional[Union[str, int]], param_dict: dict[str, str], param: ParameterKwarg, should_raise: bool
 ) -> None:
     test_path = "/test"
 

@@ -1,4 +1,4 @@
-from typing import Any, Literal, Type, Union
+from typing import Any, Literal, Union
 from unittest import mock
 
 import pytest
@@ -18,7 +18,7 @@ handler_decoder, router_decoder, controller_decoder, app_decoder = 4 * [(lambda 
 
 
 @pytest.fixture(scope="module")
-def controller() -> Type[Controller]:
+def controller() -> type[Controller]:
     class MyController(Controller):
         path = "/controller"
         type_decoders = [controller_decoder]
@@ -33,7 +33,7 @@ def controller() -> Type[Controller]:
 
 
 @pytest.fixture(scope="module")
-def websocket_listener_handler() -> Type[WebsocketListener]:
+def websocket_listener_handler() -> type[WebsocketListener]:
     class WebSocketHandler(WebsocketListener):
         path = "/ws-listener"
         type_decoders = [handler_decoder]
@@ -62,10 +62,10 @@ def websocket_handler() -> WebsocketListenerRouteHandler:
 
 @pytest.fixture(scope="module")
 def router(
-    controller: Type[Controller],
-    websocket_listener_handler: Type[WebsocketListenerRouteHandler],
-    http_handler: Type[HTTPRouteHandler],
-    websocket_handler: Type[WebsocketListenerRouteHandler],
+    controller: type[Controller],
+    websocket_listener_handler: type[WebsocketListenerRouteHandler],
+    http_handler: type[HTTPRouteHandler],
+    websocket_handler: type[WebsocketListenerRouteHandler],
 ) -> Router:
     return Router(
         "/router",

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import TYPE_CHECKING, Any, Generator, Generic, Iterable, Mapping, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from multidict import MultiDict as BaseMultiDict
 from multidict import MultiDictProxy, MultiMapping
@@ -9,6 +9,8 @@ from multidict import MultiDictProxy, MultiMapping
 from litestar.datastructures.upload_file import UploadFile
 
 if TYPE_CHECKING:
+    from collections.abc import Generator, Iterable, Mapping
+
     from typing_extensions import Self
 
 

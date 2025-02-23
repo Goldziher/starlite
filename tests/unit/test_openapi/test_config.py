@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, List, Type
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
@@ -89,6 +89,6 @@ def test_raises_exception_when_no_config_in_place() -> None:
         ([RedocRenderPlugin(), SwaggerRenderPlugin(path="/")], SwaggerRenderPlugin),
     ],
 )
-def test_default_plugin(plugins: "List[OpenAPIRenderPlugin]", exp: "Type[OpenAPIRenderPlugin]") -> None:
+def test_default_plugin(plugins: "list[OpenAPIRenderPlugin]", exp: "type[OpenAPIRenderPlugin]") -> None:
     config = OpenAPIConfig(title="my title", version="1.0.0", render_plugins=plugins)
     assert isinstance(config.default_plugin, exp)

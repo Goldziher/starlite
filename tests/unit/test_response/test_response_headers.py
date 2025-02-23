@@ -1,5 +1,3 @@
-from typing import Dict
-
 import pytest
 
 from litestar import Controller, Litestar, Router, get, post
@@ -65,7 +63,7 @@ def test_response_headers_rendering() -> None:
         tags=["search"],
         response_headers=[ResponseHeader(name="test-header", value="test value", description="test")],
     )
-    def my_handler(data: Dict[str, str]) -> Dict[str, str]:
+    def my_handler(data: dict[str, str]) -> dict[str, str]:
         return data
 
     with create_test_client(my_handler) as client:

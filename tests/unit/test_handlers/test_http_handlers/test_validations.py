@@ -1,9 +1,8 @@
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Callable, Dict, List
+from typing import Annotated, Any, Callable
 
 import pytest
-from typing_extensions import Annotated
 
 from litestar import HttpMethod, Litestar, WebSocket, delete, get, patch, post, put, route
 from litestar.exceptions import ImproperlyConfiguredException, ValidationException
@@ -52,7 +51,7 @@ async def test_function_validation() -> None:
     ):
 
         @delete(path="/")
-        def method_with_no_content() -> Dict[str, str]:
+        def method_with_no_content() -> dict[str, str]:
             return {}
 
         Litestar(route_handlers=[method_with_no_content])
@@ -63,7 +62,7 @@ async def test_function_validation() -> None:
     ):
 
         @get(path="/", status_code=HTTP_304_NOT_MODIFIED)
-        def method_with_not_modified() -> Dict[str, str]:
+        def method_with_not_modified() -> dict[str, str]:
             return {}
 
         Litestar(route_handlers=[method_with_not_modified])
@@ -74,7 +73,7 @@ async def test_function_validation() -> None:
     ):
 
         @get(path="/", status_code=HTTP_100_CONTINUE)
-        def method_with_status_lower_than_200() -> Dict[str, str]:
+        def method_with_status_lower_than_200() -> dict[str, str]:
             return {}
 
         Litestar(route_handlers=[method_with_status_lower_than_200])
@@ -145,7 +144,7 @@ def no_response_handler() -> {return_annotation}:
 
 @pytest.mark.parametrize("decorator", [post, put, patch])
 def test_body_param_with_non_bytes_annotation_raises(decorator: Callable[..., Any]) -> None:
-    def handler_fn(body: List[str]) -> None:
+    def handler_fn(body: list[str]) -> None:
         pass
 
     with pytest.raises(ImproperlyConfiguredException, match="Invalid type annotation for 'body' parameter"):

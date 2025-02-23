@@ -1,9 +1,9 @@
 import dataclasses
-from typing import TYPE_CHECKING, Any, List, Optional, Type, cast
+from typing import TYPE_CHECKING, Annotated, Any, Optional, cast
 from uuid import UUID
 
 import pytest
-from typing_extensions import Annotated, NewType
+from typing_extensions import NewType
 
 from litestar import Controller, Litestar, Router, get
 from litestar._openapi.datastructures import OpenAPIContext
@@ -37,7 +37,7 @@ def create_factory(route: BaseRoute, handler: HTTPRouteHandler) -> ParameterFact
     )
 
 
-def _create_parameters(app: Litestar, path: str) -> List["OpenAPIParameter"]:
+def _create_parameters(app: Litestar, path: str) -> list["OpenAPIParameter"]:
     index = find_index(app.routes, lambda x: x.path_format == path)
     route = app.routes[index]
     route_handler = route.route_handler_map["GET"]  # type: ignore[union-attr]
@@ -46,7 +46,7 @@ def _create_parameters(app: Litestar, path: str) -> List["OpenAPIParameter"]:
     return create_factory(route, route_handler).create_parameters_for_handler()
 
 
-def test_create_parameters(person_controller: Type[Controller]) -> None:
+def test_create_parameters(person_controller: type[Controller]) -> None:
     ExampleFactory.seed_random(10)
 
     parameters = _create_parameters(app=Litestar(route_handlers=[person_controller]), path="/{service_id}/person")
@@ -244,7 +244,7 @@ def test_layered_parameters() -> None:
             router1: str,
             router2: float,
             app1: str,
-            app2: List[str],
+            app2: list[str],
             controller2: float = Parameter(float, ge=5.0),
         ) -> dict:
             return {}
@@ -263,7 +263,7 @@ def test_layered_parameters() -> None:
             route_handlers=[router],
             parameters={
                 "app1": Parameter(str, cookie="app4"),
-                "app2": Parameter(List[str], min_items=2),
+                "app2": Parameter(list[str], min_items=2),
                 "app3": Parameter(bool, required=False),
             },
         ),

@@ -1,4 +1,4 @@
-from typing import Dict, Generator
+from collections.abc import Generator
 
 from litestar import Litestar, get
 from litestar.di import Provide
@@ -6,7 +6,7 @@ from litestar.di import Provide
 CONNECTION = {"open": False}
 
 
-def generator_function() -> Generator[Dict[str, bool], None, None]:
+def generator_function() -> Generator[dict[str, bool], None, None]:
     """Set connection to open and close it after the handler returns."""
     CONNECTION["open"] = True
     yield CONNECTION
@@ -14,7 +14,7 @@ def generator_function() -> Generator[Dict[str, bool], None, None]:
 
 
 @get("/", dependencies={"conn": Provide(generator_function)})
-def index(conn: Dict[str, bool]) -> Dict[str, bool]:
+def index(conn: dict[str, bool]) -> dict[str, bool]:
     """Return the current connection state."""
     return conn
 

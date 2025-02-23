@@ -1,6 +1,7 @@
 import asyncio
 import time
-from typing import Any, AsyncGenerator
+from collections.abc import AsyncGenerator
+from typing import Any
 
 from litestar import Litestar, WebSocket, websocket_stream
 

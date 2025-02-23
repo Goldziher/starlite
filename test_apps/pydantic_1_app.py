@@ -1,5 +1,4 @@
 import unittest
-from typing import List
 
 import pydantic
 
@@ -9,7 +8,7 @@ from litestar.testing import create_test_client
 
 class Foo(pydantic.BaseModel):
     bar: str
-    baz: List[str]
+    baz: list[str]
 
 
 @post("/")

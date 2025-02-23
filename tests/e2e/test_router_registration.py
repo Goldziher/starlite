@@ -1,5 +1,3 @@
-from typing import Type
-
 import pytest
 
 from litestar import (
@@ -21,7 +19,7 @@ from litestar.routes import HTTPRoute
 
 
 @pytest.fixture
-def controller() -> Type[Controller]:
+def controller() -> type[Controller]:
     class MyController(Controller):
         path = "/test"
 
@@ -44,7 +42,7 @@ def controller() -> Type[Controller]:
     return MyController
 
 
-def test_register_with_controller_class(controller: Type[Controller]) -> None:
+def test_register_with_controller_class(controller: type[Controller]) -> None:
     router = Litestar(path="/base", route_handlers=[controller], openapi_config=None)
     assert len(router.routes) == 3
     for route in router.routes:
@@ -57,7 +55,7 @@ def test_register_with_controller_class(controller: Type[Controller]) -> None:
                 assert route.path == "/base/test"
 
 
-def test_register_with_router_instance(controller: Type[Controller]) -> None:
+def test_register_with_router_instance(controller: type[Controller]) -> None:
     top_level_router = Router(path="/top-level", route_handlers=[controller])
     base_router = Litestar(path="/base", route_handlers=[top_level_router], openapi_config=None)
 
@@ -136,7 +134,7 @@ def test_register_app_on_itself() -> None:
         app.register(app)
 
 
-def test_missing_path_param_type(controller: Type[Controller]) -> None:
+def test_missing_path_param_type(controller: type[Controller]) -> None:
     missing_path_type = "/missing_path_type/{path_type}"
 
     @get(path=missing_path_type)

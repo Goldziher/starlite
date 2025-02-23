@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Mapping
+from typing import TYPE_CHECKING, Any
 
 import litestar.exceptions
 from litestar.exceptions import MissingDependencyException
@@ -16,7 +16,7 @@ from litestar.template.base import _get_request_from_context
 from litestar.utils.predicates import is_class_and_subclass
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Mapping
 
     from litestar.config.app import AppConfig
     from litestar.connection.base import ASGIConnection

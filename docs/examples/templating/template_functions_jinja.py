@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from litestar import Litestar, get
 from litestar.contrib.jinja import JinjaTemplateEngine
@@ -7,7 +7,7 @@ from litestar.response import Template
 from litestar.template.config import TemplateConfig
 
 
-def my_template_function(ctx: Dict[str, Any]) -> str:
+def my_template_function(ctx: dict[str, Any]) -> str:
     return ctx.get("my_context_key", "nope")
 
 

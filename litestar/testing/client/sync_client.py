@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from contextlib import ExitStack
-from typing import TYPE_CHECKING, Any, Generic, Mapping, Sequence, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from httpx import USE_CLIENT_DEFAULT, Client
 
@@ -11,6 +11,8 @@ from litestar.testing.transport import ConnectionUpgradeExceptionError, TestClie
 from litestar.types import AnyIOBackend, ASGIApp
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+
     from httpx._client import UseClientDefault
     from httpx._types import (
         AuthTypes,

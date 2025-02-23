@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import Generic, List, Optional, TypeVar
+from typing import Annotated, Generic, Optional, TypeVar
 
 import pytest
 from attr import define
-from typing_extensions import Annotated, TypedDict
+from typing_extensions import TypedDict
 
 from litestar import get, post
 from litestar._signature import SignatureModel
@@ -116,7 +116,7 @@ def test_validation_error_exception_key() -> None:
 
     @dataclass
     class OtherChild:
-        val: List[int]
+        val: list[int]
 
     @dataclass
     class Child:
@@ -152,7 +152,7 @@ def test_validation_error_exception_key() -> None:
 def test_invalid_input_attrs() -> None:
     @define
     class OtherChild:
-        val: List[int]
+        val: list[int]
 
     @define
     class Child:
@@ -197,7 +197,7 @@ def test_invalid_input_attrs() -> None:
 def test_invalid_input_dataclass() -> None:
     @dataclass
     class OtherChild:
-        val: List[int]
+        val: list[int]
 
     @dataclass
     class Child:
@@ -243,7 +243,7 @@ def test_invalid_input_dataclass() -> None:
 
 def test_invalid_input_typed_dict() -> None:
     class OtherChild(TypedDict):
-        val: List[int]
+        val: list[int]
 
     class Child(TypedDict):
         val: int

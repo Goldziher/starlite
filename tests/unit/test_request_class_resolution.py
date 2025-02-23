@@ -1,14 +1,14 @@
-from typing import Optional, Type
+from typing import Optional
 
 import pytest
 
 from litestar import Controller, HttpMethod, Litestar, Request, Router, get
 from litestar.handlers.http_handlers.base import HTTPRouteHandler
 
-RouterRequest: Type[Request] = type("RouterRequest", (Request,), {})
-ControllerRequest: Type[Request] = type("ControllerRequest", (Request,), {})
-AppRequest: Type[Request] = type("AppRequest", (Request,), {})
-HandlerRequest: Type[Request] = type("HandlerRequest", (Request,), {})
+RouterRequest: type[Request] = type("RouterRequest", (Request,), {})
+ControllerRequest: type[Request] = type("ControllerRequest", (Request,), {})
+AppRequest: type[Request] = type("AppRequest", (Request,), {})
+HandlerRequest: type[Request] = type("HandlerRequest", (Request,), {})
 
 
 @pytest.mark.parametrize(
@@ -31,11 +31,11 @@ HandlerRequest: Type[Request] = type("HandlerRequest", (Request,), {})
     ),
 )
 def test_request_class_resolution_of_layers(
-    handler_request_class: Optional[Type[Request]],
-    controller_request_class: Optional[Type[Request]],
-    router_request_class: Optional[Type[Request]],
-    app_request_class: Optional[Type[Request]],
-    expected: Type[Request],
+    handler_request_class: Optional[type[Request]],
+    controller_request_class: Optional[type[Request]],
+    router_request_class: Optional[type[Request]],
+    app_request_class: Optional[type[Request]],
+    expected: type[Request],
 ) -> None:
     class MyController(Controller):
         request_class = controller_request_class

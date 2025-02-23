@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
@@ -41,7 +41,7 @@ class Auth:
 user = User(name="moishe", id=100)
 auth = Auth(props="abc")
 
-state: Dict[str, AuthenticationResult] = {}
+state: dict[str, AuthenticationResult] = {}
 
 
 class AuthMiddleware(AbstractAuthenticationMiddleware):
@@ -133,7 +133,7 @@ def test_authentication_middleware_exclude() -> None:
     auth_mw = DefineMiddleware(AuthMiddleware, exclude=["north", "south"])
 
     @get("/north/{value:int}")
-    def north_handler(value: int) -> Dict[str, int]:
+    def north_handler(value: int) -> dict[str, int]:
         return {"value": value}
 
     @get("/south")
@@ -162,7 +162,7 @@ def test_authentication_middleware_exclude_from_auth() -> None:
     auth_mw = DefineMiddleware(AuthMiddleware, exclude=["south", "east"])
 
     @get("/north/{value:int}", exclude_from_auth=True)
-    def north_handler(value: int) -> Dict[str, int]:
+    def north_handler(value: int) -> dict[str, int]:
         return {"value": value}
 
     @get("/south")
@@ -198,7 +198,7 @@ def test_authentication_middleware_exclude_from_auth_custom_key() -> None:
     auth_mw = DefineMiddleware(AuthMiddleware, exclude=["south", "east"], exclude_from_auth_key="my_exclude_key")
 
     @get("/north/{value:int}", my_exclude_key=True)
-    def north_handler(value: int) -> Dict[str, int]:
+    def north_handler(value: int) -> dict[str, int]:
         return {"value": value}
 
     @get("/south")

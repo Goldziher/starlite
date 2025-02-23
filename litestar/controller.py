@@ -3,7 +3,7 @@ from __future__ import annotations
 import types
 from collections import defaultdict
 from operator import attrgetter
-from typing import TYPE_CHECKING, Any, Mapping, Sequence, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from litestar._layers.utils import narrow_response_cookies, narrow_response_headers
 from litestar.exceptions import ImproperlyConfiguredException
@@ -18,6 +18,8 @@ __all__ = ("Controller",)
 
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+
     from litestar.connection import Request, WebSocket
     from litestar.datastructures import CacheControlHeader, ETag
     from litestar.dto import AbstractDTO

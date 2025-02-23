@@ -6,15 +6,12 @@ from functools import partial
 from pathlib import Path, PurePath
 from typing import (
     TYPE_CHECKING,
+    Annotated,
     Any,
     Callable,
     ClassVar,
-    Dict,
     Literal,
     Optional,
-    Sequence,
-    Set,
-    Type,
     TypedDict,
     Union,
     cast,
@@ -23,7 +20,6 @@ from uuid import UUID
 
 from msgspec import NODEFAULT, Meta, Struct, ValidationError, convert, defstruct
 from msgspec.structs import asdict
-from typing_extensions import Annotated
 
 from litestar._signature.types import ExtendedMsgSpecValidationError
 from litestar._signature.utils import (
@@ -42,6 +38,8 @@ from litestar.utils import get_origin_or_inner_type, is_class_and_subclass
 from litestar.utils.dataclass import simple_asdict
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from typing_extensions import NotRequired
 
     from litestar.connection import ASGIConnection
@@ -104,9 +102,9 @@ def _deserializer(target_type: Any, value: Any, default_deserializer: Callable[[
 class SignatureModel(Struct):
     """Model that represents a function signature that uses a msgspec specific type or types."""
 
-    _data_dto: ClassVar[Optional[Type[AbstractDTO]]]
-    _dependency_name_set: ClassVar[Set[str]]
-    _fields: ClassVar[Dict[str, FieldDefinition]]
+    _data_dto: ClassVar[Optional[type[AbstractDTO]]]
+    _dependency_name_set: ClassVar[set[str]]
+    _fields: ClassVar[dict[str, FieldDefinition]]
     _return_annotation: ClassVar[Any]
 
     @classmethod

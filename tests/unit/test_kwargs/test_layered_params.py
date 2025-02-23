@@ -1,5 +1,3 @@
-from typing import List
-
 import pytest
 
 from litestar import Controller, Router, get
@@ -22,7 +20,7 @@ def test_layered_parameters_injected_correctly() -> None:
             router1: str,
             router2: float,
             app1: str,
-            app2: List[str],
+            app2: list[str],
         ) -> dict:
             assert isinstance(local, float)
             assert isinstance(controller1, int)
@@ -46,7 +44,7 @@ def test_layered_parameters_injected_correctly() -> None:
         route_handlers=router,
         parameters={
             "app1": Parameter(str, cookie="app4"),
-            "app2": Parameter(List[str], min_items=2),
+            "app2": Parameter(list[str], min_items=2),
             "app3": Parameter(bool, required=False),
         },
     ) as client:
@@ -94,7 +92,7 @@ def test_layered_parameters_validation(parameter: str, param_type: str) -> None:
         route_handlers=router,
         parameters={
             "app1": Parameter(str, cookie="app4"),
-            "app2": Parameter(List[str], min_items=2),
+            "app2": Parameter(list[str], min_items=2),
             "app3": Parameter(bool, required=False),
         },
     ) as client:

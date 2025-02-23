@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, Mapping, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
 from typing_extensions import TypeAlias
 

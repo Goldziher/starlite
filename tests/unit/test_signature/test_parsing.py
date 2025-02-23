@@ -1,11 +1,11 @@
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from types import ModuleType
-from typing import Any, Callable, Iterable, List, Optional, Sequence, Union
+from typing import Annotated, Any, Callable, Optional, Union
 from unittest.mock import MagicMock
 
 import msgspec
 import pytest
-from typing_extensions import Annotated
 
 from litestar import get
 from litestar._signature import SignatureModel
@@ -90,7 +90,7 @@ app = Litestar(route_handlers=[hello_world], openapi_config=None)
 @pytest.mark.parametrize(("query", "exp"), [("?a=1&a=2&a=3", [1, 2, 3]), ("", None)])
 def test_parse_optional_sequence_from_connection_kwargs(query: str, exp: Any) -> None:
     @get("/")
-    def test(a: Optional[List[int]] = Parameter(query="a", default=None, required=False)) -> Optional[List[int]]:
+    def test(a: Optional[list[int]] = Parameter(query="a", default=None, required=False)) -> Optional[list[int]]:
         return a
 
     with create_test_client(route_handlers=[test]) as client:
@@ -149,7 +149,7 @@ def test_union_constraint_handling() -> None:
     mock = MagicMock()
 
     @get("/")
-    def handler(param: Annotated[Union[str, List[str]], Body(max_length=3, max_items=3)]) -> None:
+    def handler(param: Annotated[Union[str, list[str]], Body(max_length=3, max_items=3)]) -> None:
         mock(param)
 
     with create_test_client([handler]) as client:
@@ -171,7 +171,7 @@ def test_collection_union_struct_fields(with_optional: bool) -> None:
     the same error.
     """
 
-    annotation = Union[List[str], List[int]]
+    annotation = Union[list[str], list[int]]
 
     if with_optional:
         annotation = Optional[annotation]  # type: ignore[misc]

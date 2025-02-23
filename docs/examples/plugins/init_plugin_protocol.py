@@ -1,5 +1,3 @@
-from typing import Dict
-
 from litestar import Litestar, get
 from litestar.config.app import AppConfig
 from litestar.di import Provide
@@ -7,7 +5,7 @@ from litestar.plugins import InitPluginProtocol
 
 
 @get("/", sync_to_thread=False)
-def route_handler(name: str) -> Dict[str, str]:
+def route_handler(name: str) -> dict[str, str]:
     return {"hello": name}
 
 

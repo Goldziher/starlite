@@ -13,7 +13,7 @@ from importlib.util import find_spec
 from itertools import chain
 from os import getenv
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Generator, Iterable, Sequence, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Callable, TypeVar, cast
 
 try:
     from rich_click import RichCommand as Command
@@ -21,10 +21,12 @@ try:
 except ImportError:
     from click import Command, Group  # type: ignore[assignment]
 
+from typing import get_type_hints
+
 from click import ClickException, Context, pass_context
 from rich import get_console
 from rich.table import Table
-from typing_extensions import ParamSpec, get_type_hints
+from typing_extensions import ParamSpec
 
 from litestar import Litestar, __version__
 from litestar.middleware import DefineMiddleware
@@ -37,6 +39,7 @@ else:
 
 
 if TYPE_CHECKING:
+    from collections.abc import Generator, Iterable, Sequence
     from types import ModuleType
 
     from litestar.openapi import OpenAPIConfig

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Tuple
+from typing import Any
 from urllib.parse import urlencode
 
 import pytest
@@ -66,12 +66,12 @@ def test_parse_utf8_form_data() -> None:
         ),
     ),
 )
-def test_parse_cookie_string(cookie_string: str, expected: Dict[str, str]) -> None:
+def test_parse_cookie_string(cookie_string: str, expected: dict[str, str]) -> None:
     assert parse_cookie_string(cookie_string) == expected
 
 
 def test_parse_query_string() -> None:
-    query: Dict[str, Any] = {
+    query: dict[str, Any] = {
         "value": "10",
         "veggies": ["tomato", "potato", "aubergine"],
         "calories": "122.53",
@@ -99,7 +99,7 @@ def test_parse_query_string() -> None:
         (("first", "a@A&.ac"), ("second", "aaa")),
     ),
 )
-def test_query_parsing_of_escaped_values(values: Tuple[Tuple[str, str], Tuple[str, str]]) -> None:
+def test_query_parsing_of_escaped_values(values: tuple[tuple[str, str], tuple[str, str]]) -> None:
     # https://github.com/litestar-org/litestar/issues/915
     with create_test_client([]) as client:
         request = client.build_request(method=HttpMethod.GET, url="http://www.example.com", params=dict(values))

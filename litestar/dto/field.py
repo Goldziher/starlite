@@ -9,7 +9,8 @@ from typing import TYPE_CHECKING
 from litestar.exceptions import ImproperlyConfiguredException
 
 if TYPE_CHECKING:
-    from typing import Any, Literal, Mapping
+    from collections.abc import Mapping
+    from typing import Any, Literal
 
     from litestar.typing import FieldDefinition
 

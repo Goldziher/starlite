@@ -15,7 +15,7 @@ __all__ = ("CacheObject", "RateLimitConfig", "RateLimitMiddleware")
 
 
 if TYPE_CHECKING:
-    from typing import Awaitable
+    from collections.abc import Awaitable
 
     from litestar import Litestar
     from litestar.connection import Request

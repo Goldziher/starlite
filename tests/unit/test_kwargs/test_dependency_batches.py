@@ -1,5 +1,3 @@
-from typing import List, Set
-
 import pytest
 
 from litestar._kwargs.dependencies import Dependency, create_dependency_batches
@@ -57,7 +55,7 @@ DEPENDENCY_ALL_EXCEPT_A = Dependency("D", Provide(dummy), [DEPENDENCY_B, DEPENDE
         ),
     ],
 )
-def test_dependency_batches(dependency_tree: Set[Dependency], expected_batches: List[Set[Dependency]]) -> None:
+def test_dependency_batches(dependency_tree: set[Dependency], expected_batches: list[set[Dependency]]) -> None:
     calculated_batches = create_dependency_batches(dependency_tree)
     assert calculated_batches == expected_batches
 

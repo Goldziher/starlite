@@ -1,6 +1,6 @@
 from asyncio import sleep
+from collections.abc import AsyncGenerator
 from datetime import datetime
-from typing import AsyncGenerator
 
 from litestar import Litestar, get
 from litestar.response import Stream

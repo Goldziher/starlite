@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, AsyncIterator, Generator
+from collections.abc import AsyncIterator, Generator
+from typing import Any
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch

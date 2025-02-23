@@ -1,9 +1,8 @@
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Type
+from typing import Annotated, Any, Callable
 from unittest.mock import ANY, MagicMock
 
 import pytest
-from typing_extensions import Annotated
 
 from litestar import Controller, Litestar, get, post
 from litestar._openapi.datastructures import OpenAPIContext
@@ -48,7 +47,7 @@ def create_request(openapi_context: OpenAPIContext) -> RequestBodyFactory:
     return _factory
 
 
-def test_create_request_body(person_controller: Type[Controller], create_request: RequestBodyFactory) -> None:
+def test_create_request_body(person_controller: type[Controller], create_request: RequestBodyFactory) -> None:
     for route in Litestar(route_handlers=[person_controller]).routes:
         for route_handler in route.route_handler_map.values():  # type: ignore[union-attr]
             handler_fields = route_handler.parsed_fn_signature.parameters
@@ -101,7 +100,7 @@ def test_upload_single_file_schema_generation() -> None:
 def test_upload_list_of_files_schema_generation() -> None:
     @post(path="/file-list-upload")
     async def handle_file_list_upload(
-        data: List[UploadFile] = Body(media_type=RequestEncodingType.MULTI_PART),
+        data: list[UploadFile] = Body(media_type=RequestEncodingType.MULTI_PART),
     ) -> None:
         return None
 
@@ -122,7 +121,7 @@ def test_upload_list_of_files_schema_generation() -> None:
 def test_upload_file_dict_schema_generation() -> None:
     @post(path="/file-dict-upload")
     async def handle_file_list_upload(
-        data: Dict[str, UploadFile] = Body(media_type=RequestEncodingType.MULTI_PART),
+        data: dict[str, UploadFile] = Body(media_type=RequestEncodingType.MULTI_PART),
     ) -> None:
         return None
 
@@ -172,12 +171,12 @@ def test_request_body_generation_with_dto(create_request: RequestBodyFactory) ->
     mock_dto = MagicMock(spec=AbstractDTO)
 
     @post(path="/form-upload", dto=mock_dto)  # pyright: ignore
-    async def handler(data: Dict[str, Any]) -> None:
+    async def handler(data: dict[str, Any]) -> None:
         return None
 
     app = Litestar(route_handlers=[handler])
     resolved_handler = app.route_handler_method_map["/form-upload"]["POST"]
-    field_definition = FieldDefinition.from_annotation(Dict[str, Any])
+    field_definition = FieldDefinition.from_annotation(dict[str, Any])
     create_request(resolved_handler, field_definition)
     mock_dto.create_openapi_schema.assert_called_once_with(
         field_definition=field_definition, handler_id=resolved_handler.handler_id, schema_creator=ANY

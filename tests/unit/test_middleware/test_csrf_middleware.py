@@ -133,9 +133,10 @@ def test_websocket_ignored() -> None:
         await socket.send_json({"data": "123"})
         await socket.close()
 
-    with create_test_client(
-        route_handlers=[websocket_handler], csrf_config=CSRFConfig(secret="secret")
-    ) as client, client.websocket_connect("/") as ws:
+    with (
+        create_test_client(route_handlers=[websocket_handler], csrf_config=CSRFConfig(secret="secret")) as client,
+        client.websocket_connect("/") as ws,
+    ):
         response = ws.receive_json()
         assert response is not None
 

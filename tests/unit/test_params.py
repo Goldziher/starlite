@@ -1,7 +1,7 @@
-from typing import Any, Dict, Generator, List, Optional
+from collections.abc import Generator
+from typing import Annotated, Any, Optional
 
 import pytest
-from typing_extensions import Annotated
 
 from litestar import Controller, Litestar, MediaType, get, post
 from litestar.di import Provide
@@ -39,7 +39,7 @@ def test_parsing_of_parameter_as_default() -> None:
 
 def test_parsing_of_body_as_annotated() -> None:
     @post(path="/")
-    def handler(data: Annotated[List[str], Body(min_items=1)]) -> List[str]:
+    def handler(data: Annotated[list[str], Body(min_items=1)]) -> list[str]:
         return data
 
     with create_test_client(handler) as client:
@@ -52,7 +52,7 @@ def test_parsing_of_body_as_annotated() -> None:
 
 def test_parsing_of_body_as_default() -> None:
     @post(path="/")
-    def handler(data: List[str] = Body(min_items=1)) -> List[str]:
+    def handler(data: list[str] = Body(min_items=1)) -> list[str]:
         return data
 
     with create_test_client(handler) as client:
@@ -88,7 +88,7 @@ def test_dependency_defaults(default: Any) -> None:
     @get("/")
     def handler(
         value_1: Optional[int] = Dependency(default=default), value_2: Annotated[Optional[int], Dependency()] = default
-    ) -> Dict[str, Optional[int]]:
+    ) -> dict[str, Optional[int]]:
         return {"value_1": value_1, "value_2": value_2}
 
     with create_test_client(route_handlers=[handler]) as client:
@@ -98,7 +98,7 @@ def test_dependency_defaults(default: Any) -> None:
 
 def test_dependency_non_optional_with_default() -> None:
     @get("/")
-    def handler(value: int = Dependency(default=13)) -> Dict[str, int]:
+    def handler(value: int = Dependency(default=13)) -> dict[str, int]:
         return {"value": value}
 
     with create_test_client(route_handlers=[handler]) as client:
@@ -108,7 +108,7 @@ def test_dependency_non_optional_with_default() -> None:
 
 def test_dependency_no_default() -> None:
     @get(dependencies={"value": Provide(lambda: 13, sync_to_thread=False)})
-    def test(value: int = Dependency()) -> Dict[str, int]:
+    def test(value: int = Dependency()) -> dict[str, int]:
         return {"value": value}
 
     with create_test_client(route_handlers=[test]) as client:
@@ -118,7 +118,7 @@ def test_dependency_no_default() -> None:
 
 def test_dependency_not_provided_and_no_default() -> None:
     @get()
-    def test(value: int = Dependency()) -> Dict[str, int]:
+    def test(value: int = Dependency()) -> dict[str, int]:
         return {"value": value}
 
     with pytest.raises(ImproperlyConfiguredException):
@@ -135,7 +135,7 @@ def test_dependency_provided_on_controller() -> None:
         dependencies = {"value": Provide(lambda: 13, sync_to_thread=False)}
 
         @get()
-        def test(self, value: int = Dependency()) -> Dict[str, int]:
+        def test(self, value: int = Dependency()) -> dict[str, int]:
             return {"value": value}
 
     with create_test_client(route_handlers=[C]) as client:
@@ -145,11 +145,11 @@ def test_dependency_provided_on_controller() -> None:
 
 def test_dependency_skip_validation() -> None:
     @get("/validated")
-    def validated(value: int = Dependency()) -> Dict[str, int]:
+    def validated(value: int = Dependency()) -> dict[str, int]:
         return {"value": value}
 
     @get("/skipped")
-    def skipped(value: int = Dependency(skip_validation=True)) -> Dict[str, int]:
+    def skipped(value: int = Dependency(skip_validation=True)) -> dict[str, int]:
         return {"value": value}
 
     with create_test_client(
@@ -164,7 +164,7 @@ def test_dependency_skip_validation() -> None:
 
 def test_dependency_skip_validation_with_default() -> None:
     @get("/skipped")
-    def skipped(value: int = Dependency(default=1, skip_validation=True)) -> Dict[str, int]:
+    def skipped(value: int = Dependency(default=1, skip_validation=True)) -> dict[str, int]:
         return {"value": value}
 
     with create_test_client(route_handlers=[skipped]) as client:
@@ -175,18 +175,18 @@ def test_dependency_skip_validation_with_default() -> None:
 
 def test_dependency_nested_sequence() -> None:
     class Obj:
-        def __init__(self, seq: List[str]) -> None:
+        def __init__(self, seq: list[str]) -> None:
             self.seq = seq
 
-    async def provides_obj(seq: List[str]) -> Obj:
+    async def provides_obj(seq: list[str]) -> Obj:
         return Obj(seq)
 
     @get("/obj")
-    def get_obj(obj: Obj) -> List[str]:
+    def get_obj(obj: Obj) -> list[str]:
         return obj.seq
 
     @get("/seq")
-    def get_seq(seq: List[str]) -> List[str]:
+    def get_seq(seq: list[str]) -> list[str]:
         return seq
 
     with create_test_client(
@@ -219,11 +219,11 @@ def test_regex_validation() -> None:
 @pytest.fixture(name="optional_no_default_client")
 def optional_no_default_client_fixture() -> Generator[TestClient, None, None]:
     @get("/optional-no-default")
-    def handle_optional(key: Optional[str]) -> Dict[str, Optional[str]]:
+    def handle_optional(key: Optional[str]) -> dict[str, Optional[str]]:
         return {"key": key}
 
     @get("/optional-annotated-no-default")
-    def handle_optional_annotated(param: Annotated[Optional[str], Parameter(query="key")]) -> Dict[str, Optional[str]]:
+    def handle_optional_annotated(param: Annotated[Optional[str], Parameter(query="key")]) -> dict[str, Optional[str]]:
         return {"key": param}
 
     with create_test_client(route_handlers=[handle_optional, handle_optional_annotated], openapi_config=None) as client:
@@ -262,13 +262,13 @@ def test_optional_query_parameter_consistency_no_default_queried_with_other_para
 @pytest.fixture(name="optional_default_client")
 def optional_default_client_fixture() -> Generator[TestClient, None, None]:
     @get("/optional-default")
-    def handle_default(key: Optional[str] = None) -> Dict[str, Optional[str]]:
+    def handle_default(key: Optional[str] = None) -> dict[str, Optional[str]]:
         return {"key": key}
 
     @get("/optional-annotated-default")
     def handle_default_annotated(
         param: Annotated[Optional[str], Parameter(query="key")] = None,
-    ) -> Dict[str, Optional[str]]:
+    ) -> dict[str, Optional[str]]:
         return {"key": param}
 
     with create_test_client(route_handlers=[handle_default, handle_default_annotated], openapi_config=None) as client:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, Dict, Generic, Iterable, Sequence, cast
+from typing import TYPE_CHECKING, Any, Callable, Generic, cast
 
 from litestar.middleware.base import DefineMiddleware
 from litestar.middleware.session.base import BaseBackendConfig, BaseSessionBackendT
@@ -12,13 +12,15 @@ from litestar.security.session_auth.middleware import MiddlewareWrapper, Session
 __all__ = ("SessionAuth",)
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
+
     from litestar.connection import ASGIConnection
     from litestar.di import Provide
     from litestar.types import ControllerRouterHandler, Guard, Method, Scopes, SyncOrAsyncUnion, TypeEncodersMap
 
 
 @dataclass
-class SessionAuth(Generic[UserType, BaseSessionBackendT], AbstractSecurityConfig[UserType, Dict[str, Any]]):
+class SessionAuth(Generic[UserType, BaseSessionBackendT], AbstractSecurityConfig[UserType, dict[str, Any]]):
     """Session Based Security Backend."""
 
     session_backend_config: BaseBackendConfig[BaseSessionBackendT]  # pyright: ignore

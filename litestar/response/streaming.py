@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import itertools
+from collections.abc import AsyncGenerator, AsyncIterable, AsyncIterator, Iterable, Iterator
 from functools import partial
-from typing import TYPE_CHECKING, Any, AsyncGenerator, AsyncIterable, AsyncIterator, Callable, Iterable, Iterator, Union
+from typing import TYPE_CHECKING, Any, Callable, Union
 
 from anyio import CancelScope, create_task_group
 

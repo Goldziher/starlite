@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import wraps
 from inspect import Parameter, Signature
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict
+from typing import TYPE_CHECKING, Any, Callable
 
 from msgspec.json import Encoder as JsonEncoder
 
@@ -13,6 +13,8 @@ from litestar.utils import ensure_async_callable
 from litestar.utils.helpers import unwrap_partial
 
 if TYPE_CHECKING:
+    from collections.abc import Coroutine
+
     from litestar import WebSocket
     from litestar.handlers.websocket_handlers.listener import WebsocketListenerRouteHandler
     from litestar.types import AnyCallable
@@ -97,7 +99,7 @@ class ListenerHandler:
         self,
         *args: Any,
         socket: WebSocket,
-        connection_lifespan_dependencies: Dict[str, Any],  # noqa: UP006
+        connection_lifespan_dependencies: dict[str, Any],
         **kwargs: Any,
     ) -> None:
         lifespan_mananger = self._listener._connection_lifespan or self._listener.default_connection_lifespan
@@ -149,7 +151,7 @@ def create_stub_dependency(src: AnyCallable) -> Provide:
     src = unwrap_partial(src)
 
     @wraps(src)
-    async def stub(**kwargs: Any) -> Dict[str, Any]:  # noqa: UP006
+    async def stub(**kwargs: Any) -> dict[str, Any]:
         return kwargs
 
     return Provide(stub)

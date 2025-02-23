@@ -4,13 +4,11 @@ from datetime import date, datetime, timezone
 from enum import Enum, auto
 from typing import (
     TYPE_CHECKING,
+    Annotated,
     Any,
-    Dict,
     Generic,
-    List,
     Literal,
     Optional,
-    Tuple,
     TypedDict,
     TypeVar,
     Union,  # pyright: ignore
@@ -20,7 +18,7 @@ import annotated_types
 import msgspec
 import pytest
 from msgspec import Struct
-from typing_extensions import Annotated, TypeAlias, TypeAliasType
+from typing_extensions import TypeAlias, TypeAliasType
 
 from litestar import Controller, MediaType, get, post
 from litestar._openapi.schema_generation.plugins import openapi_schema_plugins
@@ -355,7 +353,7 @@ def test_literal_enums() -> None:
         A = auto()
         B = auto()
 
-    schema = get_schema_for_field_definition(FieldDefinition.from_annotation(List[Literal[Foo.A]]))
+    schema = get_schema_for_field_definition(FieldDefinition.from_annotation(list[Literal[Foo.A]]))
     assert isinstance(schema.items, Schema)
     assert schema.items.const == 1
 
@@ -373,7 +371,7 @@ class MsgspecGeneric(Struct, Generic[T]):
     annotated_foo: Annotated[T, object()]
 
 
-annotations: List[type] = [DataclassGeneric[int], MsgspecGeneric[int]]
+annotations: list[type] = [DataclassGeneric[int], MsgspecGeneric[int]]
 
 # Generic TypedDict was only supported from 3.11 onwards
 if sys.version_info >= (3, 11):
@@ -454,13 +452,13 @@ def test_schema_generation_with_pagination(annotation: Any) -> None:
 
 
 def test_schema_generation_with_ellipsis() -> None:
-    schema = get_schema_for_field_definition(FieldDefinition.from_annotation(Tuple[int, ...]))
+    schema = get_schema_for_field_definition(FieldDefinition.from_annotation(tuple[int, ...]))
     assert isinstance(schema.items, Schema)
     assert schema.items.type == OpenAPIType.INTEGER
 
 
 def test_schema_tuple_with_union() -> None:
-    schema = get_schema_for_field_definition(FieldDefinition.from_annotation(Tuple[int, Union[int, str]]))
+    schema = get_schema_for_field_definition(FieldDefinition.from_annotation(tuple[int, Union[int, str]]))
     assert isinstance(schema.items, Schema)
     assert schema.items.one_of == [
         Schema(type=OpenAPIType.INTEGER),
@@ -706,7 +704,7 @@ def test_type_alias_type() -> None:
 
 @pytest.mark.skipif(sys.version_info < (3, 12), reason="type keyword not available before 3.12")
 def test_type_alias_type_keyword() -> None:
-    ctx: Dict[str, Any] = {}
+    ctx: dict[str, Any] = {}
     exec("type IntAlias = int", ctx, None)
     annotation = ctx["IntAlias"]
 

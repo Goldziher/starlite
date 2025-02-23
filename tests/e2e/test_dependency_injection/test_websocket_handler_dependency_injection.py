@@ -1,5 +1,5 @@
 from asyncio import sleep
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 
@@ -20,12 +20,12 @@ async def router_second_dependency() -> bool:
     return False
 
 
-def controller_first_dependency(headers: Dict[str, Any]) -> Dict[Any, Any]:
+def controller_first_dependency(headers: dict[str, Any]) -> dict[Any, Any]:
     assert headers
     return {}
 
 
-async def controller_second_dependency(socket: WebSocket[Any, Any, Any]) -> Dict[Any, Any]:
+async def controller_second_dependency(socket: WebSocket[Any, Any, Any]) -> dict[Any, Any]:
     assert socket
     await sleep(0)
     return {}
@@ -58,7 +58,7 @@ class FirstController(Controller):
         },
     )
     async def test_method(
-        self, socket: WebSocket[Any, Any, Any], first: int, second: Dict[Any, Any], third: bool
+        self, socket: WebSocket[Any, Any, Any], first: int, second: dict[Any, Any], third: bool
     ) -> None:
         await socket.accept()
         msg = await socket.receive_json()
@@ -116,7 +116,7 @@ def test_dependency_isolation() -> None:
         path = "/second"
 
         @websocket()
-        async def test_method(self, socket: WebSocket[Any, Any, Any], _: Dict[Any, Any]) -> None:
+        async def test_method(self, socket: WebSocket[Any, Any, Any], _: dict[Any, Any]) -> None:
             await socket.accept()
 
     client = create_test_client([FirstController, SecondController])

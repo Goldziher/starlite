@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Type, Union
+from typing import TYPE_CHECKING, Union
 
 from typing_extensions import _TypedDictMeta  # type: ignore[attr-defined]
 
@@ -22,4 +22,4 @@ except ImportError:
     UnionType: TypeAlias = Union  # type: ignore[no-redef]
 
 UnionTypes = {UnionType, Union}
-TypedDictClass: TypeAlias = Type[_TypedDictMeta]
+TypedDictClass: TypeAlias = type[_TypedDictMeta]

@@ -6,10 +6,10 @@ import inspect
 import warnings
 from inspect import Parameter
 from types import ModuleType
-from typing import Any, Callable, Generic, List, Optional, TypeVar, Union
+from typing import Annotated, Any, Callable, Generic, Optional, TypeVar, Union, get_type_hints
 
 import pytest
-from typing_extensions import Annotated, NotRequired, Required, TypedDict, get_args, get_type_hints
+from typing_extensions import NotRequired, Required, TypedDict, get_args
 
 from litestar import Controller, post
 from litestar.exceptions import ImproperlyConfiguredException
@@ -86,11 +86,11 @@ def fn(plain: {hint} = None, annotated: Annotated[{hint}, ...] = None) -> None: 
 
 class _TD(TypedDict):
     req_int: Required[int]
-    req_list_int: Required[List[int]]
+    req_list_int: Required[list[int]]
     not_req_int: NotRequired[int]
-    not_req_list_int: NotRequired[List[int]]
+    not_req_list_int: NotRequired[list[int]]
     ann_req_int: Required[Annotated[int, "foo"]]
-    ann_req_list_int: Required[Annotated[List[int], "foo"]]
+    ann_req_list_int: Required[Annotated[list[int], "foo"]]
 
 
 test_type_hints = get_type_hints(_TD, include_extras=True)
@@ -140,13 +140,13 @@ def test_field_definition_from_parameter_annotation_property() -> None:
 def test_parsed_signature() -> None:
     """Test ParsedSignature."""
 
-    def fn(foo: int, bar: Optional[List[int]] = None) -> None: ...
+    def fn(foo: int, bar: Optional[list[int]] = None) -> None: ...
 
     parsed_sig = ParsedSignature.from_fn(fn, get_fn_type_hints(fn))
     assert parsed_sig.return_type.annotation is NoneType
     assert parsed_sig.parameters["foo"].annotation is int
-    assert parsed_sig.parameters["bar"].args == (List[int], NoneType)
-    assert parsed_sig.parameters["bar"].annotation == Union[List[int], NoneType]
+    assert parsed_sig.parameters["bar"].args == (list[int], NoneType)
+    assert parsed_sig.parameters["bar"].annotation == Union[list[int], NoneType]
     assert parsed_sig.parameters["bar"].default is None
     assert parsed_sig.original_signature == inspect.signature(fn)
 

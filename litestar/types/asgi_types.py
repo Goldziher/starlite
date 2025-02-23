@@ -31,16 +31,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Iterable
 from typing import (
     TYPE_CHECKING,
     Any,
-    Awaitable,
     Callable,
-    Dict,
-    Iterable,
-    List,
     Literal,
-    Tuple,
     TypedDict,
     Union,
 )
@@ -106,7 +102,7 @@ if TYPE_CHECKING:
 
 HttpMethodName: TypeAlias = Literal["GET", "POST", "DELETE", "PATCH", "PUT", "HEAD", "TRACE", "OPTIONS"]
 Method: TypeAlias = Union[HttpMethodName, HttpMethod]
-ScopeSession: TypeAlias = "EmptyType | Dict[str, Any] | DataContainerType | None"
+ScopeSession: TypeAlias = "EmptyType | dict[str, Any] | DataContainerType | None"
 
 
 class ASGIVersion(TypedDict):
@@ -341,6 +337,6 @@ Scope: TypeAlias = Union[HTTPScope, WebSocketScope]
 Receive: TypeAlias = Callable[..., Awaitable[Union[HTTPReceiveMessage, WebSocketReceiveMessage]]]
 Send: TypeAlias = Callable[[Message], Awaitable[None]]
 ASGIApp: TypeAlias = Callable[[Scope, Receive, Send], Awaitable[None]]
-RawHeaders: TypeAlias = Iterable[Tuple[bytes, bytes]]
-RawHeadersList: TypeAlias = List[Tuple[bytes, bytes]]
+RawHeaders: TypeAlias = Iterable[tuple[bytes, bytes]]
+RawHeadersList: TypeAlias = list[tuple[bytes, bytes]]
 WebSocketMode: TypeAlias = Literal["text", "binary"]

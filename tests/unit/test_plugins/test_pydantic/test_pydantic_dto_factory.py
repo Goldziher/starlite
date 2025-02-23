@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING, Annotated, Callable, Optional
 from unittest.mock import ANY
 
 import pydantic as pydantic_v2
 import pytest
 from pydantic import v1 as pydantic_v1
-from typing_extensions import Annotated
 
 from litestar.dto import DTOField, DTOFieldDefinition, Mark, dto_field
 from litestar.plugins.pydantic import PydanticDTO

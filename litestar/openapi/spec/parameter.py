@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Mapping
+from typing import TYPE_CHECKING, Any
 
 from litestar.openapi.spec.base import BaseSchemaObject
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from litestar.openapi.spec.example import Example
     from litestar.openapi.spec.media_type import OpenAPIMediaType
     from litestar.openapi.spec.reference import Reference
