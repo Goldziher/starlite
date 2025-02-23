@@ -370,9 +370,14 @@ Working with Litestar's Pagination Types
 Litestar offers paginated response wrapper types, and DTO Factory types can handle this out of the box.
 
 .. literalinclude:: /examples/data_transfer_objects/factory/paginated_return_data.py
-    :caption: Paginated Return Data
     :language: python
-    :linenos:
+    :lines: 9-11,22-39
+
+.. dropdown:: Full Code (click to expand)
+
+    .. literalinclude:: /examples/data_transfer_objects/factory/paginated_return_data.py
+        :language: python
+        :emphasize-lines: 9,22-39
 
 The DTO is defined and configured, in our example, we're excluding ``password`` and ``created_at`` fields from the final
 representation of our users.

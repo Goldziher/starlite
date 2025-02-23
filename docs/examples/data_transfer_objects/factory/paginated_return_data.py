@@ -5,12 +5,10 @@ from sqlalchemy.orm import Mapped
 from litestar import Litestar, get
 from litestar.dto import DTOConfig
 from litestar.pagination import ClassicPagination
-from litestar.plugins.sqlalchemy import SQLAlchemyDTO
-
-from .my_lib import Base
+from litestar.plugins.sqlalchemy import SQLAlchemyDTO, base
 
 
-class User(Base):
+class User(base.UUIDBase):
     name: Mapped[str]
     password: Mapped[str]
     created_at: Mapped[datetime]
