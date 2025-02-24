@@ -13,7 +13,7 @@ repos:
       - id: check-case-conflict
       - id: check-toml
       - id: debug-statements
-        exclude: "litestar/middleware/_internal/exceptions/middleware.py"
+        exclude: ^(litestar/config/app\.py|litestar/app\.py|test_apps/debugging/main\.py)$
       - id: end-of-file-fixer
       - id: mixed-line-ending
       - id: trailing-whitespace

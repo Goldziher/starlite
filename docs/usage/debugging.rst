@@ -126,3 +126,18 @@ Using uvicorn
 5. Run your application via the debugger via ``Run`` > ``Start debugging``
     .. image:: /images/debugging/vs-code-debug.png
         :align: center
+
+
+Customizing the debugger
+-------------------------
+
+You can configure Litestar with the debug_module option to enable interactive debugging. Currently, it supports the following debugging tools:
+`ipdb <https://github.com/gotcha/ipdb>`_, `PuDB <https://documen.tician.de/pudb/>`_ and `pdbr <https://github.com/cansarigol/pdbr>`_. Also supports `pdb++ <https://github.com/pdbpp/pdbpp>`_.
+The default value is `pdb <https://docs.python.org/3/library/pdb.html>`_.
+
+    .. code-block:: python
+
+        import ipdb
+
+
+        app = Litestar(pdb_on_exception=True, debugger_module=ipdb)

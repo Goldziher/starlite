@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import pdb  # noqa: T100
 from inspect import getmro
 from sys import exc_info
 from traceback import format_exception
@@ -170,7 +169,7 @@ class ExceptionHandlerMiddleware:
                 await hook(e, scope)
 
             if litestar_app.pdb_on_exception:
-                pdb.post_mortem()
+                litestar_app.debugger_module.post_mortem()
 
             if scope["type"] == ScopeType.HTTP:
                 await self.handle_request_exception(
