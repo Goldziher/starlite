@@ -80,6 +80,18 @@ below:
         logging_config=logging_config,
     )
 
+If you want to use ``LoggingConfig`` with another format string style, you need add a key "style"
+
+.. code-block:: python
+
+   logging_config = LoggingConfig(
+      ...
+       formatters={
+           "standard": {"format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s", "style": "%"}
+       },
+       ...
+   )
+
 The above example is the same as using logging without the litestar ``LoggingConfig``.
 
 .. code-block:: python
@@ -114,6 +126,33 @@ The above example is the same as using logging without the litestar ``LoggingCon
         route_handlers=[my_router_handler],
     )
 
+Formatter like JSON string
+--------------------------
+
+* printf-style String Formatting
+
+.. code-block:: python
+
+   format = ('{"asctime": "%(asctime)s", "name": "%(name)s", "level": "%(levelname)s", "message": "%(message)s"}')
+
+   ch.setFormatter(logging.Formatter(format))
+
+* str.format() String Formatting
+
+.. code-block:: python
+
+   # The double bracket are an escaping construction.
+   format = ('{{"asctime": "{asctime}", "name": "{name}", "level": "{levelname}", "message": "{message}" }}')
+
+   ch.setFormatter(logging.Formatter(format, style="{"))
+
+* string.Template String Formatting
+
+.. code-block:: python
+
+   format = ('{"asctime": "$asctime", "name": "$name", "level": "$levelname", "message": "$message"}')
+
+   ch.setFormatter(logging.Formatter(format, style="$"))
 
 Using Picologging
 ^^^^^^^^^^^^^^^^^
