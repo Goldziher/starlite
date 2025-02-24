@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, Generator, TypeVar
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, Generator, Protocol, TypeVar
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -23,12 +23,29 @@ AfterExceptionHookHandler: TypeAlias = "Callable[[ExceptionT, Scope], SyncOrAsyn
 AfterRequestHookHandler: TypeAlias = (
     "Callable[[ASGIApp], SyncOrAsyncUnion[ASGIApp]] | Callable[[Response], SyncOrAsyncUnion[Response]]"
 )
-AfterResponseHookHandler: TypeAlias = "Callable[[Request], SyncOrAsyncUnion[None]]"
+
+AfterResponseHookHandlerSimple: TypeAlias = "Callable[[Request], SyncOrAsyncUnion[None]]"
+
+
+class AfterResponseHookHandlerWithParent(Protocol):
+    async def __call__(self, request: Request, /, *, parent: AfterResponseHookHandler | None = None) -> None: ...
+
+
+AfterResponseHookHandler: TypeAlias = "AfterResponseHookHandlerSimple | AfterResponseHookHandlerWithParent"
+
 AsyncAnyCallable: TypeAlias = Callable[..., Awaitable[Any]]
 AnyCallable: TypeAlias = Callable[..., Any]
 AnyGenerator: TypeAlias = "Generator[Any, Any, Any] | AsyncGenerator[Any, Any]"
 BeforeMessageSendHookHandler: TypeAlias = "Callable[[Message, Scope], SyncOrAsyncUnion[None]]"
-BeforeRequestHookHandler: TypeAlias = "Callable[[Request], Any | Awaitable[Any]]"
+
+
+class BeforeRequestHookHandlerWithParent(Protocol):
+    async def __call__(self, request: Request, /, *, parent: BeforeRequestHookHandler | None = None) -> Any: ...
+
+
+BeforeRequestHookHandlerSimple: TypeAlias = "Callable[[Request], Any | Awaitable[Any]]"
+BeforeRequestHookHandler: TypeAlias = "BeforeRequestHookHandlerSimple | BeforeRequestHookHandlerWithParent"
+
 CacheKeyBuilder: TypeAlias = "Callable[[Request], str]"
 ExceptionHandler: TypeAlias = "Callable[[Request, ExceptionT], Response]"
 ExceptionLoggingHandler: TypeAlias = "Callable[[Logger, Scope, list[str]], None]"

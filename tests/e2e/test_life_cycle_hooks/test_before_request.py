@@ -1,4 +1,5 @@
-from typing import Any, Dict, Optional
+import logging
+from typing import Any, Dict, Optional, Union
 
 import pytest
 
@@ -6,6 +7,18 @@ from litestar import Controller, Request, Response, Router, get
 from litestar.datastructures import State
 from litestar.testing import create_test_client
 from litestar.types import AnyCallable, BeforeRequestHookHandler
+
+logger = logging.getLogger(__name__)
+
+
+async def async_before_request_handler_with_parent(
+    request: Request[Any, Any, State], /, *, parent: Optional[BeforeRequestHookHandler] = None
+) -> Optional[Dict[str, Union[str, int]]]:
+    assert isinstance(request, Request)
+    retval: Dict[str, Union[str, int]] = (None if parent is None else await parent(request)) or {}
+    retval.setdefault("amended_count", 0)
+    retval["amended_count"] += 1  # type: ignore[operator]
+    return retval
 
 
 def sync_before_request_handler_with_return_value(request: Request[Any, Any, State]) -> Dict[str, str]:
@@ -88,6 +101,27 @@ def test_before_request_handler_called(before_request: Optional[AnyCallable], ex
             {"hello": "world"},
         ],
         [None, None, None, async_before_request_handler_without_return_value, {"hello": "world"}],
+        [
+            sync_before_request_handler_with_return_value,
+            None,
+            None,
+            async_before_request_handler_with_parent,
+            {"hello": "moon", "amended_count": 1},
+        ],
+        [
+            sync_before_request_handler_with_return_value,
+            None,
+            async_before_request_handler_with_parent,
+            async_before_request_handler_with_parent,
+            {"hello": "moon", "amended_count": 2},
+        ],
+        [
+            sync_before_request_handler_with_return_value,
+            async_before_request_handler_with_parent,
+            async_before_request_handler_with_parent,
+            async_before_request_handler_with_parent,
+            {"hello": "moon", "amended_count": 3},
+        ],
     ],
 )
 def test_before_request_handler_resolution(

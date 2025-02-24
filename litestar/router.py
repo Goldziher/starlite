@@ -172,8 +172,8 @@ class Router:
         """
 
         self.after_request = ensure_async_callable(after_request) if after_request else None  # pyright: ignore
-        self.after_response = ensure_async_callable(after_response) if after_response else None
-        self.before_request = ensure_async_callable(before_request) if before_request else None
+        self.after_response = ensure_async_callable(after_response) if after_response else None  # pyright: ignore
+        self.before_request = ensure_async_callable(before_request) if before_request else None  # pyright: ignore
         self.cache_control = cache_control
         self.dto = dto
         self.etag = etag

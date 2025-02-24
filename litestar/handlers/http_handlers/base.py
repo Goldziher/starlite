@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import functools
+import inspect
 from enum import Enum
 from typing import TYPE_CHECKING, AnyStr, Mapping, Sequence, TypedDict, cast
 
@@ -60,6 +62,15 @@ if TYPE_CHECKING:
     from litestar.types.composite_types import TypeDecodersSequence
 
 __all__ = ("HTTPRouteHandler", "route")
+
+
+def _wrap_layered_hooks(hooks: list[AsyncAnyCallable]) -> AsyncAnyCallable | None:
+    """Given a list of callables, starting from the end, set the parent= keyword argument of each to default to the preceding hook should any preceding hook exist and should that argument be accepted."""
+    if not hooks:
+        return None
+    if "parent" in inspect.signature(hooks[-1]).parameters:
+        return functools.partial(hooks[-1], parent=_wrap_layered_hooks(hooks[:-1]))
+    return hooks[-1]
 
 
 class ResponseHandlerMap(TypedDict):
@@ -265,9 +276,9 @@ class HTTPRouteHandler(BaseRouteHandler):
         )
 
         self.after_request = ensure_async_callable(after_request) if after_request else None  # pyright: ignore
-        self.after_response = ensure_async_callable(after_response) if after_response else None
+        self.after_response = ensure_async_callable(after_response) if after_response else None  # pyright: ignore
         self.background = background
-        self.before_request = ensure_async_callable(before_request) if before_request else None
+        self.before_request = ensure_async_callable(before_request) if before_request else None  # pyright: ignore
         self.cache = cache
         self.cache_control = cache_control
         self.cache_key_builder = cache_key_builder
@@ -407,7 +418,7 @@ class HTTPRouteHandler(BaseRouteHandler):
         """
         if self._resolved_before_request is Empty:
             before_request_handlers = [layer.before_request for layer in self.ownership_layers if layer.before_request]
-            self._resolved_before_request = before_request_handlers[-1] if before_request_handlers else None
+            self._resolved_before_request = _wrap_layered_hooks(before_request_handlers)
         return cast("AsyncAnyCallable | None", self._resolved_before_request)
 
     def resolve_after_response(self) -> AsyncAnyCallable | None:
@@ -425,7 +436,7 @@ class HTTPRouteHandler(BaseRouteHandler):
                 for layer in self.ownership_layers
                 if layer.after_response
             ]
-            self._resolved_after_response = after_response_handlers[-1] if after_response_handlers else None
+            self._resolved_after_response = _wrap_layered_hooks(after_response_handlers)
 
         return cast("AsyncAnyCallable | None", self._resolved_after_response)
 

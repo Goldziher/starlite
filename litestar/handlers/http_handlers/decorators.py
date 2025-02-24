@@ -121,8 +121,9 @@ class delete(HTTPRouteHandler):
                 :class:`BackgroundTasks <.background_tasks.BackgroundTasks>` to execute after the response is finished.
                 Defaults to ``None``.
             before_request: A sync or async function called immediately before calling the route handler. Receives
-                the :class:`.connection.Request` instance and any non-``None`` return value is used for the response,
-                bypassing the route handler.
+                the :class:`.connection.Request` instance (and, if it accepts a keyword argument named `parent`, the
+                outer scope's before_request handler if any exists). Any non-``None`` return value is used for the
+                response, bypassing the route handler.
             cache: Enables response caching if configured on the application level. Valid values are ``True`` or a number
                 of seconds (e.g. ``120``) to cache the response.
             cache_control: A ``cache-control`` header of type
