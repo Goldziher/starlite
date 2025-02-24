@@ -37,7 +37,16 @@ from typing import (
     cast,
 )
 
-from typing_extensions import Annotated, NewType, NotRequired, Required, get_args, get_origin, get_type_hints
+from typing_extensions import (
+    Annotated,
+    NewType,
+    NotRequired,
+    Required,
+    TypeAliasType,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 from litestar.types.builtin_types import NoneType, UnionTypes
 
@@ -128,7 +137,7 @@ This is necessary because occasionally we want to rebuild a generic outer type w
 ``collections.abc.Mapping``, are not valid generic types in Python 3.8.
 """
 
-wrapper_type_set = {Annotated, Required, NotRequired}
+wrapper_type_set = {Annotated, Required, NotRequired, TypeAliasType}
 """Types that always contain a wrapped type annotation as their first arg."""
 
 
@@ -151,7 +160,7 @@ def make_non_optional_union(annotation: UnionT | None) -> UnionT:
 
 
 def unwrap_annotation(annotation: Any) -> tuple[Any, tuple[Any, ...], set[Any]]:
-    """Remove "wrapper" annotation types, such as ``Annotated``, ``Required``, and ``NotRequired``.
+    """Remove "wrapper" annotation types, such as ``Annotated``, ``Required``, ``NotRequired`` or ``TypeAliasType``.
 
     Note:
         ``annotation`` should have been retrieved from :func:`get_type_hints()` with ``include_extras=True``. This
@@ -163,14 +172,30 @@ def unwrap_annotation(annotation: Any) -> tuple[Any, tuple[Any, ...], set[Any]]:
     Returns:
         A tuple of the unwrapped annotation and any ``Annotated`` metadata, and a set of any wrapper types encountered.
     """
-    origin = get_origin(annotation)
-    wrappers = set()
+
     metadata = []
-    while origin in wrapper_type_set:
-        wrappers.add(origin)
-        annotation, *meta = get_args(annotation)
-        metadata.extend(meta)
-        origin = get_origin(annotation)
+    wrappers = set()
+
+    stack = [annotation]
+
+    while stack:
+        ann = stack.pop()
+
+        if isinstance(ann, TypeAliasType):
+            wrappers.add(TypeAliasType)
+            stack.append(ann.__value__)
+            continue
+
+        origin = get_origin(ann)
+        if origin in wrapper_type_set:
+            ann, *meta = get_args(ann)
+            metadata.extend(meta)
+            wrappers.add(origin)
+            stack.append(ann)
+            continue
+
+        return ann, tuple(metadata), wrappers
+
     return annotation, tuple(metadata), wrappers
 
 

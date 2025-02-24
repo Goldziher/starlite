@@ -52,6 +52,7 @@ from litestar.plugins import OpenAPISchemaPlugin
 from litestar.types import Empty
 from litestar.types.builtin_types import NoneType
 from litestar.typing import FieldDefinition
+from litestar.utils import deprecated
 from litestar.utils.helpers import get_name
 from litestar.utils.predicates import (
     is_class_and_subclass,
@@ -309,8 +310,6 @@ class SchemaCreator:
 
         if field_definition.is_new_type:
             result = self.for_new_type(field_definition)
-        elif field_definition.is_type_alias_type:
-            result = self.for_type_alias_type(field_definition)
         elif plugin_for_annotation := self.get_plugin_for(field_definition):
             result = self.for_plugin(field_definition, plugin_for_annotation)
         elif _should_create_literal_schema(field_definition):
@@ -353,6 +352,7 @@ class SchemaCreator:
             )
         )
 
+    @deprecated(version="2.15", removal_in="3.0", info="TypeAliasType is supported natively")
     def for_type_alias_type(self, field_definition: FieldDefinition) -> Schema | Reference:
         return self.for_field_definition(
             FieldDefinition.from_kwarg(

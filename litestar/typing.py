@@ -272,7 +272,7 @@ class FieldDefinition:
     @property
     def is_type_alias_type(self) -> bool:
         """Whether the annotation is a ``TypeAliasType``"""
-        return isinstance(self.annotation, TypeAliasType)
+        return TypeAliasType in self.type_wrappers
 
     @property
     def is_type_var(self) -> bool:
