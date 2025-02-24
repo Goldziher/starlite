@@ -73,6 +73,8 @@ napoleon_use_admonition_for_notes = True
 napoleon_use_admonition_for_references = False
 napoleon_attr_annotations = True
 
+mermaid_params = ["--backgroundColor", "transparent"]
+
 autoclass_content = "class"
 autodoc_class_signature = "separated"
 autodoc_default_options = {"special-members": "__init__", "show-inheritance": True, "members": True}
