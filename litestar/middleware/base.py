@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import abc
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Callable, Protocol, runtime_checkable
 
@@ -9,7 +10,12 @@ from litestar.middleware._utils import (
     should_bypass_middleware,
 )
 
-__all__ = ("AbstractMiddleware", "DefineMiddleware", "MiddlewareProtocol")
+__all__ = (
+    "ASGIMiddleware",
+    "AbstractMiddleware",
+    "DefineMiddleware",
+    "MiddlewareProtocol",
+)
 
 
 if TYPE_CHECKING:
@@ -149,3 +155,84 @@ class AbstractMiddleware:
             None
         """
         raise NotImplementedError("abstract method must be implemented")
+
+
+class ASGIMiddleware(abc.ABC):
+    """An abstract base class to easily construct ASGI middlewares, providing functionality
+    to dynamically skip the middleware based on ASGI ``scope["type"]``, handler ``opt``
+    keys or path patterns and a simple way to pass configuration to middlewares.
+
+    This base class does not implement an ``__init__`` method, so subclasses are free
+    to use it to customize the middleware's configuration.
+
+    .. important::
+        An instance of the individual middleware's will be created *once* and used to
+        build up the internal middleware stack. As such, middlewares should *not* be
+        stateful, as this state will be shared across all requests.
+        Any connection-specific state should be scoped to the `handle` implementation. Not doing so would typically lead to conflicting variable reads/writes across requests, and most likely bugs.
+
+    .. example::
+
+        .. code-block:: python
+
+            class MyMiddleware(ASGIMiddleware):
+                scopes = (ScopeType.HTTP,)
+                exclude = ("/not/this/path",)
+                exclude_opt_key = "exclude_my_middleware"
+
+                def __init__(self, my_logger: Logger) -> None:
+                    self.logger = logger
+
+                async def handle(
+                    self, scope: Scope, receive: Receive, send: Send, next_app: ASGIApp
+                ) -> None:
+                    self.logger.debug("Received request for path %s", scope["path"])
+                    await next_app(scope, receive, send)
+                    self.logger.debug("Processed request for path %s", scope["path"])
+
+
+            app = Litestar(..., middleware=[MyMiddleware(logger=my_logger)])
+
+    .. versionadded:: 2.15
+    """
+
+    scopes: tuple[ScopeType, ...] = (
+        ScopeType.HTTP,
+        ScopeType.WEBSOCKET,
+        ScopeType.ASGI,
+    )
+    exclude_path_pattern: str | tuple[str, ...] | None = None
+    exclude_opt_key: str | None = None
+
+    def __call__(self, app: ASGIApp) -> ASGIApp:
+        """Create the actual middleware callable"""
+        handle = self.handle
+        exclude_pattern = build_exclude_path_pattern(exclude=self.exclude_path_pattern, middleware_cls=type(self))
+        scopes = set(self.scopes)
+        exclude_opt_key = self.exclude_opt_key
+
+        async def middleware(scope: Scope, receive: Receive, send: Send) -> None:
+            if should_bypass_middleware(
+                scope=scope,
+                scopes=scopes,
+                exclude_opt_key=exclude_opt_key,
+                exclude_path_pattern=exclude_pattern,
+            ):
+                await app(scope, receive, send)
+            else:
+                await handle(scope=scope, receive=receive, send=send, next_app=app)
+
+        return middleware
+
+    @abc.abstractmethod
+    async def handle(self, scope: Scope, receive: Receive, send: Send, next_app: ASGIApp) -> None:
+        """Handle ASGI call.
+
+        Args:
+            scope: The ASGI connection scope.
+            receive: The ASGI receive function.
+            send: The ASGI send function
+            next_app: The next ASGI application in the middleware stack to call
+        """
+
+        raise NotImplementedError

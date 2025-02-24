@@ -26,6 +26,21 @@ two base classes you can use for this purpose - the :class:`~litestar.middleware
 which gives a bare-bones type, or the :class:`~litestar.middleware.base.AbstractMiddleware` that offers a
 base class with some built in functionality.
 
+Modifying Requests and Responses
+-------------------------------------
+
+Middlewares can not only be used to execute *around* other ASGI callable, they can also
+intercept and modify both incoming and outgoing data in a request / response cycle by
+"wrapping" the respective ``receive`` and ``send`` ASGI callables.
+
+The following demonstrates how to add a request timing header with a timestamp to all
+outgoing responses:
+
+.. literalinclude:: /examples/middleware/request_timing.py
+    :language: python
+
+
+
 Using MiddlewareProtocol
 ------------------------
 
